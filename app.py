@@ -6,7 +6,7 @@ import os
 # import detecteur
 
 app= Flask(__name__, static_folder='static', template_folder='template')
-app.config['SQLALCHEMY_URI'] ='postgresql://ifsm_db_user:kGi5McF1aQchxW7D712d71Lh1E2TUKdc@dpg-d09sq1uuk2gs73cqb6fg-a.oregon-postgres.render.com/ifsm_db'
+app.config['SQLALCHEMY_URI'] ='postgresql://LIEN_DE_LABASE'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 with app.app_context():
