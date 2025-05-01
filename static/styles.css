@@ -31,6 +31,68 @@
     background-color: #f5f7fb;
   }
   
+  /* Style de base pour la sidebar */
+  .sidebar {
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: #343a40;
+    color: #fff;
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+  
+  /* Masquer la sidebar sur les petits écrans */
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+  }
+  
+  /* Style pour les options de la sidebar */
+  .sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .sidebar-menu li {
+    padding: 15px 20px;
+    cursor: pointer;
+  }
+  
+  .sidebar-menu li:hover {
+    background-color: #495057;
+  }
+  
+  /* Style pour le bouton de bascule */
+  #sidebar-toggle {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: none;
+    border: none;
+    color: #343a40;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1100;
+  }
+  
+  /* Masquer la sidebar sur les écrans plus petits */
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+    }
+  
+    .sidebar.open {
+      transform: translateX(0);
+    }
+  
+    .main-content {
+      margin-left: 0;
+    }
+  }
+  
   /* Dashboard Layout */
   .sidebar {
     position: fixed;
@@ -255,4 +317,3 @@
       margin-left: 0;
     }
   }
-  
