@@ -1,0 +1,3 @@
+# filepath: c:\Users\Samuel\Desktop\MesProjets\Pointeuse_Biometrique_IFSM\env\requirements.txt
+
+flask
