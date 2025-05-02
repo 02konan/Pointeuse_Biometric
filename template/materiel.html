@@ -1,0 +1,243 @@
+<!-- Devices Content -->
+<div id="devices-content" class="content-section d-none">
+    <div class="container-fluid p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Appareils Biométriques</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
+                <i class="fas fa-plus me-2"></i> Ajouter un appareil
+            </button>
+        </div>
+        
+        <!-- Devices Grid -->
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Scanner Entrée Principale</h5>
+                            <span class="badge bg-success">En ligne</span>
+                        </div>
+                        <div class="device-details mb-3">
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">ID:</div>
+                                <div class="col-7">DEV001</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Modèle:</div>
+                                <div class="col-7">FingerTech FT-800</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Emplacement:</div>
+                                <div class="col-7">Entrée Principale</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">IP:</div>
+                                <div class="col-7">192.168.1.100</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Dernière sync:</div>
+                                <div class="col-7">30/06/2023 17:30</div>
+                            </div>
+                        </div>
+                        <div class="device-stats mb-3">
+                            <div class="progress mb-2" style="height: 5px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">Utilisation mémoire: 25%</small>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-sm btn-outline-primary"><i class="fas fa-sync me-1"></i> Synchroniser</button>
+                            <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-cog me-1"></i> Paramètres</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Scanner Entrée Secondaire</h5>
+                            <span class="badge bg-success">En ligne</span>
+                        </div>
+                        <div class="device-details mb-3">
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">ID:</div>
+                                <div class="col-7">DEV002</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Modèle:</div>
+                                <div class="col-7">FingerTech FT-800</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Emplacement:</div>
+                                <div class="col-7">Entrée Secondaire</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">IP:</div>
+                                <div class="col-7">192.168.1.101</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Dernière sync:</div>
+                                <div class="col-7">30/06/2023 17:25</div>
+                            </div>
+                        </div>
+                        <div class="device-stats mb-3">
+                            <div class="progress mb-2" style="height: 5px;">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 30%;" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">Utilisation mémoire: 30%</small>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-sm btn-outline-primary"><i class="fas fa-sync me-1"></i> Synchroniser</button>
+                            <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-cog me-1"></i> Paramètres</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Scanner Cafétéria</h5>
+                            <span class="badge bg-danger">Hors ligne</span>
+                        </div>
+                        <div class="device-details mb-3">
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">ID:</div>
+                                <div class="col-7">DEV003</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Modèle:</div>
+                                <div class="col-7">FingerTech FT-600</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Emplacement:</div>
+                                <div class="col-7">Cafétéria</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">IP:</div>
+                                <div class="col-7">192.168.1.102</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Dernière sync:</div>
+                                <div class="col-7">29/06/2023 16:45</div>
+                            </div>
+                        </div>
+                        <div class="device-stats mb-3">
+                            <div class="progress mb-2" style="height: 5px;">
+                                <div class="progress-bar bg-danger" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">Utilisation mémoire: N/A</small>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-sm btn-outline-primary"><i class="fas fa-sync me-1"></i> Synchroniser</button>
+                            <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-cog me-1"></i> Paramètres</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0">Scanner Salle de Conférence</h5>
+                            <span class="badge bg-warning">Maintenance</span>
+                        </div>
+                        <div class="device-details mb-3">
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">ID:</div>
+                                <div class="col-7">DEV004</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Modèle:</div>
+                                <div class="col-7">FingerTech FT-800</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Emplacement:</div>
+                                <div class="col-7">Salle de Conférence</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">IP:</div>
+                                <div class="col-7">192.168.1.103</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted">Dernière sync:</div>
+                                <div class="col-7">28/06/2023 10:15</div>
+                            </div>
+                        </div>
+                        <div class="device-stats mb-3">
+                            <div class="progress mb-2" style="height: 5px;">
+                                <div class="progress-bar bg-warning" role="progressbar" style="width: 15%;" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">Utilisation mémoire: 15%</small>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-sm btn-outline-primary"><i class="fas fa-sync me-1"></i> Synchroniser</button>
+                            <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-cog me-1"></i> Paramètres</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Add Device Modal -->
+<div class="modal fade" id="addDeviceModal" tabindex="-1" aria-labelledby="addDeviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addDeviceModalLabel">Ajouter un nouvel appareil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="deviceName" class="form-label">Nom de l'appareil</label>
+                        <input type="text" class="form-control" id="deviceName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deviceModel" class="form-label">Modèle</label>
+                        <select class="form-select" id="deviceModel" required>
+                            <option selected disabled value="">Choisir...</option>
+                            <option>FingerTech FT-800</option>
+                            <option>FingerTech FT-600</option>
+                            <option>SecureScan SS-200</option>
+                            <option>BioID B-100</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deviceLocation" class="form-label">Emplacement</label>
+                        <input type="text" class="form-control" id="deviceLocation" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deviceIP" class="form-label">Adresse IP</label>
+                        <input type="text" class="form-control" id="deviceIP" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="devicePort" class="form-label">Port</label>
+                        <input type="number" class="form-control" id="devicePort" value="4370">
+                    </div>
+                    <div class="mb-3">
+                        <label for="deviceSerial" class="form-label">Numéro de série</label>
+                        <input type="text" class="form-control" id="deviceSerial">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label d-block">Type d'appareil</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="deviceType" id="typeFingerprint" value="fingerprint" checked>
+                            <label class="form-check-label" for="typeFingerprint">Empreinte digitale</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="deviceType" id="typeFacial" value="facial">
+                            <label class="form-check-label" for="typeFacial">Reconnaissance faciale</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
