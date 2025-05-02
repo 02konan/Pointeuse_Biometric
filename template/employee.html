@@ -55,20 +55,19 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for employee in employee_data %}
                                         <tr>
-                                            <td>{{ employee.user_id }}</td>
+                                            <td></td>
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <div class="avatar me-2">
                                                         <img src="/placeholder.svg?height=40&width=40" alt="Employee">
                                                     </div>
-                                                    <div>{{ employee.nom }}</div>
+                                                    <div></div>
                                                 </div>
                                             </td>
-                                            <td>{{ employee.finger_id }}</td>
-                                            <td>{{ employee.template }}</td>
-                                            <td>+33 6 12 34 56 78</td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
                                             <td><span class="badge bg-success">Actif</span></td>
                                             <td>
                                                 <div class="dropdown">
@@ -85,10 +84,23 @@
                                                 </div>
                                             </td>
                                         </tr>
-                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
+                            <!-- Pagination -->
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Suivant</a>
+                        </li>
+                    </ul>
+                </nav>
                         </div>
                     </div>
                 </div>
