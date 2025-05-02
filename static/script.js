@@ -14,6 +14,16 @@ document.addEventListener("DOMContentLoaded", () => {
       const sidebar = document.querySelector('.sidebar');
       sidebar.classList.toggle('open');
     });
+
+    sidebarToggle.addEventListener("click", function () {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('collapsed');
+    });
+
+    sidebarToggle.addEventListener("click", function () {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('collapsed');
+    });
   }
 
   // Sidebar Menu Navigation

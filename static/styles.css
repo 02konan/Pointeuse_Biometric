@@ -40,13 +40,32 @@
     height: 100%;
     background-color: #343a40;
     color: #fff;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, width 0.3s ease;
     z-index: 1000;
+    overflow: hidden; /* Empêche les enfants de déborder */
   }
   
-  /* Masquer la sidebar sur les petits écrans */
+  /* Masquer complètement la sidebar lorsqu'elle est repliée */
   .sidebar.collapsed {
     transform: translateX(-100%);
+    overflow: hidden; /* Empêche les éléments de rester visibles */
+  }
+  
+  /* Assurez-vous que les éléments <li> ne s'affichent pas lorsque la sidebar est masquée */
+  .sidebar-menu li {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+  }
+  
+  .sidebar.collapsed .sidebar-menu li {
+    opacity: 0; /* Rendre les éléments invisibles */
+    pointer-events: none; /* Désactiver les interactions */
+  }
+  
+  /* Lorsque la sidebar est ouverte, les éléments <li> redeviennent visibles */
+  .sidebar:not(.collapsed) .sidebar-menu li {
+    opacity: 1; /* Rendre les éléments visibles */
+    pointer-events: auto; /* Réactiver les interactions */
   }
   
   /* Style pour les options de la sidebar */
