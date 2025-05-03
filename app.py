@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for,jsonify
 from flask_cors import CORS
 from read_data import read_data_from_db
 from database.db import db
@@ -18,19 +18,25 @@ CORS(app)
 
 @app.route('/')
 def index():
+        return render_template('index.html')
+@app.route('/api/dashboard',methods=['GET'])
+def dashboard_data():
     data = read_data_from_db()
     if data:
-        total_eleves, total_Presents, total_retard, activité_recentes = data
-        employee={
+        total_eleves, presents, retard, activites = data
+        absents = total_eleves - presents - retard
+
+        return jsonify({
             'total_eleves': total_eleves,
-            'presents': total_Presents,
-            'retard': total_retard,
-            'activité_recentes':activité_recentes,
-        }
-        employees=[employee]
-    else:
-        employees=[]
-    return render_template('index.html', employee_data=employees)
+            'presents': presents,
+            'retard': retard,
+            'absents': absents,
+            'pourcentage_presents': round((presents / total_eleves) * 100, 2),
+            'pourcentage_absents': round((absents / total_eleves) * 100, 2),
+            'pourcentage_retards': round((retard / total_eleves) * 100, 2),
+            'activité_recentes': activites
+        })
+    return jsonify({})
 
 
 if __name__ =='__main__':

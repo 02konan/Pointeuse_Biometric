@@ -21,9 +21,12 @@ try:
             template = conn.get_user_template(user.uid, fid)
             if template and template.size > 0:
                 print(f'  Finger ID: {fid} => Template size: {template.size}')
-                
-                sql = "INSERT INTO empreintes (user_id, nom, finger_id, template) VALUES (%s, %s, %s, %s)"
-                cursor.execute(sql, (user.user_id, user.name, fid, template.template))
+                recup="SELECT user_id FROM empreintes"
+                if recup[user.user_id] == user.user_id:
+                    print("L'empreinte existe déjà")
+                else:
+                 sql = "INSERT INTO empreintes (user_id, nom, finger_id, template) VALUES (%s, %s, %s, %s)"
+                 cursor.execute(sql, (user.user_id, user.name, fid, template.template))
 
         data_base.commit()
         cursor.close()

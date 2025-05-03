@@ -13,9 +13,9 @@ def read_data_from_db():
         with data_base.cursor() as cursor:
             # Requête POUR AFFICHER LE NOMBRE D'EMPLOYES
             sql1 = "SELECT COUNT(nom) FROM empreintes"
-            sql2 = "SELECT COUNT(*) FROM `empreintes_utilisees` WHERE time(heure_pointage) < '08:00:00'"
+            sql2 = "SELECT COUNT(*) FROM `empreintes_utilisees` WHERE time(heure_pointage) < '07:00:00'"
             sql3 = "SELECT COUNT(*) FROM `empreintes_utilisees` WHERE time(heure_pointage) > '08:00:00'"
-            sql4 = "SELECT DISTINCT empreintes.user_id,heure_pointage " \
+            sql4 = "SELECT DISTINCT empreintes.nom,heure_pointage " \
             "FROM empreintes_utilisees " \
             "JOIN empreintes on empreintes_utilisees.user_id=empreintes.user_id" \
             " ORDER BY heure_pointage DESC LIMIT 4;"

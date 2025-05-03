@@ -28,6 +28,8 @@ def listen_attendance():
                 for record in attendances:
                     if last_processed_timestamp is None or record.timestamp > last_processed_timestamp:
                         print(f"[Nouveau pointage] User ID: {record.user_id} | Heure: {record.timestamp}")
+                        #supprimer les pointage des meme utilisateur a la meme heure mais dans un intervalle de 5 secondes
+                        sql = "DELETE FROM empreintes_utilisees WHERE user_id = %s AND heure_pointage BETWEEN %s AND %s"
 
                         # Insertion dans MySQL
                         sql = "INSERT INTO empreintes_utilisees (user_id, heure_pointage) VALUES (%s, %s)"
