@@ -1,14 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
 {%include "header.html"%}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+            <button id="sidebar-toggle" class="btn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="d-flex align-items-center ms-auto">
+                <div class="dropdown">
+                    <button class="btn dropdown-toggle d-flex align-items-center" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        <div class="avatar me-2">
+                            <img src="/placeholder.svg?height=40&width=40" alt="Admin">
+                        </div>
+                        <span>Admin</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profil</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Paramètres</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="dropdown-logout"><i class="fas fa-sign-out-alt me-2"></i> Déconnexion</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+      </nav>
     <div id="dashboard">
         {%include "Sidebar.html"%}
         <!-- Main Content -->
         <div class="main-content">
-                   {%include "nav-bar.html"%}
-                   {%include "Dashboard.html"%}
-                   {%include "presence.html"%}
-                   {%include "rapport.html"%}
-                   {%include "materiel.html"%}
-                   {%include "parametre.html"%}
+            {% block content %}
+            {% if active_page == 'index' %}{%include "Dashboard.html"%}{% endif %}
+            {% endblock %}
         </div>
     </div>
 {%include "footer.html"%}   
+</body>
+</html>

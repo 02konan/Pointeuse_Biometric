@@ -5,12 +5,12 @@
         <span>BioPro</span>
     </div>
     <ul class="sidebar-menu">
-        <li class="active" data-target="dashboard-content"><i class="fas fa-tachometer-alt"></i> Tableau de bord</li>
-        <li data-target="employees-content"><i class="fas fa-users"></i>Employés</li>
-        <li data-target="attendance-content"><i class="fas fa-calendar-check"></i> Présences</li>
-        <li data-target="reports-content"><i class="fas fa-chart-bar"></i> Rapports</li>
-        <li data-target="devices-content"><i class="fas fa-fingerprint"></i> Appareils</li>
-        <li data-target="settings-content"><i class="fas fa-cog"></i> Paramètres</li>
+        <li class="{% if active_page == 'index' %}active{% endif %}"><a class="text-white text-decoration-none" href="{{ url_for('index') }}"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
+        <li class="{% if active_page == 'employee' %}active{% endif %}"><a class="text-white text-decoration-none" href="{{ url_for('intf_employee') }}"><i class="fas fa-users"></i>Employee</a></li>
+        <li><i class="fas fa-calendar-check"></i> Présences</li>
+        <li><i class="fas fa-chart-bar"></i> Rapports</li>
+        <li><i class="fas fa-fingerprint"></i> Appareils</li>
+        <li><i class="fas fa-cog"></i> Paramètres</li>
     </ul>
     <div class="sidebar-footer">
         <button id="logout-btn" class="btn btn-sm btn-outline-light"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>

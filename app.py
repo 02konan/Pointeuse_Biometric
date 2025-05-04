@@ -18,7 +18,7 @@ CORS(app)
 
 @app.route('/')
 def index():
-        return render_template('index.html')
+     return render_template('index.html',active_page='index')
 @app.route('/api/dashboard',methods=['GET'])
 def dashboard_data():
     data = read_data_from_db()
@@ -37,7 +37,9 @@ def dashboard_data():
             'activité_recentes': activites
         })
     return jsonify({})
-
+@app.route('/employee')
+def intf_employee():
+    return render_template('employee.html',active_page='employee')
 
 if __name__ =='__main__':
     app.run(debug=True)

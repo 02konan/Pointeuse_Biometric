@@ -1,191 +1,262 @@
-   <!-- Employees Content -->
-            <div id="employees-content" class="content-section d-none">
-                <div class="container-fluid p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h2>Gestion des Employés</h2>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
-                            <i class="fas fa-plus me-2"></i> Ajouter un employé
-                        </button>
-                    </div>
-                    
-                    <!-- Search and Filter -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <input type="text" class="form-control" placeholder="Rechercher un employé...">
-                                </div>
-                                <div class="col-md-3">
-                                    <select class="form-select">
-                                        <option selected>Tous les départements</option>
-                                        <option>Ressources Humaines</option>
-                                        <option>Informatique</option>
-                                        <option>Finance</option>
-                                        <option>Marketing</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <select class="form-select">
-                                        <option selected>Tous les statuts</option>
-                                        <option>Actif</option>
-                                        <option>Inactif</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <button class="btn btn-outline-primary w-100">Filtrer</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Employees Table -->
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Nom</th>
-                                            <th>Département</th>
-                                            <th>Email</th>
-                                            <th>Téléphone</th>
-                                            <th>Statut</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td></td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="avatar me-2">
-                                                        <img src="/placeholder.svg?height=40&width=40" alt="Employee">
-                                                    </div>
-                                                    <div></div>
-                                                </div>
-                                            </td>
-                                            <td></td>
-                                            <td></td>
-                                            <td></td>
-                                            <td><span class="badge bg-success">Actif</span></td>
-                                            <td>
-                                                <div class="dropdown">
-                                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                        Actions
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-eye me-2"></i> Voir</a></li>
-                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i> Modifier</a></li>
-                                                        <li><a class="dropdown-item" href="#"><i class="fas fa-fingerprint me-2"></i> Empreintes</a></li>
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i> Supprimer</a></li>
-                                                    </ul>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <!-- Pagination -->
-                <nav aria-label="Page navigation" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
-                        </li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">Suivant</a>
-                        </li>
-                    </ul>
-                </nav>
-                        </div>
-                    </div>
-                </div>
-            </div>
-             <!-- Add Employee Modal -->
-    <div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addEmployeeModalLabel">Ajouter un nouvel employé</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="firstName" class="form-label">Prénom</label>
-                                <input type="text" class="form-control" id="firstName" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="lastName" class="form-label">Nom</label>
-                                <input type="text" class="form-control" id="lastName" required>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="employeeId" class="form-label">ID Employé</label>
-                                <input type="text" class="form-control" id="employeeId" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="department" class="form-label">Département</label>
-                                <select class="form-select" id="department" required>
-                                    <option selected disabled value="">Choisir...</option>
-                                    <option>Ressources Humaines</option>
-                                    <option>Informatique</option>
-                                    <option>Finance</option>
-                                    <option>Marketing</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="phone" class="form-label">Téléphone</label>
-                                <input type="tel" class="form-control" id="phone">
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="joinDate" class="form-label">Date d'embauche</label>
-                                <input type="date" class="form-control" id="joinDate" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="position" class="form-label">Poste</label>
-                                <input type="text" class="form-control" id="position" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="address" class="form-label">Adresse</label>
-                            <textarea class="form-control" id="address" rows="2"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label d-block">Statut</label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="status" id="statusActive" value="active" checked>
-                                <label class="form-check-label" for="statusActive">Actif</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="status" id="statusInactive" value="inactive">
-                                <label class="form-check-label" for="statusInactive">Inactif</label>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="photo" class="form-label">Photo</label>
-                            <input class="form-control" type="file" id="photo">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <button type="button" class="btn btn-primary">Enregistrer</button>
-                </div>
-            </div>
-        </div>
+{% extends 'index.html' %}
+{% block content %}
+<div id="employees-content" class="content-section">
+  <div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Gestion des Employés</h2>
+      <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#addEmployeeModal"
+      >
+        <i class="fas fa-plus me-2"></i> Ajouter un employé
+      </button>
     </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Rechercher un employé..."
+            />
+          </div>
+          <div class="col-md-3">
+            <select class="form-select">
+              <option selected>Tous les départements</option>
+              <option>Ressources Humaines</option>
+              <option>Informatique</option>
+              <option>Finance</option>
+              <option>Marketing</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <select class="form-select">
+              <option selected>Tous les statuts</option>
+              <option>Actif</option>
+              <option>Inactif</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <button class="btn btn-outline-primary w-100">Filtrer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employees Table -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Département</th>
+                <th>Email</th>
+                <th>Téléphone</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td></td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar me-2">
+                      <img
+                        src="/placeholder.svg?height=40&width=40"
+                        alt="Employee"
+                      />
+                    </div>
+                    <div></div>
+                  </div>
+                </td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td><span class="badge bg-success">Actif</span></td>
+                <td>
+                  <div class="dropdown">
+                    <button
+                      class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                      type="button"
+                      data-bs-toggle="dropdown"
+                    >
+                      Actions
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <a class="dropdown-item" href="#"
+                          ><i class="fas fa-eye me-2"></i> Voir</a
+                        >
+                      </li>
+                      <li>
+                        <a class="dropdown-item" href="#"
+                          ><i class="fas fa-edit me-2"></i> Modifier</a
+                        >
+                      </li>
+                      <li>
+                        <a class="dropdown-item" href="#"
+                          ><i class="fas fa-fingerprint me-2"></i> Empreintes</a
+                        >
+                      </li>
+                      <li><hr class="dropdown-divider" /></li>
+                      <li>
+                        <a class="dropdown-item text-danger" href="#"
+                          ><i class="fas fa-trash me-2"></i> Supprimer</a
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- Pagination -->
+        <nav aria-label="Page navigation" class="mt-4">
+          <ul class="pagination justify-content-center">
+            <li class="page-item disabled">
+              <a class="page-link" href="#" tabindex="-1" aria-disabled="true"
+                >Précédent</a
+              >
+            </li>
+            <li class="page-item active">
+              <a class="page-link" href="#">1</a>
+            </li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item">
+              <a class="page-link" href="#">Suivant</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </div>
+</div>
+<div
+  class="modal fade"
+  id="addEmployeeModal"
+  tabindex="-1"
+  aria-labelledby="addEmployeeModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addEmployeeModalLabel">
+          Ajouter un nouvel employé
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="firstName" class="form-label">Prénom</label>
+              <input type="text" class="form-control" id="firstName" required />
+            </div>
+            <div class="col-md-6">
+              <label for="lastName" class="form-label">Nom</label>
+              <input type="text" class="form-control" id="lastName" required />
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="employeeId" class="form-label">ID Employé</label>
+              <input
+                type="text"
+                class="form-control"
+                id="employeeId"
+                required
+              />
+            </div>
+            <div class="col-md-6">
+              <label for="department" class="form-label">Département</label>
+              <select class="form-select" id="department" required>
+                <option selected disabled value="">Choisir...</option>
+                <option>Ressources Humaines</option>
+                <option>Informatique</option>
+                <option>Finance</option>
+                <option>Marketing</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" required />
+            </div>
+            <div class="col-md-6">
+              <label for="phone" class="form-label">Téléphone</label>
+              <input type="tel" class="form-control" id="phone" />
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="joinDate" class="form-label">Date d'embauche</label>
+              <input type="date" class="form-control" id="joinDate" required />
+            </div>
+            <div class="col-md-6">
+              <label for="position" class="form-label">Poste</label>
+              <input type="text" class="form-control" id="position" required />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="address" class="form-label">Adresse</label>
+            <textarea class="form-control" id="address" rows="2"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label d-block">Statut</label>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="status"
+                id="statusActive"
+                value="active"
+                checked
+              />
+              <label class="form-check-label" for="statusActive">Actif</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="status"
+                id="statusInactive"
+                value="inactive"
+              />
+              <label class="form-check-label" for="statusInactive"
+                >Inactif</label
+              >
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="photo" class="form-label">Photo</label>
+            <input class="form-control" type="file" id="photo" />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Annuler
+        </button>
+        <button type="button" class="btn btn-primary">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
