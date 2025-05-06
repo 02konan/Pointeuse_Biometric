@@ -15,7 +15,8 @@ def read_data_from_db():
             sql1 = "SELECT COUNT(nom) FROM empreintes"
             sql2 = "SELECT COUNT(*) FROM `empreintes_utilisees` WHERE time(heure_pointage) < '07:00:00'"
             sql3 = "SELECT COUNT(*) FROM `empreintes_utilisees` WHERE time(heure_pointage) > '08:00:00'"
-            sql4 = "SELECT DISTINCT empreintes.nom,heure_pointage " \
+            sql4 =""
+            sql5 = "SELECT DISTINCT empreintes.nom,heure_pointage " \
             "FROM empreintes_utilisees " \
             "JOIN empreintes on empreintes_utilisees.user_id=empreintes.user_id" \
             " ORDER BY heure_pointage DESC LIMIT 4;"
@@ -27,7 +28,7 @@ def read_data_from_db():
             total_Presents=cursor.fetchone()[0]
             cursor.execute(sql3)
             total_retard=cursor.fetchone()[0]
-            cursor.execute(sql4)
+            cursor.execute(sql5)
             activité_recentes=cursor.fetchall()
 
             return total_eleves,total_Presents,total_retard,activité_recentes

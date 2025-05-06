@@ -2,8 +2,10 @@ from flask import Flask, render_template, request, redirect, url_for,jsonify
 from flask_cors import CORS
 from read_data import read_data_from_db
 from database.db import db
+from Creat_employee import creat_data_employee
 import os
-# import detecteur
+import detecteur
+from attendance import listen_attendance
 
 app= Flask(__name__, static_folder='static', template_folder='template')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('LIEN_DE_LABASE')
@@ -40,6 +42,16 @@ def dashboard_data():
 @app.route('/employee')
 def intf_employee():
     return render_template('employee.html',active_page='employee')
-
+@app.route('/presence')
+def intf_presence():
+    return render_template('presence.html',active_page='presence')
+@app.route('/enregistrer_employer', methods=['POST'])
+def enregistrement():
+    nom = request.form['nom']
+    prenom = request.form['prenom']
+    telephone = request.form['telephone']
+    email = request.form['email']
+    creat_data_employee(nom, prenom, telephone, email)
+    return render_template('employee.html',message="Employé enregistré avec succès",active_page='employee')
 if __name__ =='__main__':
     app.run(debug=True)

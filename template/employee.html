@@ -162,15 +162,15 @@
         ></button>
       </div>
       <div class="modal-body">
-        <form>
+        <form action="/enregistrer_employer" method="POST" enctype="multipart/form-data">
           <div class="row mb-3">
             <div class="col-md-6">
               <label for="firstName" class="form-label">Prénom</label>
-              <input type="text" class="form-control" id="firstName" required />
+              <input type="text" class="form-control" name="prenom" required />
             </div>
             <div class="col-md-6">
               <label for="lastName" class="form-label">Nom</label>
-              <input type="text" class="form-control" id="lastName" required />
+              <input type="text" class="form-control" name="nom" required />
             </div>
           </div>
           <div class="row mb-3">
@@ -180,12 +180,12 @@
                 type="text"
                 class="form-control"
                 id="employeeId"
-                required
+                
               />
             </div>
             <div class="col-md-6">
               <label for="department" class="form-label">Département</label>
-              <select class="form-select" id="department" required>
+              <select class="form-select" id="department" >
                 <option selected disabled value="">Choisir...</option>
                 <option>Ressources Humaines</option>
                 <option>Informatique</option>
@@ -197,21 +197,21 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label for="email" class="form-label">Email</label>
-              <input type="email" class="form-control" id="email" required />
+              <input type="email" class="form-control" name="email" required />
             </div>
             <div class="col-md-6">
               <label for="phone" class="form-label">Téléphone</label>
-              <input type="tel" class="form-control" id="phone" />
+              <input type="tel" class="form-control" name="telephone" />
             </div>
           </div>
           <div class="row mb-3">
             <div class="col-md-6">
               <label for="joinDate" class="form-label">Date d'embauche</label>
-              <input type="date" class="form-control" id="joinDate" required />
+              <input type="date" class="form-control" name="joinDate" required />
             </div>
             <div class="col-md-6">
               <label for="position" class="form-label">Poste</label>
-              <input type="text" class="form-control" id="position" required />
+              <input type="text" class="form-control" id="position"/>
             </div>
           </div>
           <div class="mb-3">
@@ -248,13 +248,10 @@
             <label for="photo" class="form-label">Photo</label>
             <input class="form-control" type="file" id="photo" />
           </div>
+          <input type="submit" value="Enregistrer" class="btn btn-primary" />
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Annuler
         </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Annuler
-        </button>
-        <button type="button" class="btn btn-primary">Enregistrer</button>
       </div>
     </div>
   </div>

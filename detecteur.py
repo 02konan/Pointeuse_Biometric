@@ -9,9 +9,6 @@ try:
 
     users = conn.get_users()
     for user in users:
-        print('User ID:', user.user_id)
-        print('Name:', user.name)
-        print('Empreinte:', user.uid)
         
 
         data_base = pymysql.connect(host="localhost", user="root", password="", database="ifsm_database")
@@ -21,12 +18,18 @@ try:
             template = conn.get_user_template(user.uid, fid)
             if template and template.size > 0:
                 print(f'  Finger ID: {fid} => Template size: {template.size}')
-                recup="SELECT user_id FROM empreintes"
-                if recup[user.user_id] == user.user_id:
-                    print("L'empreinte existe déjà")
+                
+                recup = "SELECT user_id FROM empreintes"
+                cursor.execute(recup)
+                result = cursor.fetchall()  # Récupère tous les résultats sous forme de tuples
+
+                user_ids = [row[0] for row in result]  # Extraire uniquement les IDs des utilisateurs
+
+                if user.user_id in user_ids:
+                 print("L'empreinte existe déjà")
                 else:
-                 sql = "INSERT INTO empreintes (user_id, nom, finger_id, template) VALUES (%s, %s, %s, %s)"
-                 cursor.execute(sql, (user.user_id, user.name, fid, template.template))
+                  sql = "INSERT INTO empreintes (user_id, nom, finger_id, template) VALUES (%s, %s, %s, %s)"
+                  cursor.execute(sql, (user.user_id, user.name, fid, template.template))
 
         data_base.commit()
         cursor.close()

@@ -1,9 +1,8 @@
- <!-- Attendance Content -->
- <div id="attendance-content" class="content-section d-none">
+{% extends 'index.html' %}
+{% block content %}
+ <div id="attendance-content" class="content-section">
     <div class="container-fluid p-4">
-        <h2 class="mb-4">Registre des Présences</h2>
-        
-        <!-- Date Filter -->
+        <h2 class="mb-4">Registre des Présences</h2>        
         <div class="card mb-4">
             <div class="card-body">
                 <div class="row g-3">
@@ -41,8 +40,6 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Attendance Table -->
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
@@ -163,8 +160,6 @@
                         </tbody>
                     </table>
                 </div>
-                
-                <!-- Pagination -->
                 <nav aria-label="Page navigation" class="mt-4">
                     <ul class="pagination justify-content-center">
                         <li class="page-item disabled">
@@ -182,3 +177,4 @@
         </div>
     </div>
 </div>
+{% endblock %}

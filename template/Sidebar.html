@@ -5,9 +5,15 @@
         <span>BioPro</span>
     </div>
     <ul class="sidebar-menu">
-        <li class="{% if active_page == 'index' %}active{% endif %}"><a class="text-white text-decoration-none" href="{{ url_for('index') }}"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
-        <li class="{% if active_page == 'employee' %}active{% endif %}"><a class="text-white text-decoration-none" href="{{ url_for('intf_employee') }}"><i class="fas fa-users"></i>Employee</a></li>
-        <li><i class="fas fa-calendar-check"></i> Présences</li>
+        <li class="{% if active_page == 'index' %}active{% endif %}">
+        <a class="text-white text-decoration-none" href="{{ url_for('index') }}">
+        <i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
+        <li class="{% if active_page == 'employee' %}active{% endif %}">
+        <a class="text-white text-decoration-none" href="{{ url_for('intf_employee') }}">
+        <i class="fas fa-users"></i>Employee</a></li>
+        <li class="{% if active_page == 'presence' %}active{% endif %}">
+        <a class="text-white text-decoration-none" href="{{ url_for('intf_presence') }}">
+        <i class="fas fa-calendar-check"></i>Présences</a></li>
         <li><i class="fas fa-chart-bar"></i> Rapports</li>
         <li><i class="fas fa-fingerprint"></i> Appareils</li>
         <li><i class="fas fa-cog"></i> Paramètres</li>
