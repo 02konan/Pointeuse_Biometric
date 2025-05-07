@@ -1,6 +1,5 @@
 from zk import ZK, const
 import pymysql
-import threading
 import time
 from datetime import datetime, timedelta
 
@@ -60,12 +59,13 @@ def listen_attendance():
                         db.close()
 
                         last_processed_timestamp = record.timestamp
-                        print(f"[NOUVEAU] ID: {record.user_id} | Heure: {record.timestamp}")
+                        retour_pointeur=f"[NOUVEAU] ID: {record.user_id} | Heure: {record.timestamp}"
 
                 time.sleep(2)
                 if last_processed_timestamp is not None:
                     print(f"[INFO] Dernier pointage traité : {last_processed_timestamp}")
-
+                else:
+                    print("[INFO] Aucun pointage traité jusqu'à présent.")
         except Exception as e:
             print(f"[ERREUR] {e}")
             print(f"[INFO] Reconnexion dans {RECONNECT_DELAY} secondes...")
@@ -78,11 +78,5 @@ def listen_attendance():
                 print("[INFO] Déconnecté proprement du capteur.")
             except:
                 pass
-
-# --- Démarrage du thread ---
-if __name__ == "__main__":
-    thread = threading.Thread(target=listen_attendance)
-    thread.start()
-
-    while True:
-        time.sleep(10)
+         
+        

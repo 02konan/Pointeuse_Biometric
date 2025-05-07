@@ -1,6 +1,7 @@
 {% extends 'index.html' %}
 {% block content %}
 <div id="employees-content" class="content-section">
+  <div id="toast-container"></div>
   <div class="container-fluid p-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Gestion des Employés</h2>
@@ -211,12 +212,12 @@
             </div>
             <div class="col-md-6">
               <label for="position" class="form-label">Poste</label>
-              <input type="text" class="form-control" id="position"/>
+              <input type="text" class="form-control" name="position"/>
             </div>
           </div>
           <div class="mb-3">
             <label for="address" class="form-label">Adresse</label>
-            <textarea class="form-control" id="address" rows="2"></textarea>
+            <textarea class="form-control" name="address" rows="2"></textarea>
           </div>
           <div class="mb-3">
             <label class="form-label d-block">Statut</label>
@@ -225,7 +226,7 @@
                 class="form-check-input"
                 type="radio"
                 name="status"
-                id="statusActive"
+                name="statusActive"
                 value="active"
                 checked
               />
@@ -236,7 +237,7 @@
                 class="form-check-input"
                 type="radio"
                 name="status"
-                id="statusInactive"
+                name="statusInactive"
                 value="inactive"
               />
               <label class="form-check-label" for="statusInactive"
@@ -246,11 +247,10 @@
           </div>
           <div class="mb-3">
             <label for="photo" class="form-label">Photo</label>
-            <input class="form-control" type="file" id="photo" />
+            <input class="form-control" type="file" name="image" />
           </div>
-          <input type="submit" value="Enregistrer" class="btn btn-primary" />
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-            Annuler
+          <input type="submit" value="Enregistrer" class="btn btn-primary"/>
+          <button type="reset" value="Annuler" class="btn btn-secondary" data-bs-dismiss="modal">
         </form>
       </div>
     </div>

@@ -27,21 +27,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Gestion de la déconnexion
-  const logoutBtn = document.getElementById("logout-btn");
-  const dropdownLogout = document.getElementById("dropdown-logout");
+  // const logoutBtn = document.getElementById("logout-btn");
+  // const dropdownLogout = document.getElementById("dropdown-logout");
 
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", handleLogout);
-  }
+  // if (logoutBtn) {
+  //   logoutBtn.addEventListener("click", handleLogout);
+  // }
 
-  if (dropdownLogout) {
-    dropdownLogout.addEventListener("click", handleLogout);
-  }
+  // if (dropdownLogout) {
+  //   dropdownLogout.addEventListener("click", handleLogout);
+  // }
 
-  function handleLogout(e) {
-    e.preventDefault();
-    document.getElementById("dashboard").classList.add("d-none");
-    document.getElementById("login-page").classList.remove("d-none");
-  }
+  // function handleLogout(e) {
+  //   e.preventDefault();
+  //   document.getElementById("dashboard").classList.add("d-none");
+  //   document.getElementById("login-page").classList.remove("d-none");
+  // }
 
 });

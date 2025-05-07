@@ -14,9 +14,15 @@
         <li class="{% if active_page == 'presence' %}active{% endif %}">
         <a class="text-white text-decoration-none" href="{{ url_for('intf_presence') }}">
         <i class="fas fa-calendar-check"></i>Présences</a></li>
-        <li><i class="fas fa-chart-bar"></i> Rapports</li>
-        <li><i class="fas fa-fingerprint"></i> Appareils</li>
-        <li><i class="fas fa-cog"></i> Paramètres</li>
+        <li class="{% if active_page == 'rapports' %}active{% endif %}">
+        <a class="text-white text-decoration-none" href="{{ url_for('intf_rapports') }}">
+        </a><i class="fas fa-chart-bar"></i> Rapports</li>
+        <li classe="{% if active_page == 'appareils' %}active{% endif %}">
+        <a class="text-white text-decoration-none" href="{{ url_for('intf_appareils') }}">
+        </a><i class="fas fa-fingerprint"></i> Appareils</li>
+        <li classe="{% if active_page == 'Parametres' %}active{% endif %}">
+        <a class="text-white text-decoration-none" href="{{ url_for('intf_Parametres') }}">
+        </a><i class="fas fa-cog"></i> Paramètres</li>
     </ul>
     <div class="sidebar-footer">
         <button id="logout-btn" class="btn btn-sm btn-outline-light"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>

@@ -21,10 +21,9 @@ try:
                 
                 recup = "SELECT user_id FROM empreintes"
                 cursor.execute(recup)
-                result = cursor.fetchall()  # Récupère tous les résultats sous forme de tuples
+                result = cursor.fetchall()
 
-                user_ids = [row[0] for row in result]  # Extraire uniquement les IDs des utilisateurs
-
+                user_ids = [row[0] for row in result]
                 if user.user_id in user_ids:
                  print("L'empreinte existe déjà")
                 else:
