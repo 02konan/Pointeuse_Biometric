@@ -1,14 +1,9 @@
 import pymysql
+from base_donnee import connexion
 
 def read_data_from_db():
     try:
-        # Connexion à la base de données
-        data_base = pymysql.connect(
-            host="localhost",
-            user="root",
-            password="",
-            database="ifsm_database"
-        )
+        data_base = connexion()
 
         with data_base.cursor() as cursor:
             # Requête POUR AFFICHER LE NOMBRE D'EMPLOYES
@@ -49,12 +44,47 @@ def read_data_from_db():
             activité_recentes=cursor.fetchall()
 
             return total_eleves,total_Presents,total_retard,activité_recentes,total_absents
-        data_base.close()
-        
+        data_base.close
 
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)
     except Exception as e:
         print("Erreur générale :", e)
- 
-
+def red_data_employe():
+ try:
+    with connexion() as conn:
+        with conn.cursor() as cursor:
+            sql="SELECT * FROM `professeur`"
+            cursor.execute(sql)
+            result=cursor.fetchall()
+    return result         
+ except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+ except Exception as e:
+        print("Erreur générale :", e)       
+def read_data_presence():
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql="""SELECT 
+  eu.user_id,
+  e.nom,
+  DATE(eu.heure_pointage) AS Date_pointage,
+  MIN(TIME(eu.heure_pointage)) AS heure_arrivee,
+  MAX(TIME(eu.heure_pointage)) AS heure_depart,
+  TIMEDIFF(MAX(eu.heure_pointage), MIN(eu.heure_pointage)) AS temps_presence
+FROM empreintes_utilisees eu
+JOIN empreintes e ON e.user_id = eu.user_id
+WHERE DATE(eu.heure_pointage) = '2025-05-10'
+GROUP BY eu.user_id, DATE(eu.heure_pointage), e.nom
+HAVING COUNT(eu.heure_pointage) >= 2
+ORDER BY temps_presence
+LIMIT 5;
+                      """
+                cursor.execute(sql)
+                result=cursor.fetchall()
+                return result
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)

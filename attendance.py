@@ -2,6 +2,8 @@ from zk import ZK, const
 import pymysql
 import time
 from datetime import datetime, timedelta
+import platform
+import os
 
 ZK_IP = '192.168.1.212'
 ZK_PORT = 4370
@@ -18,7 +20,9 @@ def get_last_pointage_timestamp():
     result = cursor.fetchone()
     db.close()
     return result[0] if result and result[0] else None
-
+def ping(ip):
+    param = "-n" if platform.system().lower() == "windows" else "-c"
+    return os.system(f"ping {param} 1 {ip}") == 0
 
 def listen_attendance():
     last_processed_timestamp = get_last_pointage_timestamp()

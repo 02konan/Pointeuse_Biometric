@@ -1,6 +1,6 @@
 {% extends 'index.html' %}
 {% block content %}
-<div id="devices-content" class="content-section d-none">
+<div id="devices-content" class="content-section">
     <div class="container-fluid p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2>Appareils Biométriques</h2>
@@ -191,14 +191,14 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form>
+                <form action="/add-device" method="POST">
                     <div class="mb-3">
                         <label for="deviceName" class="form-label">Nom de l'appareil</label>
-                        <input type="text" class="form-control" id="deviceName" required>
+                        <input type="text" class="form-control" name="pointeuseN" required>
                     </div>
                     <div class="mb-3">
                         <label for="deviceModel" class="form-label">Modèle</label>
-                        <select class="form-select" id="deviceModel" required>
+                        <select class="form-select" name="pointeuseM" required>
                             <option selected disabled value="">Choisir...</option>
                             <option>FingerTech FT-800</option>
                             <option>FingerTech FT-600</option>
@@ -208,37 +208,38 @@
                     </div>
                     <div class="mb-3">
                         <label for="deviceLocation" class="form-label">Emplacement</label>
-                        <input type="text" class="form-control" id="deviceLocation" required>
+                        <input type="text" class="form-control" name="pointeuseP" required>
                     </div>
                     <div class="mb-3">
                         <label for="deviceIP" class="form-label">Adresse IP</label>
-                        <input type="text" class="form-control" id="deviceIP" required>
+                        <input type="text" class="form-control" name="Adresseip" required>
                     </div>
                     <div class="mb-3">
                         <label for="devicePort" class="form-label">Port</label>
-                        <input type="number" class="form-control" id="devicePort" value="4370">
+                        <input type="number" class="form-control" name="pointeusePort" value="4370">
                     </div>
                     <div class="mb-3">
                         <label for="deviceSerial" class="form-label">Numéro de série</label>
-                        <input type="text" class="form-control" id="deviceSerial">
+                        <input type="text" class="form-control" name="pointeuseSerie">
                     </div>
                     <div class="mb-3">
                         <label class="form-label d-block">Type d'appareil</label>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="deviceType" id="typeFingerprint" value="fingerprint" checked>
+                            <input class="form-check-input" type="radio" name="pointeuseType" id="typeFingerprint" value="fingerprint" checked>
                             <label class="form-check-label" for="typeFingerprint">Empreinte digitale</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="deviceType" id="typeFacial" value="facial">
+                            <input class="form-check-input" type="radio" name="pointeuseType" id="typeFacial" value="facial">
                             <label class="form-check-label" for="typeFacial">Reconnaissance faciale</label>
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <input type="submit" class="btn btn-primary" value="Enregistrer">
+                    </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary">Enregistrer</button>
-            </div>
+            
         </div>
     </div>
 </div>

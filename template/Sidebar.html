@@ -1,30 +1,59 @@
 <!-- Sidebar -->
 <div class="sidebar">
-    <div class="sidebar-header">
-        <i class="fas fa-fingerprint"></i>
-        <span>BioPro</span>
-    </div>
-    <ul class="sidebar-menu">
-        <li class="{% if active_page == 'index' %}active{% endif %}">
-        <a class="text-white text-decoration-none" href="{{ url_for('index') }}">
-        <i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
-        <li class="{% if active_page == 'employee' %}active{% endif %}">
-        <a class="text-white text-decoration-none" href="{{ url_for('intf_employee') }}">
-        <i class="fas fa-users"></i>Employee</a></li>
-        <li class="{% if active_page == 'presence' %}active{% endif %}">
-        <a class="text-white text-decoration-none" href="{{ url_for('intf_presence') }}">
-        <i class="fas fa-calendar-check"></i>Présences</a></li>
-        <li class="{% if active_page == 'rapports' %}active{% endif %}">
-        <a class="text-white text-decoration-none" href="{{ url_for('intf_rapports') }}">
-        </a><i class="fas fa-chart-bar"></i> Rapports</li>
-        <li classe="{% if active_page == 'appareils' %}active{% endif %}">
-        <a class="text-white text-decoration-none" href="{{ url_for('intf_appareils') }}">
-        </a><i class="fas fa-fingerprint"></i> Appareils</li>
-        <li classe="{% if active_page == 'Parametres' %}active{% endif %}">
-        <a class="text-white text-decoration-none" href="{{ url_for('intf_Parametres') }}">
-        </a><i class="fas fa-cog"></i> Paramètres</li>
-    </ul>
-    <div class="sidebar-footer">
-        <button id="logout-btn" class="btn btn-sm btn-outline-light"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
-    </div>
+  <div class="sidebar-header">
+    <i class="fas fa-fingerprint"></i>
+    <span>BioPro</span>
+  </div>
+  <ul class="sidebar-menu">
+    <li class="{% if active_page == 'index' %}active{% endif %}">
+      <a class="text-white text-decoration-none" href="{{ url_for('index') }}">
+        <i class="fas fa-tachometer-alt"></i> Tableau de bord</a
+      >
+    </li>
+    <li class="{% if active_page == 'employee' %}active{% endif %}">
+      <a
+        class="text-white text-decoration-none"
+        href="{{ url_for('intf_employee') }}"
+      >
+        <i class="fas fa-users"></i>Employee</a
+      >
+    </li>
+    <li class="{% if active_page == 'presence' %}active{% endif %}">
+      <a
+        class="text-white text-decoration-none"
+        href="{{ url_for('intf_presence') }}"
+      >
+        <i class="fas fa-calendar-check"></i>Présences</a
+      >
+    </li>
+    <li class="{% if active_page == 'rapports' %}active{% endif %}">
+      <a
+        class="text-white text-decoration-none"
+        href="{{ url_for('intf_rapports') }}"
+      >
+        <i class="fas fa-chart-bar"></i>Rapports</a
+      >
+    </li>
+    <li class="{% if active_page == 'appareils' %}active{% endif %}">
+      <a
+        class="text-white text-decoration-none"
+        href="{{ url_for('intf_appareils') }}"
+      >
+        <i class="fas fa-fingerprint"></i>Appareils</a
+      >
+    </li>
+    <li class="{% if active_page == 'parametres' %}active{% endif %}">
+      <a
+        class="text-white text-decoration-none"
+        href="{{ url_for('intf_Parametres') }}"
+      >
+        <i class="fas fa-fingerprint"></i>Paramètres</a
+      >
+    </li>
+  </ul>
+  <div class="sidebar-footer">
+    <button id="logout-btn" class="btn btn-sm btn-outline-light">
+      <i class="fas fa-sign-out-alt"></i> Déconnexion
+    </button>
+  </div>
 </div>

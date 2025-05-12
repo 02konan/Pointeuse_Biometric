@@ -1,5 +1,6 @@
 {% extends 'index.html' %}
 {% block content %}
+<script src="{{url_for('static', filename='searchtable.js')}}"></script>
 <div id="employees-content" class="content-section">
   <div id="toast-container"></div>
   <div class="container-fluid p-4">
@@ -20,6 +21,7 @@
         <div class="row g-3">
           <div class="col-md-4">
             <input
+            id="champrecherche"
               type="text"
               class="form-control"
               placeholder="Rechercher un employé..."
@@ -52,7 +54,7 @@
     <div class="card">
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-hover">
+          <table class="table table-hover" id="employeeTable">
             <thead>
               <tr>
                 <th>ID</th>
@@ -65,22 +67,23 @@
               </tr>
             </thead>
             <tbody>
+              {% for resultat in resultats %}
               <tr>
-                <td></td>
+                <td>{{resultat.Matricule}}</td>
                 <td>
                   <div class="d-flex align-items-center">
                     <div class="avatar me-2">
                       <img
-                        src="/placeholder.svg?height=40&width=40"
+                        src="/image/{{ resultat.Matricule }}"
                         alt="Employee"
                       />
                     </div>
-                    <div></div>
+                    <div>{{resultat.Nom}} {{resultat.Prenom}}</div>
                   </div>
                 </td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td>{{resultat.section}}</td>
+                <td>{{resultat.email}}</td>
+                <td>{{resultat.Telephone}}</td>
                 <td><span class="badge bg-success">Actif</span></td>
                 <td>
                   <div class="dropdown">
@@ -117,6 +120,7 @@
                   </div>
                 </td>
               </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
@@ -163,7 +167,7 @@
         ></button>
       </div>
       <div class="modal-body">
-        <form action="/enregistrer_employer" method="POST" enctype="multipart/form-data">
+        <form action="/employee" method="POST" enctype="multipart/form-data">
           <div class="row mb-3">
             <div class="col-md-6">
               <label for="firstName" class="form-label">Prénom</label>
@@ -177,22 +181,21 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label for="employeeId" class="form-label">ID Employé</label>
-              <input
-                type="text"
-                class="form-control"
-                id="employeeId"
-                
-              />
+              <input list="Matriucle" type="text" class="form-control" name="idEmploye" required />
+              <datalist id="Matriucle">
+                <option value="12345" />
+                <option value="67890" />
+                <option value="54321" />
+                <option value="09876" />
             </div>
             <div class="col-md-6">
-              <label for="department" class="form-label">Département</label>
-              <select class="form-select" id="department" >
-                <option selected disabled value="">Choisir...</option>
-                <option>Ressources Humaines</option>
-                <option>Informatique</option>
-                <option>Finance</option>
-                <option>Marketing</option>
-              </select>
+              <label for="department" class="form-label">Section</label>
+              <input type="text" list="section" class="form-control" name="section" required />
+              <datalist id="section">
+                <option value="Ressources Humaines" />
+                <option value="Informatique" />
+                <option value="Finance" />
+                <option value="Marketing" />
             </div>
           </div>
           <div class="row mb-3">
@@ -220,37 +223,11 @@
             <textarea class="form-control" name="address" rows="2"></textarea>
           </div>
           <div class="mb-3">
-            <label class="form-label d-block">Statut</label>
-            <div class="form-check form-check-inline">
-              <input
-                class="form-check-input"
-                type="radio"
-                name="status"
-                name="statusActive"
-                value="active"
-                checked
-              />
-              <label class="form-check-label" for="statusActive">Actif</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input
-                class="form-check-input"
-                type="radio"
-                name="status"
-                name="statusInactive"
-                value="inactive"
-              />
-              <label class="form-check-label" for="statusInactive"
-                >Inactif</label
-              >
-            </div>
-          </div>
-          <div class="mb-3">
             <label for="photo" class="form-label">Photo</label>
             <input class="form-control" type="file" name="image" />
           </div>
           <input type="submit" value="Enregistrer" class="btn btn-primary"/>
-          <button type="reset" value="Annuler" class="btn btn-secondary" data-bs-dismiss="modal">
+          <input type="reset" value="Annuler" class="btn btn-secondary" data-bs-dismiss="modal"/>
         </form>
       </div>
     </div>

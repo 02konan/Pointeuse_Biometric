@@ -113,5 +113,5 @@ document.addEventListener("DOMContentLoaded", () => {
   chargerDonneesDashboard();
 
   // Rafraîchissement toutes les 30 secondes
-  setInterval(chargerDonneesDashboard, 20000);
+  setInterval(chargerDonneesDashboard, 10000);
 });
