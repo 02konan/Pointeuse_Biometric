@@ -1,41 +1,61 @@
-from zk import ZK, const
+import os
 import pymysql
+from zk import ZK, const
+from base_donnee import connexion
+def is_pingable(ip):
+    response = os.system(f"ping -n 1 -w 1000 {ip}" if os.name == "nt" else f"ping -c 1 -W 1 {ip}")
+    return response == 0
 
-zk = ZK('192.168.1.212', port=4370, timeout=15)
+# Connexion base de données pour récupérer les IP
+def recuperation_emprientes():
+    db = connexion()
+    cursor = db.cursor()
 
-try:
-    conn = zk.connect()
-    conn.disable_device()
+    cursor.execute("SELECT id, AdresseIp FROM pointeuse")
+    pointeuses = cursor.fetchall()
+    cursor.close()
+    db.close()
 
-    users = conn.get_users()
-    for user in users:
+    for pointeuse_id, ip in pointeuses:
+     print(f"\n📡 Vérification de la pointeuse ID {pointeuse_id} à l'adresse {ip}")
+    
+    if is_pingable(ip):
+        print(f"✅ {ip} est en ligne. Connexion...")
+
+        zk = ZK(ip, port=4370, timeout=10)
+        try:
+            conn = zk.connect()
+            conn.disable_device()
+
+            users = conn.get_users()
+            for user in users:
+                for fid in range(10):
+                    template = conn.get_user_template(user.uid, fid)
+                    if template and template.size > 0:
+                        print(f'  👤 Empreinte utilisateur {user.name} (uid {user.uid}) - Finger ID {fid} : {template.size} octets')
+
+                        # Vérifier si l'utilisateur existe déjà
+                        db = pymysql.connect(host="localhost", user="root", password="", database="ifsm_database")
+                        cursor = db.cursor()
+
+                        cursor.execute("SELECT user_id FROM empreintes WHERE user_id=%s AND finger_id=%s", (user.user_id, fid))
+                        if cursor.fetchone():
+                            print("⚠️ Déjà enregistré.")
+                        else:
+                            cursor.execute("INSERT INTO empreintes (user_id, nom, finger_id, template, pointeuse_id) VALUES (%s, %s, %s, %s, %s)",
+                                           (user.user_id, user.name, fid, template.template, pointeuse_id))
+                            print("✅ Empreinte enregistrée.")
+                        
+                        db.commit()
+                        cursor.close()
+                        db.close()
+
+            conn.enable_device()
+            conn.disconnect()
+
+        except Exception as e:
+            print(f"❌ Erreur de connexion avec {ip} : {e}")
+    else:
+        print(f"❌ {ip} ne répond pas au ping.")
+        print("⚠️ Vérifiez la connexion réseau ou l'alimentation de la pointeuse.")
         
-
-        data_base = pymysql.connect(host="localhost", user="root", password="", database="ifsm_database")
-        cursor = data_base.cursor()
-
-        for fid in range(10):
-            template = conn.get_user_template(user.uid, fid)
-            if template and template.size > 0:
-                print(f'  Finger ID: {fid} => Template size: {template.size}')
-                
-                recup = "SELECT user_id FROM empreintes"
-                cursor.execute(recup)
-                result = cursor.fetchall()
-
-                user_ids = [row[0] for row in result]
-                if user.user_id in user_ids:
-                 print("L'empreinte existe déjà")
-                else:
-                  sql = "INSERT INTO empreintes (user_id, nom, finger_id, template) VALUES (%s, %s, %s, %s)"
-                  cursor.execute(sql, (user.user_id, user.name, fid, template.template))
-
-        data_base.commit()
-        cursor.close()
-        data_base.close()
-
-    conn.enable_device()
-    conn.disconnect()
-
-except Exception as e:
-    print("Erreur :", e)

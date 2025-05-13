@@ -1,12 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, Response
 from flask_cors import CORS
-from read_data import read_data_from_db, red_data_employe,read_data_presence
+from read_data import read_data_from_db, read_data_employe,read_data_presence,read_data_pointeuse
 from database.db import db
 from Creat_employee import creat_data_employee, creat_data_pointeuse
 from datetime import datetime,timedelta
 import threading
 import os
-# import detecteur
+from detecteur import recuperation_emprientes
 from attendance import listen_attendance
 from werkzeug.utils import secure_filename
 
@@ -70,7 +70,7 @@ def dashboard_data():
 
 @app.route('/employee')
 def intf_employee():
-    data = red_data_employe()
+    data = read_data_employe()
     table = []
     for donnee in data:
         information = {
@@ -90,41 +90,57 @@ def intf_presence():
     data = read_data_presence()
     table = []
     for donnee in data:
-        arrivee = donnee[3]
-        depart = donnee[4]
-        statut = "Absent"
-        couleur="warning"
+     arrivee = donnee[3]
+     depart = donnee[4]
+     heur_travaille = donnee[5]
+     statut = "Absent"
+     couleur = "danger"
 
-        if arrivee:
-            if isinstance(arrivee, timedelta):
-                total_seconds = int(arrivee.total_seconds())
-                hours = total_seconds // 3600
-                minutes = (total_seconds % 3600) // 60
-                arrivee = f"{hours:02}:{minutes:02}"  # Format HH:MM
+     if arrivee:
+        if isinstance(arrivee, timedelta):
+            total_seconds = int(arrivee.total_seconds())
+            hours = total_seconds // 3600
+            minutes = (total_seconds % 3600) // 60
+            arrivee = f"{hours:02}:{minutes:02}"
 
-            heure_arrivee = datetime.strptime(arrivee, "%H:%M")
-            heure_limite = datetime.strptime("10:00", "%H:%M")
+        heure_arrivee = datetime.strptime(arrivee, "%H:%M")
+        heure_limite = datetime.strptime("8:15", "%H:%M")
+
+        # Cas où l'heure d'arrivée est égale à l'heure de départ
+        if arrivee == depart:
             if heure_arrivee > heure_limite:
                 statut = "En retard"
-                couleur="danger"
+                couleur = "warning"
             else:
                 statut = "Présent"
-                couleur="success"
-        
-        if not depart:
-            statut = "Absent"
+                couleur = "success"
+        else:
+            if heure_arrivee > heure_limite:
+                statut = "En retard"
+                couleur = "warning"
+            elif heur_travaille == "00:00:00":
+                statut = "Absent"
+                couleur = "danger"
+            else:
+                statut = "Présent"
+                couleur = "success"
 
-        resultat = {
-            'ID_employe': donnee[0],
-            'Nom': donnee[1],
-            'Date': donnee[2],
-            'arrivee': arrivee,
-            'depart': depart,
-            'Heures': donnee[5],
-            'Statut': statut,
-            'couleur': couleur
-        }
-        table.append(resultat)
+     if not depart:
+        statut = "Absent"
+        couleur = "danger"
+
+     resultat = {
+        'ID_employe': donnee[0],
+        'Nom': donnee[1],
+        'Date': donnee[2],
+        'arrivee': arrivee,
+        'depart': depart,
+        'Heures': heur_travaille,
+        'Statut': statut,
+        'couleur': couleur
+     }
+
+     table.append(resultat)
     
     return render_template('presence.html', active_page='presence', resultats=table)
 @app.route('/rapports')
@@ -133,7 +149,21 @@ def intf_rapports():
 
 @app.route('/appareils')
 def intf_appareils():
-    return render_template('materiel.html', active_page='appareils')
+    data= read_data_pointeuse()
+    table =[]
+    for donnee in data:
+        resultat={
+            'ID': donnee[0],
+            'Nom': donnee[1],
+            'Modele': donnee[2],
+            'Localisation': donnee[3],
+            'AdresseIp': donnee[4],
+            'Port': donnee[5],
+            'Serie': donnee[6],
+            'Type': donnee[7],
+        }
+        table.append(resultat)
+    return render_template('materiel.html', active_page='appareils',resultats=table)
 
 @app.route('/add-device', methods=['POST'])
 def enregistrement_appareils():
@@ -157,4 +187,8 @@ if __name__ == '__main__':
     thread = threading.Thread(target=listen_attendance)
     thread.daemon = True
     thread.start()
+    recuperation = threading.Thread(target=recuperation_emprientes)
+    recuperation.daemon = True
+    recuperation.start()
+
     app.run(debug=True)

@@ -6,7 +6,6 @@ def read_data_from_db():
         data_base = connexion()
 
         with data_base.cursor() as cursor:
-            # Requête POUR AFFICHER LE NOMBRE D'EMPLOYES
             sql1 = "SELECT COUNT(nom) FROM empreintes"
             sql2 = """SELECT COUNT(*) AS nb_personnes
                       FROM (
@@ -50,7 +49,7 @@ def read_data_from_db():
         print("Erreur MySQL :", e)
     except Exception as e:
         print("Erreur générale :", e)
-def red_data_employe():
+def read_data_employe():
  try:
     with connexion() as conn:
         with conn.cursor() as cursor:
@@ -75,12 +74,25 @@ def read_data_presence():
   TIMEDIFF(MAX(eu.heure_pointage), MIN(eu.heure_pointage)) AS temps_presence
 FROM empreintes_utilisees eu
 JOIN empreintes e ON e.user_id = eu.user_id
-WHERE DATE(eu.heure_pointage) = '2025-05-10'
+WHERE DATE(eu.heure_pointage) = CURRENT_DATE()
 GROUP BY eu.user_id, DATE(eu.heure_pointage), e.nom
 HAVING COUNT(eu.heure_pointage) >= 2
 ORDER BY temps_presence
 LIMIT 5;
+
                       """
+                cursor.execute(sql)
+                result=cursor.fetchall()
+                return result
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)
+def read_data_pointeuse():
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql="SELECT * FROM pointeuse"
                 cursor.execute(sql)
                 result=cursor.fetchall()
                 return result
