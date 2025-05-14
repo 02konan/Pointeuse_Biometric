@@ -1,102 +1,102 @@
-{% extends 'index.html' %}
-{% block content %}
- <div id="attendance-content" class="content-section">
-    <div class="container-fluid p-4">
-        <h2 class="mb-4">Registre des Présences</h2>        
-        <div class="card mb-4">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label">Date de début</label>
-                        <input type="date" class="form-control" value="2023-06-01">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Date de fin</label>
-                        <input type="date" class="form-control" value="2023-06-30">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Département</label>
-                        <select class="form-select">
-                            <option selected>Tous les départements</option>
-                            <option>Ressources Humaines</option>
-                            <option>Informatique</option>
-                            <option>Finance</option>
-                            <option>Marketing</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">Statut</label>
-                        <select class="form-select">
-                            <option selected>Tous les statuts</option>
-                            <option>Présent</option>
-                            <option>Absent</option>
-                            <option>Retard</option>
-                        </select>
-                    </div>
-                    <div class="col-md-12 d-flex justify-content-end">
-                        <button class="btn btn-primary me-2">Appliquer</button>
-                        <button class="btn btn-outline-secondary">Réinitialiser</button>
-                    </div>
-                </div>
-            </div>
+{% extends 'index.html' %} {% block content %}
+<div id="attendance-content" class="content-section">
+  <div class="container-fluid p-4">
+    <h2 class="mb-4">Registre des Présences</h2>
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <label class="form-label">Date de début</label>
+            <input type="date" class="form-control" value="2023-06-01" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Date de fin</label>
+            <input type="date" class="form-control" value="2023-06-30" />
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Département</label>
+            <select class="form-select">
+              <option selected>Tous les départements</option>
+              <option>Ressources Humaines</option>
+              <option>Informatique</option>
+              <option>Finance</option>
+              <option>Marketing</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Statut</label>
+            <select class="form-select">
+              <option selected>Tous les statuts</option>
+              <option>Présent</option>
+              <option>Absent</option>
+              <option>Retard</option>
+            </select>
+          </div>
+          <div class="col-md-12 d-flex justify-content-end">
+            <button class="btn btn-primary me-2">Appliquer</button>
+            <button class="btn btn-outline-secondary">Réinitialiser</button>
+          </div>
         </div>
-        <div class="card">
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Employé</th>
-                                <th>Date</th>
-                                <th>Arrivée</th>
-                                <th>Départ</th>
-                                <th>Heures travaillées</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        {% for attendance in resultats %}
-                        <tbody>
-                            <tr>
-                                <td>{{attendance.ID_employe}}</td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar me-2">
-                                            <img src="/placeholder.svg?height=40&width=40" alt="Employee">
-                                        </div>
-                                        <div>{{attendance.Nom}}</div>
-                                    </div>
-                                </td>
-                                <td>{{attendance.Date}}</td>
-                                <td>{{attendance.arrivee}}</td>
-                                <td>{{attendance.depart}}</td>
-                                <td>{{attendance.Heures}}</td>
-                                <td><span class="badge bg-{{attendance.couleur}}">{{attendance.Statut}}</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
-                                    <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-edit"></i></button>
-                                </td>
-                            </tr>
-                        </tbody>
-                        {% endfor %}
-                    </table>
-                </div>
-                <nav aria-label="Page navigation" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Précédent</a>
-                        </li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">3</a></li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">Suivant</a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
+      </div>
     </div>
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover" id="Table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Employé</th>
+                <th>Date</th>
+                <th>Arrivée</th>
+                <th>Départ</th>
+                <th>Heures travaillées</th>
+                <th>Statut</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for attendance in resultats %}
+              <tr>
+                <td>{{attendance.ID_employe}}</td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <div class="avatar me-2">
+                      <img
+                        src="/placeholder.svg?height=40&width=40"
+                        alt="Employee"
+                      />
+                    </div>
+                    <div>{{attendance.Nom}}</div>
+                  </div>
+                </td>
+                <td>{{attendance.Date}}</td>
+                <td>{{attendance.arrivee}}</td>
+                <td>{{attendance.depart}}</td>
+                <td>{{attendance.Heures}}</td>
+                <td>
+                  <span class="badge bg-{{attendance.couleur}}"
+                    >{{attendance.Statut}}</span
+                  >
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-outline-primary me-1">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <nav aria-label="Page navigation" class="mt-4">
+          <ul class="pagination justify-content-center"></ul>
+        </nav>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

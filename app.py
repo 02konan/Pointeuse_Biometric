@@ -48,7 +48,7 @@ def enregistrement():
 
     creat_data_employee(idEmploye, nom, prenom, telephone, address, email, poste, chemin, date, section)
 
-    return render_template('employee.html', message="Employé enregistré avec succès", active_page='employee')
+    return redirect(url_for('intf_employee'))
 
 @app.route('/api/dashboard', methods=['GET'])
 def dashboard_data():
@@ -104,7 +104,7 @@ def intf_presence():
             arrivee = f"{hours:02}:{minutes:02}"
 
         heure_arrivee = datetime.strptime(arrivee, "%H:%M")
-        heure_limite = datetime.strptime("8:15", "%H:%M")
+        heure_limite = datetime.strptime("9:15", "%H:%M")
 
         # Cas où l'heure d'arrivée est égale à l'heure de départ
         if arrivee == depart:
@@ -165,6 +165,7 @@ def intf_appareils():
         table.append(resultat)
     return render_template('materiel.html', active_page='appareils',resultats=table)
 
+    
 @app.route('/add-device', methods=['POST'])
 def enregistrement_appareils():
     pointeuseN = request.form['pointeuseN']
@@ -175,7 +176,7 @@ def enregistrement_appareils():
     pointeuseSerie = request.form['pointeuseSerie']
     pointeuseType = request.form['pointeuseType']
     creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip, pointeusePort, pointeuseSerie, pointeuseType)
-    return render_template('materiel.html', active_page='appareils')
+    return redirect(url_for('intf_appareils'))
 
 @app.route('/parametres')
 def intf_Parametres():
