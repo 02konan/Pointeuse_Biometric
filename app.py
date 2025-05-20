@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, s
 from flask_cors import CORS
 from read_data import read_data_from_db, read_data_employe,read_data_presence,read_data_pointeuse
 from database.db import db
-from Creat_employee import creat_data_employee, creat_data_pointeuse
+from Creat_data import creat_data_employee, creat_data_pointeuse
 from datetime import datetime,timedelta
 import threading
 import os
@@ -23,7 +23,20 @@ app = Flask(__name__, static_folder='static', template_folder='template')
 
 CORS(app)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        # Remplacez cette logique par une vérification réelle
+        if username == 'admin' and password == 'password':
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html', error="Nom d'utilisateur ou mot de passe incorrect")
+    return render_template('login.html')
+
 @app.route('/')
+@app.route('/index')
 def index():
     return render_template('index.html', active_page='index')
 

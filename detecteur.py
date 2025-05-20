@@ -6,7 +6,6 @@ def is_pingable(ip):
     response = os.system(f"ping -n 1 -w 1000 {ip}" if os.name == "nt" else f"ping -c 1 -W 1 {ip}")
     return response == 0
 
-# Connexion base de données pour récupérer les IP
 def recuperation_emprientes():
     db = connexion()
     cursor = db.cursor()
@@ -17,7 +16,7 @@ def recuperation_emprientes():
     db.close()
 
     for pointeuse_id, ip in pointeuses:
-     print(f"\n📡 Vérification de la pointeuse ID {pointeuse_id} à l'adresse {ip}")
+     print(f"\n📡 Vérification de la pointeuse N°{pointeuse_id} à l'adresse {ip}")
     
     if is_pingable(ip):
         print(f"✅ {ip} est en ligne. Connexion...")
@@ -32,10 +31,10 @@ def recuperation_emprientes():
                 for fid in range(10):
                     template = conn.get_user_template(user.uid, fid)
                     if template and template.size > 0:
-                        print(f'  👤 Empreinte utilisateur {user.name} (uid {user.uid}) - Finger ID {fid} : {template.size} octets')
+                        print(f'Empreinte utilisateur {user.name} (uid {user.uid}) - Finger ID {fid} : {template.size} octets')
 
                         # Vérifier si l'utilisateur existe déjà
-                        db = pymysql.connect(host="localhost", user="root", password="", database="ifsm_database")
+                        db = connexion()
                         cursor = db.cursor()
 
                         cursor.execute("SELECT user_id FROM empreintes WHERE user_id=%s AND finger_id=%s", (user.user_id, fid))

@@ -11,18 +11,18 @@ def read_data_from_db():
                       FROM (
                       SELECT user_id
                       FROM empreintes_utilisees
-                      WHERE DATE(heure_pointage) = CURRENT_DATE()
+                      WHERE DATE(heure_pointage) = 'CURRENT_DATE()'
                       GROUP BY user_id
                       HAVING 
                       MIN(TIME(heure_pointage)) <= '08:00:00'
                       AND MAX(TIME(heure_pointage)) >= '16:00:00'
                       ) AS personnes_presentes;
                    """
-            sql3 = "SELECT COUNT(*) FROM empreintes_utilisees WHERE DATE(heure_pointage) = CURRENT_DATE() AND TIME(heure_pointage) > '08:00:00';"
+            sql3 = "SELECT COUNT(*) FROM empreintes_utilisees WHERE DATE(heure_pointage) = 'CURRENT_DATE()' AND TIME(heure_pointage) > '08:00:00';"
             sql4 ="""SELECT COUNT(*)
                      FROM empreintes_utilisees
                      JOIN empreintes ON empreintes.user_id = empreintes_utilisees.user_id
-                     WHERE heure_pointage=CURRENT_DATE();"""
+                     WHERE heure_pointage='CURRENT_DATE()';"""
             sql5 = "SELECT DISTINCT empreintes.nom,heure_pointage " \
             "FROM empreintes_utilisees " \
             "JOIN empreintes on empreintes_utilisees.user_id=empreintes.user_id" \
@@ -72,12 +72,11 @@ def read_data_presence():
   MIN(TIME(eu.heure_pointage)) AS heure_arrivee,
   MAX(TIME(eu.heure_pointage)) AS heure_depart,
   TIMEDIFF(MAX(eu.heure_pointage), MIN(eu.heure_pointage)) AS temps_presence
-  FROM empreintes_utilisees eu
-  JOIN empreintes e ON e.user_id = eu.user_id
-  WHERE DATE(eu.heure_pointage) = CURRENT_DATE()
-  GROUP BY eu.user_id, DATE(eu.heure_pointage), e.nom
-  HAVING COUNT(DISTINCT eu.heure_pointage) >= 2
-  ORDER BY temps_presence;
+FROM empreintes_utilisees eu
+JOIN empreintes e ON e.user_id = eu.user_id
+GROUP BY eu.user_id, DATE(eu.heure_pointage), e.nom
+HAVING COUNT(DISTINCT eu.heure_pointage) >= 2
+ORDER BY temps_presence;
                       """
                 cursor.execute(sql)
                 result=cursor.fetchall()

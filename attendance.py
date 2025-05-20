@@ -4,7 +4,7 @@ import time
 from datetime import datetime, timedelta
 import platform
 import os
-
+from base_donnee import connexion
 ZK_IP = '192.168.1.212'
 ZK_PORT = 4370
 RECONNECT_DELAY = 5  
@@ -12,7 +12,7 @@ RECONNECT_DELAY = 5
 last_processed_timestamp = None
 
 def get_db_connection():
-    return pymysql.connect(host="localhost", user="root", password="", database="ifsm_database")
+    return connexion()
 def get_last_pointage_timestamp():
     db = get_db_connection()
     cursor = db.cursor()
