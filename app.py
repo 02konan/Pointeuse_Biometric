@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, Response
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, Response, session
 from flask_cors import CORS
-from read_data import read_data_from_db, read_data_employe,read_data_presence,read_data_pointeuse
+from read_data import read_data_from_db,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,vefification_utilisateur
 from database.db import db
 from Creat_data import creat_data_employee, creat_data_pointeuse
 from datetime import datetime,timedelta
@@ -10,7 +10,9 @@ from detecteur import recuperation_emprientes
 from attendance import listen_attendance
 from werkzeug.utils import secure_filename
 
+
 app = Flask(__name__, static_folder='static', template_folder='template')
+app.secret_key = '&é1234azerty'
 
 # app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('LIEN_DE_LABASE')
 # app.config['SQLALCHEMY_BINDS'] = {
@@ -23,16 +25,23 @@ app = Flask(__name__, static_folder='static', template_folder='template')
 
 CORS(app)
 
+@app.before_request
+def require_login():
+    if request.endpoint not in ('login', 'static') and not session.get('connecter'):
+        return redirect(url_for('login'))
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    data=vefification_utilisateur()
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        # Remplacez cette logique par une vérification réelle
-        if username == 'admin' and password == 'password':
-            return redirect(url_for('index'))
-        else:
-            return render_template('login.html', error="Nom d'utilisateur ou mot de passe incorrect")
+        for user in data:
+            if user[1] == username and user[2] == password:
+                session['connecter'] = True
+                return redirect(url_for('index'))
+            else:
+                return render_template('login.html', error='Identifiants incorrects')
     return render_template('login.html')
 
 @app.route('/')
@@ -84,6 +93,7 @@ def dashboard_data():
 @app.route('/employee')
 def intf_employee():
     data = read_data_employe()
+    id_employee=read_matricule()
     table = []
     for donnee in data:
         information = {
@@ -96,7 +106,7 @@ def intf_employee():
             'section': donnee[10],
         }
         table.append(information)
-    return render_template('employee.html', active_page='employee', resultats=table)
+    return render_template('employee.html', active_page='employee', resultats=table,user_id=id_employee)
 
 @app.route('/presence')
 def intf_presence():
@@ -158,6 +168,7 @@ def intf_presence():
     return render_template('presence.html', active_page='presence', resultats=table)
 @app.route('/rapports')
 def intf_rapports():
+    
     return render_template('rapport.html', active_page='rapports')
 
 @app.route('/appareils')

@@ -1,6 +1,18 @@
 import pymysql
 from base_donnee import connexion
 
+def read_matricule():
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql = "SELECT DISTINCT(nom) FROM empreintes"
+                cursor.execute(sql)
+                result = cursor.fetchall()
+                return [row[0] for row in result]
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)
 def read_data_from_db():
     try:
         data_base = connexion()
@@ -11,18 +23,18 @@ def read_data_from_db():
                       FROM (
                       SELECT user_id
                       FROM empreintes_utilisees
-                      WHERE DATE(heure_pointage) = 'CURRENT_DATE()'
+                      WHERE DATE(heure_pointage) = '4-05-2025'
                       GROUP BY user_id
                       HAVING 
                       MIN(TIME(heure_pointage)) <= '08:00:00'
                       AND MAX(TIME(heure_pointage)) >= '16:00:00'
                       ) AS personnes_presentes;
                    """
-            sql3 = "SELECT COUNT(*) FROM empreintes_utilisees WHERE DATE(heure_pointage) = 'CURRENT_DATE()' AND TIME(heure_pointage) > '08:00:00';"
+            sql3 = "SELECT COUNT(*) FROM empreintes_utilisees WHERE DATE(heure_pointage) = '4-05-2025' AND TIME(heure_pointage) > '08:00:00';"
             sql4 ="""SELECT COUNT(*)
                      FROM empreintes_utilisees
                      JOIN empreintes ON empreintes.user_id = empreintes_utilisees.user_id
-                     WHERE heure_pointage='CURRENT_DATE()';"""
+                     WHERE heure_pointage='4-05-2025';"""
             sql5 = "SELECT DISTINCT empreintes.nom,heure_pointage " \
             "FROM empreintes_utilisees " \
             "JOIN empreintes on empreintes_utilisees.user_id=empreintes.user_id" \
@@ -97,3 +109,15 @@ def read_data_pointeuse():
         print("Erreur MySQL :", e)
     except Exception as e:
         print("Erreur générale :", e)
+def vefification_utilisateur():
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql="SELECT * FROM utilisateur"
+                cursor.execute(sql)
+                result=cursor.fetchall()
+                return result
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur generale:", e)

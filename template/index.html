@@ -4,6 +4,12 @@
 {%include "header.html"%}
 </head>
 <body>
+    <!-- Loader -->
+    <div id="loader" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;">
+        <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+          <span class="visually-hidden">Chargement...</span>
+        </div>
+    </div>
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container-fluid">
             <button id="sidebar-toggle" class="btn">
@@ -27,6 +33,10 @@
             </div>
         </div>
       </nav>
+    <!-- Sous-barre pour combler le vide -->
+    <div class="bg-light shadow-sm py-2 px-4" style="min-height: 48px;">
+        <!-- Tu peux ajouter ici du texte, des liens ou laisser vide pour juste combler l'espace -->
+    </div>
     <div id="dashboard">
         {%include "Sidebar.html"%}
         <div class="main-content">
@@ -36,5 +46,10 @@
         </div>
     </div>
 {%include "footer.html"%}   
+    <script>
+      window.addEventListener('load', function() {
+        document.getElementById('loader').style.display = 'none';
+      });
+    </script>
 </body>
 </html>

@@ -168,11 +168,11 @@
             <div class="col-md-6">
               <label for="employeeId" class="form-label">ID Employé</label>
               <input list="Matriucle" type="text" class="form-control" name="idEmploye" required />
-              <datalist id="Matriucle">
-                <option value="12345" />
-                <option value="67890" />
-                <option value="54321" />
-                <option value="09876" />
+               <datalist id="Matriucle">
+                {% for resultat in user_id %}
+                <option value="{{resultat}}" />
+                {% endfor %}
+               </datalist>
             </div>
             <div class="col-md-6">
               <label for="department" class="form-label">Section</label>
