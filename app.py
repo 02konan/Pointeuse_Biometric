@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, Response, session
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, Response, session, flash
 from flask_cors import CORS
 from read_data import read_data_from_db,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,vefification_utilisateur
 from database.db import db
@@ -61,7 +61,7 @@ def enregistrement():
     section = request.form['section']
     idEmploye = request.form['idEmploye']
     photo = request.files.get('image')
-
+    
     chemin = None
     if photo and photo.filename != '':
         chemin = os.path.join('uploads', secure_filename(photo.filename))
@@ -69,7 +69,7 @@ def enregistrement():
         photo.save(chemin)
 
     creat_data_employee(idEmploye, nom, prenom, telephone, address, email, poste, chemin, date, section)
-
+    flash("Employé enregistré avec succès !", "success")
     return redirect(url_for('intf_employee'))
 
 @app.route('/api/dashboard', methods=['GET'])
@@ -129,30 +129,17 @@ def intf_presence():
             arrivee = f"{hours:02}:{minutes:02}"
 
         heure_arrivee = datetime.strptime(arrivee, "%H:%M")
-        heure_limite = datetime.strptime("9:15", "%H:%M")
+        heure_limite = datetime.strptime("8:15", "%H:%M")
 
-        # Cas où l'heure d'arrivée est égale à l'heure de départ
-        if arrivee == depart:
-            if heure_arrivee > heure_limite:
-                statut = "En retard"
-                couleur = "warning"
-            else:
-                statut = "Présent"
-                couleur = "success"
+        if heure_arrivee <= heure_limite:
+            statut = "Présent"
+            couleur = "success"
         else:
-            if heure_arrivee > heure_limite:
-                statut = "En retard"
-                couleur = "warning"
-            elif heur_travaille == "00:00:00":
-                statut = "Absent"
-                couleur = "danger"
-            else:
-                statut = "Présent"
-                couleur = "success"
-
-     if not depart:
-        statut = "Absent"
-        couleur = "danger"
+            statut="En retard"
+            couleur = "warning"
+        if heur_travaille < timedelta(hours=9):
+            statut = "Absent"
+            couleur = "danger"
 
      resultat = {
         'ID_employe': donnee[0],
@@ -202,6 +189,7 @@ def enregistrement_appareils():
     pointeuseSerie = request.form['pointeuseSerie']
     pointeuseType = request.form['pointeuseType']
     creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip, pointeusePort, pointeuseSerie, pointeuseType)
+    flash("Appareil enregistré avec succès !", "success")
     return redirect(url_for('intf_appareils'))
 
 @app.route('/parametres')

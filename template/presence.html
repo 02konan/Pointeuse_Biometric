@@ -1,40 +1,26 @@
-{% extends 'index.html' %} {% block content %}
+{% extends 'index.html' %} 
+{% block content %}
 <div id="attendance-content" class="content-section">
   <div class="container-fluid p-4">
-    <h2 class="mb-4">Registre des Présences</h2>
     <div class="card mb-4">
       <div class="card-body">
         <div class="row g-3">
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label class="form-label">Date de début</label>
-            <input type="date" class="form-control" value="2023-06-01" />
+            <input type="date" class="form-control"/>
           </div>
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label class="form-label">Date de fin</label>
-            <input type="date" class="form-control" value="2023-06-30" />
+            <input type="date" class="form-control"/>
           </div>
-          <div class="col-md-3">
-            <label class="form-label">Département</label>
-            <select class="form-select">
-              <option selected>Tous les départements</option>
-              <option>Ressources Humaines</option>
-              <option>Informatique</option>
-              <option>Finance</option>
-              <option>Marketing</option>
-            </select>
-          </div>
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label class="form-label">Statut</label>
             <select class="form-select">
               <option selected>Tous les statuts</option>
               <option>Présent</option>
               <option>Absent</option>
-              <option>Retard</option>
+              <option>En retard</option>
             </select>
-          </div>
-          <div class="col-md-12 d-flex justify-content-end">
-            <button class="btn btn-primary me-2">Appliquer</button>
-            <button class="btn btn-outline-secondary">Réinitialiser</button>
           </div>
         </div>
       </div>
@@ -99,4 +85,37 @@
     </div>
   </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const table = document.getElementById('Table');
+  const dateInputs = document.querySelectorAll('input[type="date"]');
+  const statutSelect = document.querySelector('.form-select');
+
+  function filterTable() {
+    const debut = dateInputs[0].value;
+    const fin = dateInputs[1].value;
+    const statut = statutSelect.value;
+
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      const date = row.children[2]?.textContent.trim();
+      const rowStatut = row.children[6]?.textContent.trim();
+
+      // Filtre date
+      let matchDate = true;
+      if (debut && date < debut) matchDate = false;
+      if (fin && date > fin) matchDate = false;
+
+      // Filtre statut
+      let matchStatut = (statut === 'Tous les statuts') || (rowStatut === statut);
+
+      row.style.display = (matchDate && matchStatut) ? '' : 'none';
+    });
+  }
+
+  if (dateInputs[0]) dateInputs[0].addEventListener('change', filterTable);
+  if (dateInputs[1]) dateInputs[1].addEventListener('change', filterTable);
+  if (statutSelect) statutSelect.addEventListener('change', filterTable);
+});
+</script>
 {% endblock %}

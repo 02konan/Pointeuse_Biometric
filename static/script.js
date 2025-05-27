@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
-
+ document.querySelectorAll('.toast').forEach(toast => {
+      new bootstrap.Toast(toast).show();
+    });
   // Gestion du bouton pour ouvrir/fermer la sidebar
   const sidebarToggle = document.getElementById("sidebar-toggle");
   if (sidebarToggle) {
@@ -26,23 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Gestion de la déconnexion
-  // const logoutBtn = document.getElementById("logout-btn");
-  // const dropdownLogout = document.getElementById("dropdown-logout");
-
-  // if (logoutBtn) {
-  //   logoutBtn.addEventListener("click", handleLogout);
-  // }
-
-  // if (dropdownLogout) {
-  //   dropdownLogout.addEventListener("click", handleLogout);
-  // }
-
-  // function handleLogout(e) {
-  //   e.preventDefault();
-  //   document.getElementById("dashboard").classList.add("d-none");
-  //   document.getElementById("login-page").classList.remove("d-none");
-  // }
+  
 
   var modal = document.getElementById('addEmployeeModal');
   var form = modal.querySelector('form');
@@ -68,4 +54,28 @@ document.addEventListener("DOMContentLoaded", () => {
       form.reset();
     }
   });
+
+  // Recherche dynamique multi-critères
+  const input = document.getElementById('champrecherche');
+  const table = document.getElementById('Table');
+  const statutSelect = document.querySelector('.form-select:nth-of-type(2)');
+
+  function filterTable() {
+    const search = input ? input.value.toLowerCase() : '';
+    const statut = statutSelect ? statutSelect.value : 'Tous les statuts';
+
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+      const rowText = row.textContent.toLowerCase();
+      const rowStatut = row.children[7]?.textContent.trim();
+
+      const matchSearch = rowText.includes(search);
+      const matchStatut = (statut === 'Tous les statuts') || (rowStatut === statut);
+
+      row.style.display = (matchSearch && matchDepartement && matchStatut) ? '' : 'none';
+    });
+  }
+
+  if (input && table) input.addEventListener('keyup', filterTable);
+  if (statutSelect) statutSelect.addEventListener('change', filterTable);
 });
