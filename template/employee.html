@@ -1,6 +1,5 @@
 {% extends 'index.html' %}
 {% block content %}
-<script src="{{url_for('static', filename='searchtable.js')}}"></script>
 <div id="employees-content" class="content-section">
   <div id="toast-container"></div>
   <div class="container-fluid p-4">
@@ -61,6 +60,8 @@
                 <th>Département</th>
                 <th>Email</th>
                 <th>Téléphone</th>
+                <th>Adresse</th>
+                <th>Poste</th>
                 <th>Statut</th>
                 <th>Actions</th>
               </tr>
@@ -83,6 +84,8 @@
                 <td>{{resultat.section}}</td>
                 <td>{{resultat.email}}</td>
                 <td>{{resultat.Telephone}}</td>
+                <td>{{resultat.Adresse}}</td>
+                <td>{{resultat.Poste}}</td>
                 <td><span class="badge bg-success">Actif</span></td>
                 <td>
                   <div class="dropdown">
@@ -95,23 +98,27 @@
                     </button>
                     <ul class="dropdown-menu">
                       <li>
-                        <a class="dropdown-item" href="#"
-                          ><i class="fas fa-eye me-2"></i> Voir</a
-                        >
+                        <button
+  class="dropdown-item"
+  type="button"
+  data-bs-toggle="modal"
+  data-bs-target="#addEmployeeModal"
+  data-id="{{ resultat.Matricule }}"
+  data-nom="{{ resultat.Nom }}"
+  data-prenom="{{ resultat.Prenom }}"
+  data-section="{{ resultat.section }}"
+  data-email="{{ resultat.email }}"
+  data-telephone="{{ resultat.Telephone }}"
+  data-Adresse="{{ resultat.Adresse }}"
+  data-poste="{{ resultat.Poste }}"
+>
+  <i class="fas fa-edit me-2"></i> Modifier
+</button>
                       </li>
-                      <li>
-                        <a class="dropdown-item" href="#"
-                          ><i class="fas fa-edit me-2"></i> Modifier</a
-                        >
-                      </li>
-                      <li>
-                        <a class="dropdown-item" href="#"
-                          ><i class="fas fa-fingerprint me-2"></i> Empreintes</a
-                        >
-                      </li>
+                      
                       <li><hr class="dropdown-divider" /></li>
                       <li>
-                        <a class="dropdown-item text-danger" href="#"
+                        <a class="dropdown-item text-danger" href="{{url_for('intf_employee',id=resultat.Matricule)}}"
                           ><i class="fas fa-trash me-2"></i> Supprimer</a
                         >
                       </li>

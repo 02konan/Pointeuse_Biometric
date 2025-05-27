@@ -102,6 +102,8 @@ def intf_employee():
             'Prenom': donnee[3],
             'Telephone': donnee[4],
             'image': donnee[8],
+            'Adresse': donnee[5],
+            'Poste': donnee[7],
             'email': donnee[6],
             'section': donnee[10],
         }

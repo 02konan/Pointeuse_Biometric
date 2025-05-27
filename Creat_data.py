@@ -1,18 +1,30 @@
 from base_donnee import connexion
 import pymysql
 
-def creat_data_employee(idEmploye,nom, prenom, telephone, address, email, poste, photo_path, date,section):
+def creat_data_employee(idEmploye, nom, prenom, telephone, address, email, poste, photo_path, date, section):
     try:
         with connexion() as conn:
             with conn.cursor() as curseur:
-                sql = """
-                INSERT INTO professeur (Matricule,Nom, Prenom, Telephone, Adresse, Email, Poste, image, Date_Embauche,section)
-                VALUES (%s,%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """
-                # Exécution de la requête
-                curseur.execute(sql, (idEmploye,nom, prenom, telephone, address, email, poste, photo_path, date,section))
-                print(curseur.rowcount, "enregistrement(s) inséré(s) avec succès.")
-            # Validation de la transaction
+                # Vérifier si l'employé existe déjà
+                curseur.execute("SELECT COUNT(*) FROM professeur WHERE Matricule = %s", (idEmploye,))
+                existe = curseur.fetchone()[0]
+
+                if existe:
+                    sql = """
+                    UPDATE professeur
+                    SET Nom=%s, Prenom=%s, Telephone=%s, Adresse=%s, Email=%s, Poste=%s, image=%s, Date_Embauche=%s, section=%s
+                    WHERE Matricule=%s
+                    """
+                    curseur.execute(sql, (nom, prenom, telephone, address, email, poste, photo_path, date, section, idEmploye))
+                    print("Employé mis à jour avec succès.")
+                else:
+                    sql = """
+                    INSERT INTO professeur (Matricule, Nom, Prenom, Telephone, Adresse, Email, Poste, image, Date_Embauche, section)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """
+                    curseur.execute(sql, (idEmploye, nom, prenom, telephone, address, email, poste, photo_path, date, section))
+                    print("Nouvel employé inséré avec succès.")
+
             conn.commit()
     except pymysql.MySQLError as e:
         print(f"Erreur MySQL : {e}")

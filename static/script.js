@@ -44,4 +44,28 @@ document.addEventListener("DOMContentLoaded", () => {
   //   document.getElementById("login-page").classList.remove("d-none");
   // }
 
+  var modal = document.getElementById('addEmployeeModal');
+  var form = modal.querySelector('form');
+
+  // Quand on clique sur "Modifier"
+  document.querySelectorAll('[data-bs-target="#addEmployeeModal"][data-id]').forEach(function(btn) {
+    btn.addEventListener('click', function () {
+      form.nom.value = btn.getAttribute('data-nom');
+      form.prenom.value = btn.getAttribute('data-prenom');
+      form.idEmploye.value = btn.getAttribute('data-id');
+      form.section.value = btn.getAttribute('data-section');
+      form.email.value = btn.getAttribute('data-email');
+      form.telephone.value = btn.getAttribute('data-telephone');
+      form.Poste.value = btn.getAttribute('data-Poste');
+      form.date.value = btn.getAttribute('data-date');
+      form.Adresse.value = btn.getAttribute('data-Adresse');
+    });
+  });
+
+  // Réinitialise le formulaire à l'ouverture du modal pour ajout
+  modal.addEventListener('show.bs.modal', function (event) {
+    if (!event.relatedTarget || !event.relatedTarget.hasAttribute('data-id')) {
+      form.reset();
+    }
+  });
 });
