@@ -5,7 +5,6 @@ def creat_data_employee(idEmploye, nom, prenom, telephone, address, email, poste
     try:
         with connexion() as conn:
             with conn.cursor() as curseur:
-                # Vérifier si l'employé existe déjà
                 curseur.execute("SELECT COUNT(*) FROM professeur WHERE Matricule = %s", (idEmploye,))
                 existe = curseur.fetchone()[0]
 

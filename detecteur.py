@@ -51,10 +51,24 @@ def recuperation_emprientes():
 
             conn.enable_device()
             conn.disconnect()
+            
 
         except Exception as e:
             print(f"❌ Erreur de connexion avec {ip} : {e}")
     else:
         print(f"❌ {ip} ne répond pas au ping.")
         print("⚠️ Vérifiez la connexion réseau ou l'alimentation de la pointeuse.")
-        
+
+def get_etats_pointeuses():
+    db = connexion()
+    cursor = db.cursor()
+    cursor.execute("SELECT id, AdresseIp FROM pointeuse")
+    pointeuses = cursor.fetchall()
+    cursor.close()
+    db.close()
+
+    etats = []
+    for pointeuse_id, ip in pointeuses:
+        etat = "En ligne" if is_pingable(ip) else "Hors ligne"
+        etats.append({"id": pointeuse_id, "ip": ip, "etat": etat})
+    return etats

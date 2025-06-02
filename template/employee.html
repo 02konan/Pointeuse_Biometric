@@ -141,25 +141,12 @@
     </div>
   </div>
 </div>
-<div
-  class="modal fade"
-  id="addEmployeeModal"
-  tabindex="-1"
-  aria-labelledby="addEmployeeModalLabel"
-  aria-hidden="true"
->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="addEmployeeModalLabel">
-          Ajouter un nouvel employé
-        </h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
+        <h5 class="modal-title" id="addEmployeeModalLabel">Ajouter un nouvel employé</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form action="/employee" method="POST" enctype="multipart/form-data">
@@ -173,15 +160,16 @@
               <input type="text" class="form-control" name="nom" required />
             </div>
           </div>
+
           <div class="row mb-3">
             <div class="col-md-6">
               <label for="employeeId" class="form-label">ID Employé</label>
               <input list="Matriucle" type="text" class="form-control" name="idEmploye" required />
-               <datalist id="Matriucle">
+              <datalist id="Matriucle">
                 {% for resultat in user_id %}
-                <option value="{{resultat}}" />
+                <option value="{{ resultat }}" />
                 {% endfor %}
-               </datalist>
+              </datalist>
             </div>
             <div class="col-md-6">
               <label for="department" class="form-label">Section</label>
@@ -191,8 +179,10 @@
                 <option value="Informatique" />
                 <option value="Finance" />
                 <option value="Marketing" />
+              </datalist>
             </div>
           </div>
+
           <div class="row mb-3">
             <div class="col-md-6">
               <label for="email" class="form-label">Email</label>
@@ -203,6 +193,7 @@
               <input type="tel" class="form-control" name="telephone" />
             </div>
           </div>
+
           <div class="row mb-3">
             <div class="col-md-6">
               <label for="joinDate" class="form-label">Date d'embauche</label>
@@ -210,19 +201,35 @@
             </div>
             <div class="col-md-6">
               <label for="position" class="form-label">Poste</label>
-              <input type="text" class="form-control" name="position"/>
+              <input type="text" class="form-control" name="position" />
             </div>
           </div>
+
           <div class="mb-3">
             <label for="address" class="form-label">Adresse</label>
             <textarea class="form-control" name="address" rows="2"></textarea>
           </div>
+
           <div class="mb-3">
             <label for="photo" class="form-label">Photo</label>
             <input class="form-control" type="file" name="image" />
           </div>
-          <input type="submit" value="Enregistrer" class="btn btn-primary"/>
-          <input type="reset" value="Annuler" class="btn btn-secondary" data-bs-dismiss="modal"/>
+
+          <!-- 📌 Zone pour empreinte digitale -->
+          <div class="mb-3">
+            <label class="form-label">Enregistrement de l'empreinte</label>
+            <div class="input-group">
+              <button type="button" class="btn btn-outline-success" onclick="capturerEmpreinte()">
+                <i class="fas fa-fingerprint"></i> Capturer l'empreinte
+              </button>
+              <input type="hidden" name="empreinte_status" id="empreinte_status" value="non_enregistrée" />
+            </div>
+            <small id="empreinte_message" class="form-text text-muted"></small>
+          </div>
+
+          <!-- Boutons -->
+          <input type="submit" value="Enregistrer" class="btn btn-primary" />
+          <input type="reset" value="Annuler" class="btn btn-secondary" data-bs-dismiss="modal" />
         </form>
       </div>
     </div>
