@@ -62,13 +62,13 @@ def recuperation_emprientes():
 def get_etats_pointeuses():
     db = connexion()
     cursor = db.cursor()
-    cursor.execute("SELECT id, AdresseIp FROM pointeuse")
+    cursor.execute("SELECT id, AdresseIp,Nom,Localisation,Serie,Model FROM pointeuse LIMIT 4")
     pointeuses = cursor.fetchall()
     cursor.close()
     db.close()
 
     etats = []
-    for pointeuse_id, ip in pointeuses:
+    for pointeuse_id, ip,Nom,Localisation,Serie,Modele in pointeuses:
         etat = "En ligne" if is_pingable(ip) else "Hors ligne"
-        etats.append({"id": pointeuse_id, "ip": ip, "etat": etat})
+        etats.append({"id": pointeuse_id, "ip": ip, "etat": etat, "Nom": Nom, "Localisation": Localisation})
     return etats

@@ -6,7 +6,7 @@ from Creat_data import creat_data_employee, creat_data_pointeuse
 from datetime import datetime,timedelta
 import threading
 import os
-from detecteur import recuperation_emprientes
+from detecteur import recuperation_emprientes,get_etats_pointeuses
 from attendance import listen_attendance
 from werkzeug.utils import secure_filename
 
@@ -46,7 +46,8 @@ def login():
 
 @app.route('/')
 def index():
-    return render_template('index.html', active_page='index')
+    pointeuses = get_etats_pointeuses()
+    return render_template('index.html',active_page='index', pointeuses=pointeuses)
 
 @app.route('/employee', methods=['POST'])
 def enregistrement():
@@ -161,21 +162,9 @@ def intf_rapports():
 
 @app.route('/appareils')
 def intf_appareils():
-    data= read_data_pointeuse()
-    table =[]
-    for donnee in data:
-        resultat={
-            'ID': donnee[0],
-            'Nom': donnee[1],
-            'Modele': donnee[2],
-            'Localisation': donnee[3],
-            'AdresseIp': donnee[4],
-            'Port': donnee[5],
-            'Serie': donnee[6],
-            'Type': donnee[7],
-        }
-        table.append(resultat)
-    return render_template('materiel.html', active_page='appareils',resultats=table)
+    data= get_etats_pointeuses()
+    
+    return render_template('materiel.html', active_page='appareils',resultats=data)
 
     
 @app.route('/add-device', methods=['POST'])

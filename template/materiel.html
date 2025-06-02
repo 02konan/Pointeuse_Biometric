@@ -29,29 +29,35 @@
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="card-title mb-0">{{pointeuse.Nom}}</h5>
-                            <span class="badge bg-success">En ligne</span>
+                            <h5 class="card-title mb-0">{{ pointeuse.Nom }}</h5>
+                            <span class="badge 
+                                {% if pointeuse.etat == 'En ligne' %}bg-success
+                                {% elif pointeuse.etat == 'Hors ligne' %}bg-danger
+                                {% else %}bg-warning{% endif %}
+                            ">
+                                {{ pointeuse.etat }}
+                            </span>
                         </div>
                         <div class="device-details mb-3">
                             <div class="row mb-2">
                                 <div class="col-5 text-muted">ID:</div>
-                                <div class="col-7">{{pointeuse.ID}}</div>
+                                <div class="col-7">{{ pointeuse.ID }}</div>
                             </div>
                             <div class="row mb-2">
                                 <div class="col-5 text-muted">Modèle:</div>
-                                <div class="col-7">{{pointeuse.Modele}}</div>
+                                <div class="col-7">{{ pointeuse.Modele }}</div>
                             </div>
                             <div class="row mb-2">
                                 <div class="col-5 text-muted">Emplacement:</div>
-                                <div class="col-7">{{pointeuse.Localisation}}</div>
+                                <div class="col-7">{{ pointeuse.Localisation }}</div>
                             </div>
                             <div class="row mb-2">
                                 <div class="col-5 text-muted">IP:</div>
-                                <div class="col-7">{{pointeuse.AdresseIp}}</div>
+                                <div class="col-7">{{ pointeuse.AdresseIp }}</div>
                             </div>
                             <div class="row mb-2">
                                 <div class="col-5 text-muted">Serie:</div>
-                                <div class="col-7">{{pointeuse.Serie}}</div>
+                                <div class="col-7">{{ pointeuse.Serie }}</div>
                             </div>
                         </div>
                         <div class="device-stats mb-3">
