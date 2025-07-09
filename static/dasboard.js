@@ -132,7 +132,8 @@ function afficherCharts(data) {
 // Lancer une fois au chargement
 document.addEventListener("DOMContentLoaded", () => {
   chargerDonneesDashboard();
-
-  // Rafraîchissement toutes les 30 secondes
-  setInterval(chargerDonneesDashboard, 5000);
+  afficherActivites();
+  afficherCharts();
+ 
+  setInterval(chargerDonneesDashboard,afficherActivites,afficherCharts, 5000);
 });

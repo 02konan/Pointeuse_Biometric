@@ -1,11 +1,11 @@
 import pymysql
 from base_donnee import connexion
-
+  
 def read_matricule():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql = "SELECT DISTINCT(nom) FROM empreintes"
+                sql = "SELECT DISTINCT(Matricule) FROM empreintes"
                 cursor.execute(sql)
                 result = cursor.fetchall()
                 return [row[0] for row in result]
@@ -18,27 +18,28 @@ def read_data_from_db():
         data_base = connexion()
 
         with data_base.cursor() as cursor:
-            sql1 = "SELECT COUNT(nom) FROM empreintes"
+            sql1 = "SELECT COUNT(Matricule) FROM empreintes"
             sql2 = """SELECT COUNT(*) AS nb_personnes
                       FROM (
-                      SELECT user_id
-                      FROM empreintes_utilisees
-                      WHERE DATE(heure_pointage) = '4-05-2025'
-                      GROUP BY user_id
+                      SELECT IDEmploye
+                      FROM pointages
+                      WHERE DATE(date_pointage) = '2025-01-10'
+                      GROUP BY IDEmploye
                       HAVING 
-                      MIN(TIME(heure_pointage)) <= '08:00:00'
-                      AND MAX(TIME(heure_pointage)) >= '16:00:00'
+                      MIN(TIME(date_pointage)) <= '08:00:00'
+                      AND MAX(TIME(date_pointage)) >= '16:00:00'
                       ) AS personnes_presentes;
                    """
-            sql3 = "SELECT COUNT(*) FROM empreintes_utilisees WHERE DATE(heure_pointage) = '4-05-2025' AND TIME(heure_pointage) > '08:00:00';"
+            sql3 = "SELECT COUNT(*) FROM pointages WHERE DATE(date_pointage) = '2025-01-10' AND TIME(date_pointage) > '08:00:00';"
             sql4 ="""SELECT COUNT(*)
-                     FROM empreintes_utilisees
-                     JOIN empreintes ON empreintes.user_id = empreintes_utilisees.user_id
-                     WHERE heure_pointage='4-05-2025';"""
-            sql5 = "SELECT DISTINCT empreintes.nom,heure_pointage " \
-            "FROM empreintes_utilisees " \
-            "JOIN empreintes on empreintes_utilisees.user_id=empreintes.user_id" \
-            " ORDER BY heure_pointage DESC LIMIT 4;"
+                     FROM pointages
+                     JOIN empreintes ON empreintes.IDEmploye = pointages.IDEmploye
+                     WHERE date_pointage='2025-01-10';"""
+            sql5 ="""SELECT DISTINCT empreintes.Matricule,pointages.date_pointage
+FROM pointages
+JOIN empreintes on pointages.IDEmploye=empreintes.IDEmploye
+WHERE DATE(date_pointage)='2025-01-10'
+ORDER BY date_pointage DESC LIMIT 4;"""
             cursor.execute(sql1)
             total_eleves=cursor.fetchone()[0]
 
@@ -65,7 +66,7 @@ def read_data_employe():
  try:
     with connexion() as conn:
         with conn.cursor() as cursor:
-            sql="SELECT * FROM `professeur`"
+            sql="SELECT * FROM `Employe`"
             cursor.execute(sql)
             result=cursor.fetchall()
     return result         
@@ -78,16 +79,16 @@ def read_data_presence():
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql="""SELECT 
-  eu.user_id,
-  e.nom,
-  DATE(eu.heure_pointage) AS Date_pointage,
-  MIN(TIME(eu.heure_pointage)) AS heure_arrivee,
-  MAX(TIME(eu.heure_pointage)) AS heure_depart,
-  TIMEDIFF(MAX(eu.heure_pointage), MIN(eu.heure_pointage)) AS temps_presence
-FROM empreintes_utilisees eu
-JOIN empreintes e ON e.user_id = eu.user_id
-GROUP BY eu.user_id, DATE(eu.heure_pointage), e.nom
-HAVING COUNT(DISTINCT eu.heure_pointage) >= 2
+  eu.IDEmploye,
+  e.Matricule,
+  DATE(eu.date_pointage) AS Date_pointage,
+  MIN(TIME(eu.date_pointage)) AS date_arrivee,
+  MAX(TIME(eu.date_pointage)) AS date_depart,
+  TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
+FROM pointages eu
+JOIN empreintes e ON e.IDEmploye = eu.IDEmploye
+GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
+HAVING COUNT(DISTINCT eu.date_pointage) >= 2
 ORDER BY temps_presence;
                       """
                 cursor.execute(sql)
@@ -113,7 +114,7 @@ def vefification_utilisateur():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql="SELECT * FROM utilisateur"
+                sql="SELECT * FROM utilisateurs"
                 cursor.execute(sql)
                 result=cursor.fetchall()
                 return result

@@ -1,4 +1,4 @@
-const rowsPerPage = 10;
+const rowsPerPage = 100;
   let currentPage = 1;
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -22,7 +22,6 @@ const rowsPerPage = 10;
       const pagination = document.querySelector(".pagination");
       pagination.innerHTML = "";
 
-      // Précédent
       const prevLi = document.createElement("li");
       prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
       prevLi.innerHTML = `<a class="page-link" href="#">Précédent</a>`;
@@ -34,7 +33,6 @@ const rowsPerPage = 10;
       });
       pagination.appendChild(prevLi);
 
-      // Pages
       for (let i = 1; i <= totalPages; i++) {
         const li = document.createElement("li");
         li.className = `page-item ${i === currentPage ? "active" : ""}`;
@@ -46,7 +44,6 @@ const rowsPerPage = 10;
         pagination.appendChild(li);
       }
 
-      // Suivant
       const nextLi = document.createElement("li");
       nextLi.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
       nextLi.innerHTML = `<a class="page-link" href="#">Suivant</a>`;

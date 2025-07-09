@@ -7,8 +7,8 @@ import os
 from base_donnee import connexion
 ZK_IP = '192.168.1.212'
 ZK_PORT = 4370
-RECONNECT_DELAY = 5  
 
+RECONNECT_DELAY = 5 
 last_processed_timestamp = None
 
 def get_db_connection():
@@ -16,7 +16,7 @@ def get_db_connection():
 def get_last_pointage_timestamp():
     db = get_db_connection()
     cursor = db.cursor()
-    cursor.execute("SELECT MAX(heure_pointage) FROM empreintes_utilisees")
+    cursor.execute("SELECT MAX(date_pointage) FROM Pointages")
     result = cursor.fetchone()
     db.close()
     return result[0] if result and result[0] else None
@@ -45,14 +45,14 @@ def listen_attendance():
                         time_min = record.timestamp - timedelta(seconds=5)
                         time_max = record.timestamp + timedelta(seconds=5)
                         delete_sql = """
-                            DELETE FROM empreintes_utilisees 
-                            WHERE user_id = %s AND heure_pointage BETWEEN %s AND %s
+                            DELETE FROM pointages 
+                            WHERE IDEmploye = %s AND date_pointage BETWEEN %s AND %s
                         """
                         cursor.execute(delete_sql, (record.user_id, time_min, time_max))
 
                         # Insérer le nouveau pointage
                         insert_sql = """
-                            INSERT INTO empreintes_utilisees (user_id, heure_pointage) 
+                            INSERT INTO pointages (IDEmploye, date_pointage) 
                             VALUES (%s, %s)
                         """
                         cursor.execute(insert_sql, (record.user_id, record.timestamp))

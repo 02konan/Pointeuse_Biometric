@@ -5,6 +5,6 @@ def connexion():
         host="localhost",
         user="root",
         password="",
-        database="ifsm_database"
+        database="bioprodb"
     )
     return connection

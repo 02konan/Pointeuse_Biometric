@@ -22,9 +22,9 @@
             </button>
         </div>
         
-        <!-- Devices Grid -->
+
         <div class="row">
-            {% for pointeuse in resultats %}
+             {% for pointeuse in resultats %}
             <div class="col-md-4 mb-4">
                 <div class="card h-100 shadow-sm">
                     <div class="card-body">
@@ -75,6 +75,8 @@
             </div>
             {% endfor %}
         </div>
+         
+        </div>
     </div>
 </div>
 <!-- Add Device Modal -->
@@ -99,6 +101,16 @@
                             <option>FingerTech FT-600</option>
                             <option>SecureScan SS-200</option>
                             <option>BioID B-100</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deviceModel" class="form-label">Section</label>
+                        <select class="form-select" name="pointeuseM" required>
+                            <option selected disabled value="">Choisir...</option>
+                            <option>Cocody</option>
+                            <option>Koumassi</option>
+                            <option>Marcory</option>
+                            <option>Adjame</option>
                         </select>
                     </div>
                     <div class="mb-3">

@@ -25,24 +25,6 @@ app.secret_key = '&é1234azerty'
 
 CORS(app)
 
-@app.before_request
-def require_login():
-    if request.endpoint not in ('login', 'static') and not session.get('connecter'):
-        return redirect(url_for('login'))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    data=vefification_utilisateur()
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        for user in data:
-            if user[1] == username and user[2] == password:
-                session['connecter'] = True
-                return redirect(url_for('index'))
-            else:
-                return render_template('login.html', error='Identifiants incorrects')
-    return render_template('login.html')
 
 @app.route('/')
 def index():
@@ -155,6 +137,7 @@ def intf_presence():
      table.append(resultat)
     
     return render_template('presence.html', active_page='presence', resultats=table)
+
 @app.route('/rapports')
 def intf_rapports():
     
@@ -165,7 +148,6 @@ def intf_appareils():
     data= get_etats_pointeuses()
     
     return render_template('materiel.html', active_page='appareils',resultats=data)
-
     
 @app.route('/add-device', methods=['POST'])
 def enregistrement_appareils():
@@ -173,10 +155,9 @@ def enregistrement_appareils():
     pointeuseM = request.form['pointeuseM']
     pointeuseP = request.form['pointeuseP']
     Adresseip = request.form['Adresseip']
-    pointeusePort = request.form['pointeusePort']
     pointeuseSerie = request.form['pointeuseSerie']
     pointeuseType = request.form['pointeuseType']
-    creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip, pointeusePort, pointeuseSerie, pointeuseType)
+    creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType)
     flash("Appareil enregistré avec succès !", "success")
     return redirect(url_for('intf_appareils'))
 
@@ -184,6 +165,10 @@ def enregistrement_appareils():
 def intf_Parametres():
     return render_template('parametre.html', active_page='parametres')
 
+@app.route('/logout')
+def logout():
+    session.pop('connecter', None)
+    return redirect(url_for('login'))
 
 
 if __name__ == '__main__':
