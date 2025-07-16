@@ -164,6 +164,7 @@ def api_fiche_presence():
     pdfexecut = generer_fiche_presence_pdf(chemin_pdf, data)
 
     if pdfexecut and os.path.exists(chemin_pdf):
+        send_file(chemin_pdf, as_attachment=True)
         return jsonify({
             "success": True,
             "type": "Présence",
@@ -172,8 +173,6 @@ def api_fiche_presence():
             "auteur": "Système",
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
-
-    return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
 
 @app.route('/api/fiche_absence', methods=['POST'])
 def fiche_absence():

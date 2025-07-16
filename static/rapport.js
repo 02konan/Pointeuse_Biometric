@@ -20,23 +20,66 @@ document.addEventListener("DOMContentLoaded", () => {
         <a href="/impression/${encodeURIComponent(data.nom)}" target="_blank" class="btn btn-sm btn-outline-secondary me-1">
           <i class="fas fa-print"></i>
         </a>
-        <button onclick="supprimerRapport('${data.nom}', this)" class="btn btn-sm btn-outline-danger">
-          <i class="fas fa-trash"></i>
-        </button>
+        <button onclick="ouvrirModaleSuppression('${data.nom}', this)" class="btn btn-sm btn-outline-danger">
+  <i class="fas fa-trash"></i>
+</button>
+
       </td>
     `;
     document.getElementById("table-rapports").prepend(ligne);
   }
 
-  window.supprimerRapport = function(nom, btn) {
-    if (!confirm("Voulez-vous vraiment supprimer ce fichier ?")) return;
-    fetch(`/suppression/${encodeURIComponent(nom)}`, { method: "DELETE" })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const ligne = btn.closest("tr");
-          ligne.remove();
-        }
-      });
-  };
+  let fichierASupprimer = null;
+let boutonSupprimer = null;
+
+function ouvrirModaleSuppression(nomFichier, btn) {
+  fichierASupprimer = nomFichier;
+  boutonSupprimer = btn;
+  const modal = new bootstrap.Modal(document.getElementById('modalSuppression'));
+  modal.show();
+}
+
+document.getElementById("confirmerSuppression").addEventListener("click", () => {
+  if (!fichierASupprimer) return;
+
+  fetch(`/suppression/${encodeURIComponent(fichierASupprimer)}`, {
+    method: "DELETE"
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      const ligne = boutonSupprimer.closest("tr");
+      ligne.remove();
+      fichierASupprimer = null;
+      boutonSupprimer = null;
+      const modal = bootstrap.Modal.getInstance(document.getElementById('modalSuppression'));
+      modal.hide();
+    }
+  });
+});
+});
+document.getElementById("form-fiche-presence").addEventListener("submit", function (e) {
+  e.preventDefault();
+
+  const date_debut = document.getElementById("date_debut").value;
+  const date_fin = document.getElementById("date_fin").value;
+
+  fetch("/api/fiche_presence", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      date_debut,
+      date_fin
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      ajouterLigneRapport(data);
+    } else {
+      alert(data.error || "Erreur inconnue");
+    }
+  });
 });

@@ -20,6 +20,25 @@
   </div>
   {% endfor %} {% endwith %}
 </div>
+<!-- Modale de confirmation de suppression -->
+<div class="modal fade" id="modalSuppression" tabindex="-1" aria-labelledby="modalSuppressionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalSuppressionLabel">Confirmation de suppression</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        Voulez-vous vraiment supprimer ce fichier ?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+        <button type="button" class="btn btn-danger" id="confirmerSuppression">Supprimer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="reports-content" class="content-section">
   <div class="container-fluid p-4">
     <div class="row mb-4">
