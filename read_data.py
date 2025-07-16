@@ -122,3 +122,29 @@ def vefification_utilisateur():
         print("Erreur MySQL :", e)
     except Exception as e:
         print("Erreur generale:", e)
+def generer_presence(date_debut, date_fin):
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql = """
+                SELECT 
+  eu.IDEmploye,
+  e.Matricule,
+  DATE(eu.date_pointage) AS Date_pointage,
+  MIN(TIME(eu.date_pointage)) AS date_arrivee,
+  MAX(TIME(eu.date_pointage)) AS date_depart,
+  TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
+FROM pointages eu
+JOIN empreintes e ON e.IDEmploye = eu.IDEmploye
+WHERE DATE(eu.date_pointage) BETWEEN %s AND %s
+GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
+HAVING COUNT(DISTINCT eu.date_pointage) >= 2
+ORDER BY Date_pointage;
+                """
+                cursor.execute(sql, (date_debut, date_fin))
+                result = cursor.fetchall()
+                return result
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)

@@ -127,13 +127,43 @@ function afficherCharts(data) {
       }
     }
   });
+  const ctx = document.getElementById("monthlyAttendanceChart").getContext("2d");
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"],
+      datasets: [
+        {
+          label: "Présences",
+          data: data.presences_mensuelles || [0,0,0,0,0,0,0,0,0,0,0,0],
+          borderColor: "#28a745",
+          backgroundColor: "rgba(40,167,69,0.1)",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointBackgroundColor: "#28a745",
+          pointBorderColor: "#fff"
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
 }
+
 
 // Lancer une fois au chargement
 document.addEventListener("DOMContentLoaded", () => {
   chargerDonneesDashboard();
   afficherActivites();
   afficherCharts();
- 
   setInterval(chargerDonneesDashboard,afficherActivites,afficherCharts, 5000);
 });
