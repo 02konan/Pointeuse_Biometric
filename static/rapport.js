@@ -1,66 +1,42 @@
-function telechargerFichePresence(type, btn) {
-    btn.disabled = true;
-    const original = btn.innerHTML;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Génération en cours...';
-    const progress = document.getElementById("progress-bar-fiche");
-    progress.style.width = "10%";
-    progress.classList.remove("d-none");
+document.addEventListener("DOMContentLoaded", () => {
+  fetch("/api/liste_rapports")
+    .then(res => res.json())
+    .then(liste => {
+      liste.forEach(ajouterLigneRapport);
+    });
 
-    fetch("/api/fiche_presence", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        type: type,
-        date_debut: document.getElementById("date_debut").value,
-        date_fin: document.getElementById("date_fin").value,
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          return response.text().then(text => {
-            let msg = "Erreur lors de la génération du PDF";
-            try {
-              const err = JSON.parse(text);
-              msg = err.error || msg;
-            } catch (e) {}
-            throw new Error(msg);
-          });
-        }
-        // Vérification du type de contenu
-        const contentType = response.headers.get("Content-Type");
-        if (!contentType || !contentType.includes("pdf")) {
-            throw new Error("La réponse n'est pas un PDF.");
-        }
-        progress.style.width = "60%";
-        return response.blob();
-      })
-      .then((blob) => {
-        // Si le PDF est vide, ne pas déclencher le téléchargement
-        if (blob.size === 0) {
-          throw new Error("Le fichier PDF généré est vide.");
-        }
-        progress.style.width = "100%";
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `fiche_${type}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => {
-          progress.classList.add("d-none");
-          progress.style.width = "0%";
-          btn.disabled = false;
-          btn.innerHTML = original;
-        }, 1000);
-      })
-      .catch((error) => {
-        btn.disabled = false;
-        btn.innerHTML = original;
-        progress.classList.add("d-none");
-        progress.style.width = "0%";
-        alert(error.message || "Erreur lors de la génération du PDF");
-      });
+  function ajouterLigneRapport(data) {
+    const ligne = document.createElement("tr");
+    ligne.innerHTML = `
+      <td>${data.nom}</td>
+      <td>${data.type}</td>
+      <td>${data.periode}</td>
+      <td>${data.auteur}</td>
+      <td>${data.date}</td>
+      <td>
+        <a href="/telechargement/${encodeURIComponent(data.nom)}" class="btn btn-sm btn-outline-primary me-1">
+          <i class="fas fa-download"></i>
+        </a>
+        <a href="/impression/${encodeURIComponent(data.nom)}" target="_blank" class="btn btn-sm btn-outline-secondary me-1">
+          <i class="fas fa-print"></i>
+        </a>
+        <button onclick="supprimerRapport('${data.nom}', this)" class="btn btn-sm btn-outline-danger">
+          <i class="fas fa-trash"></i>
+        </button>
+      </td>
+    `;
+    document.getElementById("table-rapports").prepend(ligne);
   }
+
+  window.supprimerRapport = function(nom, btn) {
+    if (!confirm("Voulez-vous vraiment supprimer ce fichier ?")) return;
+    fetch(`/suppression/${encodeURIComponent(nom)}`, { method: "DELETE" })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const ligne = btn.closest("tr");
+          ligne.remove();
+        }
+      });
+  };
+});

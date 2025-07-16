@@ -148,3 +148,30 @@ ORDER BY Date_pointage;
         print("Erreur MySQL :", e)
     except Exception as e:
         print("Erreur générale :", e)
+def generer_retard(date_debut_retard, date_fin_retard):
+   try:
+    with connexion() as conn:
+        with conn.cursor() as cursor:
+            sql = """
+            SELECT 
+              eu.IDEmploye,
+              e.Matricule,
+              DATE(eu.date_pointage) AS Date_pointage,
+              MIN(TIME(eu.date_pointage)) AS date_arrivee,
+              MAX(TIME(eu.date_pointage)) AS date_depart,
+              TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
+            FROM pointages eu
+            JOIN empreintes e ON e.IDEmploye = eu.IDEmploye
+            WHERE DATE(eu.date_pointage) BETWEEN %s AND %s
+            GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
+            HAVING COUNT(DISTINCT eu.date_pointage) >= 2
+               AND MIN(TIME(eu.date_pointage)) > '08:30:00'
+            ORDER BY Date_pointage;
+            """
+            cursor.execute(sql,(date_debut_retard,date_fin_retard))
+            result = cursor.fetchall()
+            return result
+   except pymysql.MySQLError as e:
+    print("Erreur MySQL :", e)
+   except Exception as e:
+    print("Erreur générale :", e)

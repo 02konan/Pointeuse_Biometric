@@ -63,12 +63,13 @@
               </div>
               <div class="col-auto">
                 <button
-                  
                   id="btn-fiche-presence"
                   type="submit"
                   class="btn btn-primary btn-generer-fiche"
-                  >Générer</button
+                  onsubmit="event.preventDefault(); telechargerFichePresence('retards', document.getElementById('btn-fiche-retards'));"
                 >
+                  Générer
+                </button>
               </div>
             </form>
           </div>
@@ -84,12 +85,44 @@
             <p class="card-text">
               Analyser les retards par département et employé
             </p>
-            <button
-              class="btn btn-primary btn-generer-fiche"
-              onclick="telechargerFichePresence('retard', this)"
+            <form
+              method="get"
+              class="row g-2 align-items-end mb-4"
+              id="form-fiche-retards"
+              onsubmit="event.preventDefault(); telechargerFichePresence('retards', document.getElementById('btn-fiche-retards'));"
             >
-              Générer
-            </button>
+              <div class="col-auto">
+                <label for="date_debut" class="form-label mb-0"
+                  >Date début</label
+                >
+                <input
+                  type="date"
+                  class="form-control"
+                  id="date_debut_retard"
+                  name="date_debut_retard"
+                  required
+                />
+              </div>
+              <div class="col-auto">
+                <label for="date_fin" class="form-label mb-0">Date fin</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="date_fin_retard"
+                  name="date_fin_retard"
+                  required
+                />
+              </div>
+              <div class="col-auto">
+                <button
+                  id="btn-fiche-presence"
+                  type="submit"
+                  class="btn btn-primary btn-generer-fiche"
+                >
+                  Générer
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -101,12 +134,44 @@
             </div>
             <h5 class="card-title">Rapport d'absences</h5>
             <p class="card-text">Suivre les absences et leurs justifications</p>
-            <button
-              class="btn btn-primary btn-generer-fiche"
-              onclick="telechargerFichePresence('absence', this)"
+            <form
+              method="get"
+              class="row g-2 align-items-end mb-4"
+              id="form-fiche-absences"
+              onsubmit="event.preventDefault(); telechargerFichePresence('absences', document.getElementById('btn-fiche-absences'));"
             >
-              Générer
-            </button>
+              <div class="col-auto">
+                <label for="date_debut" class="form-label mb-0"
+                  >Date début</label
+                >
+                <input
+                  type="date"
+                  class="form-control"
+                  id="date_debut_absence"
+                  name="date_debut_absence"
+                  required
+                />
+              </div>
+              <div class="col-auto">
+                <label for="date_fin" class="form-label mb-0">Date fin</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="date_fin_absence"
+                  name="date_fin_absence"
+                  required
+                />
+              </div>
+              <div class="col-auto">
+                <button
+                  id="btn-fiche-presence"
+                  type="submit"
+                  class="btn btn-primary btn-generer-fiche"
+                >
+                  Générer
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -120,12 +185,35 @@
             <p class="card-text">
               Créer un rapport avec des critères spécifiques
             </p>
-            <button
-              class="btn btn-primary btn-generer-fiche"
-              onclick="telechargerFichePresence('custom', this)"
+            <form
+              method="get"
+              class="row g-2 align-items-end mb-4"
+              id="form-fiche-personnalisé"
+              onsubmit="event.preventDefault(); telechargerFichePresence('personnalisé', document.getElementById('btn-fiche-personnalisé'));"
             >
-              Générer
-            </button>
+              <div class="col-auto">
+                <label for="date_fin" class="form-label mb-0"
+                  >Code Employe</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="codeEmpoye"
+                  name="codeEmpoye"
+                  placeholder="Entrez le code de l'employé"
+                  required
+                />
+              </div>
+              <div class="col-auto">
+                <button
+                  id="btn-fiche-personnalisé"
+                  type="submit"
+                  class="btn btn-primary btn-generer-fiche"
+                >
+                  Générer
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -139,45 +227,16 @@
           <table class="table">
             <thead>
               <tr>
-                <th>Nom du rapport</th>
+                <th>Nom</th>
                 <th>Type</th>
                 <th>Période</th>
-                <th>Généré par</th>
-                <th>Date de génération</th>
+                <th>Auteur</th>
+                <th>Date</th>
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody>
-              {% for rapport in resultat %}
-              <tr>
-                <td>{{ rapport.nom }}</td>
-                <td>{{ rapport.type }}</td>
-                <td>{{ rapport.periode }}</td>
-                <td>{{ rapport.auteur }}</td>
-                <td>{{ rapport.date }}</td>
-                <td>
-                  <a
-                    href="{{ url_for('telecharger_rapport', nom=rapport.nom) }}"
-                    class="btn btn-sm btn-outline-primary me-1"
-                  >
-                    <i class="fas fa-download"></i>
-                  </a>
-                  <a
-                    href="{{ url_for('imprimer_rapport', nom=rapport.nom) }}"
-                    target="_blank"
-                    class="btn btn-sm btn-outline-secondary me-1"
-                  >
-                    <i class="fas fa-print"></i>
-                  </a>
-                  <a
-                    href="{{ url_for('supprimer_rapport', nom=rapport.nom) }}"
-                    class="btn btn-sm btn-outline-danger"
-                  >
-                    <i class="fas fa-trash"></i>
-                  </a>
-                </td>
-              </tr>
-              {% endfor %}
+            <tbody id="table-rapports">
+              <!-- Les fichiers seront insérés ici dynamiquement -->
             </tbody>
           </table>
         </div>

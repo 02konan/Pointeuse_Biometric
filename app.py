@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, send_from_directory, Response, session, flash
+from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
 from flask_cors import CORS
 from read_data import read_data_from_db,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,vefification_utilisateur
 from database.db import db
@@ -9,7 +9,7 @@ import os
 from detecteur import recuperation_emprientes,get_etats_pointeuses
 from attendance import listen_attendance
 from werkzeug.utils import secure_filename
-
+from gerenerateurPdf import generer_fiche_presence_pdf,generer_presence,generer_retard
 
 app = Flask(__name__, static_folder='static', template_folder='template')
 app.secret_key = '&é1234azerty'
@@ -138,9 +138,121 @@ def intf_presence():
     
     return render_template('presence.html', active_page='presence', resultats=table)
 
+@app.route('/api/fiche_presence', methods=['POST'])
+def api_fiche_presence():
+    data_json = request.get_json()
+    date_debut = data_json.get('date_debut')
+    date_fin = data_json.get('date_fin')
+
+    if not date_debut or not date_fin:
+        return jsonify({'error': 'Les dates sont obligatoires.'}), 400
+
+    data = generer_presence(date_debut, date_fin)
+    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+
+    base_filename = f"fichePresence_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
+    filename = f"{base_filename}.pdf"
+    chemin_pdf = os.path.join(uploads_dir, filename)
+
+    compteur = 1
+    while os.path.exists(chemin_pdf):
+        filename = f"{base_filename}_{compteur}.pdf"
+        chemin_pdf = os.path.join(uploads_dir, filename)
+        compteur += 1
+
+    pdfexecut = generer_fiche_presence_pdf(chemin_pdf, data)
+
+    if pdfexecut and os.path.exists(chemin_pdf):
+        return jsonify({
+            "success": True,
+            "type": "Présence",
+            "nom": filename,
+            "periode": f"{date_debut} → {date_fin}",
+            "auteur": "Système",
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+        })
+
+    return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
+
+@app.route('/api/fiche_absence', methods=['POST'])
+def fiche_absence():
+    data_json = request.get_json()
+    date_debut_retard = data_json.get('date_debut')
+    date_fin_retard = data_json.get('date_fin')
+
+    if not date_debut_retard or not date_fin_retard:
+        return jsonify({'error': 'Les dates sont obligatoires.'}), 400
+
+    data = generer_retard(date_debut_retard, date_fin_retard)
+    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+
+    base_filename = f"ficheAbsence_{date_debut_retard}_au_{date_fin_retard}".replace(":", "-").replace("/", "-")
+    filename = f"{base_filename}.pdf"
+    chemin_pdf = os.path.join(uploads_dir, filename)
+
+    compteur = 1
+    while os.path.exists(chemin_pdf):
+        filename = f"{base_filename}_{compteur}.pdf"
+        chemin_pdf = os.path.join(uploads_dir, filename)
+        compteur += 1
+
+    pdfexecut = generer_fiche_presence_pdf(chemin_pdf, data)
+
+    if pdfexecut and os.path.exists(chemin_pdf):
+        return jsonify({
+            "success": True,
+            "type": "Absence",
+            "nom": filename,
+            "periode": f"{date_debut_retard} → {date_fin_retard}",
+            "auteur": "Système",
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+        })
+
+    return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
+
+@app.route('/telechargement/<nom>')
+def telecharger_rapport(nom):
+    chemin = os.path.join('uploads', nom)
+    if os.path.exists(chemin):
+      return send_file(chemin, as_attachment=True)
+    return "Fichier non trouvé", 404
+
+@app.route('/impression/<nom>')
+def imprimer_rapport(nom):
+    chemin = os.path.join('uploads', nom)
+    if os.path.exists(chemin):
+        return send_file(chemin)
+    return "Fichier non trouvé", 404
+
+@app.route('/suppression/<nom>', methods=['DELETE'])
+def supprimer_rapport(nom):
+    chemin = os.path.join('uploads', nom)
+    if os.path.exists(chemin):
+        os.remove(chemin)
+        return jsonify({"success": True})
+    return jsonify({"error": "Fichier introuvable"}), 404
+@app.route('/api/liste_rapports')
+def liste_rapports():
+    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+    fichiers = []
+
+    for nom in sorted(os.listdir(uploads_dir), reverse=True):
+        if nom.endswith(".pdf"):
+            type_rapport = "Présence" if "presence" in nom.lower() else "Absence"
+            fichiers.append({
+                "nom": nom,
+                "type": type_rapport,
+                "periode": "Inconnue",  # Tu peux parser depuis le nom si besoin
+                "auteur": "Système",
+                "date": datetime.fromtimestamp(os.path.getctime(os.path.join(uploads_dir, nom))).strftime("%Y-%m-%d %H:%M")
+            })
+
+    return jsonify(fichiers)
+
 @app.route('/rapports')
 def intf_rapports():
-    
     return render_template('rapport.html', active_page='rapports')
 
 @app.route('/appareils')
