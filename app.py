@@ -174,11 +174,11 @@ def api_fiche_presence():
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
 
-@app.route('/api/fiche_absence', methods=['POST'])
+@app.route('/api/fiche_retards', methods=['POST'])
 def fiche_absence():
     data_json = request.get_json()
-    date_debut_retard = data_json.get('date_debut')
-    date_fin_retard = data_json.get('date_fin')
+    date_debut_retard = data_json.get('date_debut_retard')
+    date_fin_retard = data_json.get('date_fin_retard')
 
     if not date_debut_retard or not date_fin_retard:
         return jsonify({'error': 'Les dates sont obligatoires.'}), 400
@@ -187,7 +187,7 @@ def fiche_absence():
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
     os.makedirs(uploads_dir, exist_ok=True)
 
-    base_filename = f"ficheAbsence_{date_debut_retard}_au_{date_fin_retard}".replace(":", "-").replace("/", "-")
+    base_filename = f"ficheretards_{date_debut_retard}_au_{date_fin_retard}".replace(":", "-").replace("/", "-")
     filename = f"{base_filename}.pdf"
     chemin_pdf = os.path.join(uploads_dir, filename)
 
@@ -202,7 +202,7 @@ def fiche_absence():
     if pdfexecut and os.path.exists(chemin_pdf):
         return jsonify({
             "success": True,
-            "type": "Absence",
+            "type": "retards",
             "nom": filename,
             "periode": f"{date_debut_retard} → {date_fin_retard}",
             "auteur": "Système",
@@ -232,6 +232,7 @@ def supprimer_rapport(nom):
         os.remove(chemin)
         return jsonify({"success": True})
     return jsonify({"error": "Fichier introuvable"}), 404
+
 @app.route('/api/liste_rapports')
 def liste_rapports():
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -243,7 +244,7 @@ def liste_rapports():
             fichiers.append({
                 "nom": nom,
                 "type": type_rapport,
-                "periode": "Inconnue",  # Tu peux parser depuis le nom si besoin
+                "periode": "Inconnue",
                 "auteur": "Système",
                 "date": datetime.fromtimestamp(os.path.getctime(os.path.join(uploads_dir, nom))).strftime("%Y-%m-%d %H:%M")
             })
