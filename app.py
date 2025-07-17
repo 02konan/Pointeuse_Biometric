@@ -1,16 +1,15 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from flask_cors import CORS
 from read_data import read_data_from_db,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,vefification_utilisateur
-from database.db import db
 from Creat_data import creat_data_employee, creat_data_pointeuse
-from datetime import datetime,timedelta
-import threading
-import os
 from detecteur import recuperation_emprientes,get_etats_pointeuses
 from attendance import listen_attendance
 from werkzeug.utils import secure_filename
-from gerenerateurPdf import generer_fiche_presence_pdf,generer_presence,generer_retard
-
+from gerenerateurPdf import generer_fiche_presence_pdf,generer_fiche_retards_pdf,generer_presence,generer_retard
+from flask_cors import CORS
+from database.db import db
+from datetime import datetime,timedelta
+import threading
+import os
 app = Flask(__name__, static_folder='static', template_folder='template')
 app.secret_key = '&é1234azerty'
 
@@ -197,7 +196,7 @@ def fiche_absence():
         chemin_pdf = os.path.join(uploads_dir, filename)
         compteur += 1
 
-    pdfexecut = generer_fiche_presence_pdf(chemin_pdf, data)
+    pdfexecut = generer_fiche_retards_pdf(chemin_pdf, data)
 
     if pdfexecut and os.path.exists(chemin_pdf):
         return jsonify({
@@ -208,7 +207,6 @@ def fiche_absence():
             "auteur": "Système",
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
-
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
 
 @app.route('/telechargement/<nom>')
