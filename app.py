@@ -4,7 +4,7 @@ from Creat_data import creat_data_employee, creat_data_pointeuse
 from detecteur import recuperation_emprientes,get_etats_pointeuses
 from attendance import listen_attendance
 from werkzeug.utils import secure_filename
-from gerenerateurPdf import generer_fiche_presence_pdf,generer_fiche_retards_pdf,generer_presence,generer_retard
+from gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
 from flask_cors import CORS
 from database.db import db
 from datetime import datetime,timedelta
@@ -174,7 +174,7 @@ def api_fiche_presence():
         })
 
 @app.route('/api/fiche_retards', methods=['POST'])
-def fiche_absence():
+def fiche_retards():
     data_json = request.get_json()
     date_debut_retard = data_json.get('date_debut_retard')
     date_fin_retard = data_json.get('date_fin_retard')
@@ -204,6 +204,78 @@ def fiche_absence():
             "type": "retards",
             "nom": filename,
             "periode": f"{date_debut_retard} → {date_fin_retard}",
+            "auteur": "Système",
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+        })
+    return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
+
+@app.route('/api/fiche_absence', methods=['POST'])
+def fiche_absence():
+    data_json = request.get_json()
+    date_debut_absence = data_json.get('date_debut_absence')
+    date_fin_absence = data_json.get('date_fin_absence')
+
+    if not date_debut_absence or not date_fin_absence:
+        return jsonify({'error': 'Les dates sont obligatoires.'}), 400
+
+    data = generer_absence(date_debut_absence, date_fin_absence)
+    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+
+    base_filename = f"ficheabsence_{date_debut_absence}_au_{date_fin_absence}".replace(":", "-").replace("/", "-")
+    filename = f"{base_filename}.pdf"
+    chemin_pdf = os.path.join(uploads_dir, filename)
+
+    compteur = 1
+    while os.path.exists(chemin_pdf):
+        filename = f"{base_filename}_{compteur}.pdf"
+        chemin_pdf = os.path.join(uploads_dir, filename)
+        compteur += 1
+
+    pdfexecut = generer_fiche_absence_pdf(chemin_pdf, data)
+
+    if pdfexecut and os.path.exists(chemin_pdf):
+        return jsonify({
+            "success": True,
+            "type": "absences",
+            "nom": filename,
+            "periode": f"{date_debut_absence} → {date_fin_absence}",
+            "auteur": "Système",
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+        })
+    return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
+
+@app.route('/api/fiche_presence_unique', methods=['POST'])
+def fiche_presence_unique():
+    data_json = request.get_json()
+    matricule = data_json.get('matricule')
+
+    if not matricule:
+        return jsonify({'error': 'Le matricule est obligatoire.'}), 400
+
+    # Génération du nom de fichier
+    data=generer_unique_presence(matricule)
+    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+    os.makedirs(uploads_dir, exist_ok=True)
+
+    base_filename = f"fiche_presence_{matricule}_{datetime.now().strftime('%Y-%m-%d_%H-%M')}"
+    filename = f"{base_filename}.pdf"
+    chemin_pdf = os.path.join(uploads_dir, filename)
+
+    compteur = 1
+    while os.path.exists(chemin_pdf):
+        filename = f"{base_filename}_{compteur}.pdf"
+        chemin_pdf = os.path.join(uploads_dir, filename)
+        compteur += 1
+
+    # Appel de ta fonction de génération
+    pdfexecut = generer_presence_unique(matricule, filename)
+
+    if pdfexecut and os.path.exists(chemin_pdf):
+        return jsonify({
+            "success": True,
+            "type": "presence_unique",
+            "nom": filename,
             "auteur": "Système",
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })

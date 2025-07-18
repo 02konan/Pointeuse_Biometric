@@ -138,7 +138,6 @@
               method="get"
               class="row g-2 align-items-end mb-4"
               id="form-fiche-absences"
-              onsubmit="event.preventDefault(); telechargerFichePresence('absences', document.getElementById('btn-fiche-absences'));"
             >
               <div class="col-auto">
                 <label for="date_debut" class="form-label mb-0"
@@ -167,6 +166,7 @@
                   id="btn-fiche-presence"
                   type="submit"
                   class="btn btn-primary btn-generer-fiche"
+                  onclick="location.reload();"
                 >
                   Générer
                 </button>
@@ -185,33 +185,13 @@
             <p class="card-text">
               Créer un rapport avec des critères spécifiques
             </p>
-            <form
-              method="get"
-              class="row g-2 align-items-end mb-4"
-              id="form-fiche-personnalisé"
-              onsubmit="event.preventDefault(); telechargerFichePresence('personnalisé', document.getElementById('btn-fiche-personnalisé'));"
-            >
-              <div class="col-auto">
-                <label for="date_fin" class="form-label mb-0"
-                  >Code Employe</label
-                >
-                <input
-                  type="text"
-                  class="form-control"
-                  id="codeEmpoye"
-                  name="codeEmpoye"
-                  placeholder="Entrez le code de l'employé"
-                  required
-                />
-              </div>
-              <div class="col-auto">
-                <button
-                  id="btn-fiche-personnalisé"
-                  type="submit"
-                  class="btn btn-primary btn-generer-fiche"
-                >
-                  Générer
-                </button>
+            <form method="get" id="form-fiche-persornalise" action="">
+              <div class="row align-items-end">
+                <input type="text" id="matricule" class="form-control mb-2" placeholder="Entrez un code" required/>
+                <div class="col-auto  align-items-end">
+                  <button 
+                  onclick="location.reload();" class="btn btn-primary" type="submit">Generer</button>
+                </div>
               </div>
             </form>
           </div>

@@ -57,8 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
       });
     });
-    document
-    .getElementById("btn-fiche-retards")
+    document.getElementById("btn-fiche-retards")
     .addEventListener("click", () => {
       const dateDebutretards = document.getElementById("date_debut_retard").value;
       const dateFinretards = document.getElementById("date_fin_retard").value;
@@ -71,6 +70,36 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({
           date_debut_retard: dateDebutretards,
           date_fin_retard: dateFinretards
+        })
+      });
+    });
+
+    document.getElementById("form-fiche-absences")
+    .addEventListener("click", () => {
+      const dateDebutabsence = document.getElementById("date_debut_absence").value;
+      const dateFinabsence = document.getElementById("date_fin_absence").value;
+
+      fetch("/api/fiche_absence", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          date_debut_absence: dateDebutabsence,
+          date_fin_absence: dateFinabsence
+        })
+      });
+    });
+     document.getElementById("form-fiche-persornalise")
+    .addEventListener("click", () => {
+      const Matricule = document.getElementById("matricule").value;
+      fetch("/api/fiche_presence_unique", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          Matricule: Matricule
         })
       });
     });
