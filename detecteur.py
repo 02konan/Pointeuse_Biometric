@@ -20,7 +20,6 @@ def get_etats_pointeuses():
         etats.append({"id": pointeuse_id, "ip": ip, "etat": etat, "Nom": Nom, "Localisation": Localisation, "Serie": Serie, "Modele": Modele})
     return etats
 
-
 def recuperation_emprientes():
     db = connexion()
     cursor = db.cursor()

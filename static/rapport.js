@@ -60,8 +60,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document
     .getElementById("btn-fiche-retards")
     .addEventListener("click", () => {
-      const dateDebutretards = document.getElementById("date_debut_retards").value;
-      const dateFinretards = document.getElementById("date_fin_retards").value;
+      const dateDebutretards = document.getElementById("date_debut_retard").value;
+      const dateFinretards = document.getElementById("date_fin_retard").value;
 
       fetch("/api/fiche_retards", {
         method: "POST",
@@ -69,8 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          date_debut_retards: dateDebutretards,
-          date_fin_retards: dateFinretards
+          date_debut_retard: dateDebutretards,
+          date_fin_retard: dateFinretards
         })
       });
     });
