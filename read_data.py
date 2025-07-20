@@ -23,23 +23,24 @@ def read_data_from_db():
                       FROM (
                       SELECT IDEmploye
                       FROM pointages
-                      WHERE DATE(date_pointage) = '2025-01-10'
+                      WHERE DATE(date_pointage) = '2025-03-5'
                       GROUP BY IDEmploye
                       HAVING 
                       MIN(TIME(date_pointage)) <= '08:00:00'
                       AND MAX(TIME(date_pointage)) >= '16:00:00'
                       ) AS personnes_presentes;
                    """
-            sql3 = "SELECT COUNT(*) FROM pointages WHERE DATE(date_pointage) = '2025-01-10' AND TIME(date_pointage) > '08:00:00';"
+            sql3 = "SELECT COUNT(*) FROM pointages WHERE DATE(date_pointage) = '2025-02-10' AND TIME(date_pointage) > '08:00:00';"
             sql4 ="""SELECT COUNT(*)
                      FROM pointages
                      JOIN empreintes ON empreintes.IDEmploye = pointages.IDEmploye
-                     WHERE date_pointage='2025-01-10';"""
+                     WHERE date_pointage='2025-02-10';"""
             sql5 ="""SELECT DISTINCT empreintes.Matricule,pointages.date_pointage
-FROM pointages
-JOIN empreintes on pointages.IDEmploye=empreintes.IDEmploye
-WHERE DATE(date_pointage)='2025-01-10'
-ORDER BY date_pointage DESC LIMIT 4;"""
+                     FROM pointages
+                     JOIN empreintes on pointages.IDEmploye=empreintes.IDEmploye
+                     WHERE DATE(date_pointage)='2025-02-10'
+                     ORDER BY date_pointage DESC LIMIT 4;"""
+            
             cursor.execute(sql1)
             total_eleves=cursor.fetchone()[0]
 
