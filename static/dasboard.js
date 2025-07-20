@@ -5,19 +5,60 @@ function chargerDonneesDashboard() {
       afficherActivites(data["activité_recentes"]);
       afficherCharts(data);
 
-      // Mise à jour des compteurs
+       // MISE À JOUR DES COMPTEURS QUOTIDIENS (existants)
       document.getElementById("presents-count").textContent = data.presents;
       document.getElementById("absents-count").textContent = data.absents;
       document.getElementById("retard-count").textContent = data.retard;
       document.getElementById("total-eleves").textContent = data.total_eleves;
 
-      // Mise à jour des barres de progression
-      document.getElementById("bar-present").style.width =
-        data.pourcentage_presents + "%";
-      document.getElementById("bar-absent").style.width =
-        data.pourcentage_absents + "%";
-      document.getElementById("bar-retard").style.width =
-        data.pourcentage_retards + "%";
+      // MISE À JOUR DES BARRES DE PROGRESSION QUOTIDIENNES (existantes)
+      document.getElementById("bar-present").style.width = data.pourcentage_presents + "%";
+      document.getElementById("bar-absent").style.width = data.pourcentage_absents + "%";
+      document.getElementById("bar-retard").style.width = data.pourcentage_retards + "%";
+
+      // NOUVEAUX COMPTEURS MENSUELS (selon vos IDs HTML)
+      if (document.getElementById("presence-mois-count")) {
+        document.getElementById("presence-mois-count").textContent = data.employes_actifs_mois;
+      }
+      if (document.getElementById("absence-mois-count")) {
+        // Calculer les absents du mois = Total - Actifs ce mois
+        const absents_mois = data.total_eleves - data.employes_actifs_mois;
+        document.getElementById("absence-mois-count").textContent = absents_mois;
+      }
+      if (document.getElementById("retard-mois-count")) {
+        document.getElementById("retard-mois-count").textContent = data.employes_retard_mois;
+      }
+      if (document.getElementById("new-employee-count")) {
+        // Pour l'instant, mettre 0 ou une valeur par défaut
+        // Il faudra ajouter cette donnée dans votre API si nécessaire
+        document.getElementById("new-employee-count").textContent = "0";
+      }
+
+      // NOUVELLES BARRES DE PROGRESSION MENSUELLES (selon vos IDs HTML)
+      if (document.getElementById("bar-presence-mois")) {
+        document.getElementById("bar-presence-mois").style.width = data.pourcentage_actifs_mois + "%";
+      }
+      if (document.getElementById("bar-absence-mois")) {
+        document.getElementById("bar-absence-mois").style.width = data.pourcentage_inactifs_mois + "%";
+      }
+      if (document.getElementById("bar-retard-mois")) {
+        document.getElementById("bar-retard-mois").style.width = data.pourcentage_retards_mois + "%";
+      }
+      if (document.getElementById("bar-new-employee")) {
+        // Barre pour nouveaux employés (à 0% pour l'instant)
+        document.getElementById("bar-new-employee").style.width = "0%";
+      }
+
+      // AFFICHAGE DES POURCENTAGES DANS LES ÉLÉMENTS DE TEXTE
+      if (document.getElementById("pourcentage-actifs-mois")) {
+        document.getElementById("pourcentage-actifs-mois").textContent = data.pourcentage_actifs_mois + "%";
+      }
+      if (document.getElementById("pourcentage-retards-mois")) {
+        document.getElementById("pourcentage-retards-mois").textContent = data.pourcentage_retards_mois + "%";
+      }
+      if (document.getElementById("pourcentage-inactifs-mois")) {
+        document.getElementById("pourcentage-inactifs-mois").textContent = data.pourcentage_inactifs_mois + "%";
+      }
     })
     .catch(error =>
       console.error("Erreur lors du chargement du dashboard :", error)
@@ -62,7 +103,7 @@ function afficherActivites(activites) {
 
 // Fonction pour afficher les graphiques
 function afficherCharts(data) {
-  // === Ligne ===
+ 
   const ctxLine = document.getElementById("attendanceChart").getContext("2d");
   new Chart(ctxLine, {
     type: "line",
@@ -90,7 +131,7 @@ function afficherCharts(data) {
     }
   });
 
-  // === Camembert ===
+ 
   const ctxPie = document.getElementById("attendancePieChart").getContext("2d");
   new Chart(ctxPie, {
     type: "pie",
@@ -127,43 +168,12 @@ function afficherCharts(data) {
       }
     }
   });
-  const ctx = document.getElementById("monthlyAttendanceChart").getContext("2d");
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"],
-      datasets: [
-        {
-          label: "Présences",
-          data: data.presences_mensuelles || [0,0,0,0,0,0,0,0,0,0,0,0],
-          borderColor: "#28a745",
-          backgroundColor: "rgba(40,167,69,0.1)",
-          fill: true,
-          tension: 0.3,
-          pointRadius: 4,
-          pointBackgroundColor: "#28a745",
-          pointBorderColor: "#fff"
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        title: { display: false }
-      },
-      scales: {
-        y: { beginAtZero: true }
-      }
-    }
-  });
+ 
 }
 
 
-// Lancer une fois au chargement
-document.addEventListener("DOMContentLoaded", () => {
-  chargerDonneesDashboard();
-  afficherActivites();
-  afficherCharts();
-  setInterval(chargerDonneesDashboard,afficherActivites,afficherCharts, 5000);
-});
+// // Lancer une fois au chargement
+// document.addEventListener("DOMContentLoaded", () => {
+//   chargerDonneesDashboard();
+//   setInterval(chargerDonneesDashboard, 5000); // recharge toutes les 5s
+// });

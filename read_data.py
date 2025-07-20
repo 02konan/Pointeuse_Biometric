@@ -18,46 +18,115 @@ def read_data_from_db():
         data_base = connexion()
 
         with data_base.cursor() as cursor:
+            # DONNÉES GÉNÉRALES
             sql1 = "SELECT COUNT(Matricule) FROM empreintes"
+            
+            # DONNÉES PAR JOUR (2025-02-10)
             sql2 = """SELECT COUNT(*) AS nb_personnes
                       FROM (
                       SELECT IDEmploye
                       FROM pointages
-                      WHERE DATE(date_pointage) = '2025-03-5'
+                      WHERE DATE(date_pointage) = '2025-02-10'
                       GROUP BY IDEmploye
                       HAVING 
                       MIN(TIME(date_pointage)) <= '08:00:00'
                       AND MAX(TIME(date_pointage)) >= '16:00:00'
                       ) AS personnes_presentes;
                    """
-            sql3 = "SELECT COUNT(*) FROM pointages WHERE DATE(date_pointage) = '2025-02-10' AND TIME(date_pointage) > '08:00:00';"
-            sql4 ="""SELECT COUNT(*)
-                     FROM pointages
-                     JOIN empreintes ON empreintes.IDEmploye = pointages.IDEmploye
-                     WHERE date_pointage='2025-02-10';"""
-            sql5 ="""SELECT DISTINCT empreintes.Matricule,pointages.date_pointage
+            
+            sql3 = "SELECT COUNT(DISTINCT IDEmploye) FROM pointages WHERE DATE(date_pointage) = '2025-02-10' AND TIME(date_pointage) > '08:00:00';"
+            
+            sql4 = """SELECT COUNT(*)
+                     FROM empreintes e
+                     LEFT JOIN pointages p ON e.IDEmploye = p.IDEmploye 
+                         AND DATE(p.date_pointage) = '2025-02-10'
+                     WHERE p.IDEmploye IS NULL;"""
+            
+            sql5 = """SELECT DISTINCT empreintes.Matricule,pointages.date_pointage
                      FROM pointages
                      JOIN empreintes on pointages.IDEmploye=empreintes.IDEmploye
                      WHERE DATE(date_pointage)='2025-02-10'
                      ORDER BY date_pointage DESC LIMIT 4;"""
+
+            # NOUVELLES REQUÊTES PAR MOIS (Février 2025)
+            sql6_mois = """SELECT COUNT(DISTINCT p.IDEmploye) AS employes_actifs_mois
+                          FROM pointages p
+                          WHERE YEAR(date_pointage) = 2025 AND MONTH(date_pointage) = 2;"""
             
+            sql7_mois = """SELECT COUNT(DISTINCT DATE(date_pointage)) AS jours_travailles
+                          FROM pointages
+                          WHERE YEAR(date_pointage) = 2025 AND MONTH(date_pointage) = 2;"""
+            
+            sql8_mois = """SELECT COUNT(DISTINCT p.IDEmploye) AS employes_retard_mois
+                          FROM pointages p
+                          WHERE YEAR(date_pointage) = 2025 AND MONTH(date_pointage) = 2
+                          AND TIME(date_pointage) > '08:00:00'
+                          AND p.IDEmploye IN (
+                              SELECT DISTINCT IDEmploye 
+                              FROM pointages 
+                              WHERE DATE(date_pointage) = DATE(p.date_pointage)
+                              AND TIME(date_pointage) > '08:00:00'
+                              AND NOT EXISTS (
+                                  SELECT 1 FROM pointages p2 
+                                  WHERE p2.IDEmploye = IDEmploye
+                                  AND DATE(p2.date_pointage) = DATE(p.date_pointage)
+                                  AND TIME(p2.date_pointage) <= '08:00:00'
+                              )
+                          );"""
+            
+            sql9_mois = """SELECT AVG(presents_par_jour) AS moyenne_presence_mois
+                          FROM (
+                              SELECT DATE(date_pointage) as jour, COUNT(DISTINCT IDEmploye) as presents_par_jour
+                              FROM pointages
+                              WHERE YEAR(date_pointage) = 2025 AND MONTH(date_pointage) = 2
+                              GROUP BY DATE(date_pointage)
+                          ) AS stats_quotidiennes;"""
+            
+            sql10_mois = """SELECT COUNT(*) AS total_pointages_mois
+                           FROM pointages
+                           WHERE YEAR(date_pointage) = 2025 AND MONTH(date_pointage) = 2;"""
+           
+            # EXÉCUTION DES REQUÊTES QUOTIDIENNES
             cursor.execute(sql1)
-            total_eleves=cursor.fetchone()[0]
+            total_eleves = cursor.fetchone()[0]
 
             cursor.execute(sql2)
-            total_Presents=cursor.fetchone()[0]
+            total_Presents = cursor.fetchone()[0]
 
             cursor.execute(sql3)
-            total_retard=cursor.fetchone()[0]
+            total_retard = cursor.fetchone()[0]
 
             cursor.execute(sql4)
-            total_absents=cursor.fetchone()[0]
+            total_absents = cursor.fetchone()[0]
 
             cursor.execute(sql5)
-            activité_recentes=cursor.fetchall()
+            activité_recentes = cursor.fetchall()
 
-            return total_eleves,total_Presents,total_retard,activité_recentes,total_absents
-        data_base.close
+            # EXÉCUTION DES REQUÊTES MENSUELLES
+            cursor.execute(sql6_mois)
+            employes_actifs_mois = cursor.fetchone()[0]
+
+            cursor.execute(sql7_mois)
+            jours_travailles_mois = cursor.fetchone()[0]
+
+            cursor.execute(sql8_mois)
+            employes_retard_mois = cursor.fetchone()[0]
+
+            cursor.execute(sql9_mois)
+            moyenne_presence_mois = cursor.fetchone()[0]
+
+            cursor.execute(sql10_mois)
+            total_pointages_mois = cursor.fetchone()[0]
+
+            return (
+                # Données quotidiennes
+                total_eleves, total_Presents, total_retard, activité_recentes, total_absents,
+                # Données mensuelles
+                employes_actifs_mois, jours_travailles_mois, employes_retard_mois, 
+                moyenne_presence_mois, total_pointages_mois
+            )
+            
+        data_base.close()
 
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)

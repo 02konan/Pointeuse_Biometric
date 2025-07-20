@@ -57,9 +57,13 @@ def enregistrement():
 def dashboard_data():
     data = read_data_from_db()
     if data:
-        total_eleves, presents, retard, activites, total_absents = data
-
+        # Décomposition des données (quotidiennes + mensuelles)
+        total_eleves, presents, retard, activites, total_absents, \
+        employes_actifs_mois, jours_travailles_mois, employes_retard_mois, \
+        moyenne_presence_mois, total_pointages_mois= data
+        
         return jsonify({
+            # DONNÉES QUOTIDIENNES (jour spécifique)
             'total_eleves': total_eleves,
             'presents': presents,
             'retard': retard,
@@ -67,7 +71,16 @@ def dashboard_data():
             'pourcentage_presents': round((presents / total_eleves) * 100, 2),
             'pourcentage_absents': round((total_absents / total_eleves) * 100, 2),
             'pourcentage_retards': round((retard / total_eleves) * 100, 2),
-            'activité_recentes': activites
+            'activité_recentes': activites,
+            
+            # DONNÉES MENSUELLES (tout le mois)
+            'employes_actifs_mois': employes_actifs_mois,
+            'jours_travailles_mois': jours_travailles_mois,
+            'employes_retard_mois': employes_retard_mois,
+            'moyenne_presence_mois': round(moyenne_presence_mois, 2) if moyenne_presence_mois else 0,
+            'total_pointages_mois': total_pointages_mois
+           
+            
         })
     return jsonify({})
 
