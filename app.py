@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 from gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
 from flask_cors import CORS
 from database.db import db
+from base_donnee import connexion
 from datetime import datetime,timedelta
 import threading
 import os
@@ -364,7 +365,45 @@ def liste_rapports():
             })
 
     return jsonify(fichiers)
+# API POINTAGES
+@app.route("/api/pointages/<matricule>", methods=["GET"])
+def get_pointages(matricule):
+    try:
+        conn = connexion()
+        cursor = conn.cursor()  # pas de dictionary=True ici
 
+        query = """
+            SELECT DATE(date_pointage) AS date_pointage,
+                   MIN(TIME(date_pointage)) AS heure_entree,
+                   MAX(TIME(date_pointage)) AS heure_sortie,
+                   Matricule
+            FROM pointages,empreintes
+            WHERE Matricule = %s
+            GROUP BY DATE(date_pointage)
+            ORDER BY date_pointage DESC
+            LIMIT 30
+        """
+        cursor.execute(query, (matricule,))
+        rows = cursor.fetchall()
+
+        # Convertir manuellement en liste de dictionnaires
+        result = []
+        for row in rows:
+            result.append({
+                "date_pointage": str(row[0]),
+                "heure_entree": str(row[1]),
+                "heure_sortie": str(row[2]),
+                "Matricule": str(row[3])
+            })
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
 @app.route('/rapports')
 def intf_rapports():
     return render_template('rapport.html', active_page='rapports')
