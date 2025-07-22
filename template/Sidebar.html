@@ -2,7 +2,7 @@
 <div class="sidebar">
   <div class="sidebar-header">
     <i class="fas fa-fingerprint"></i>
-    <span>BioPro</span>
+    <span>Biometric</span>
   </div>
   <ul class="sidebar-menu">
     <li class="{% if active_page == 'index' %}active{% endif %}">
@@ -40,6 +40,14 @@
         href="{{ url_for('intf_appareils') }}"
       >
         <i class="fas fa-fingerprint"></i>Appareils</a
+      >
+    </li>
+    <li class="{% if active_page == 'parametres' %}active{% endif %}">
+      <a
+        class="text-white text-decoration-none"
+        href="{{ url_for('lister_utilisateurs') }}"
+      >
+        <i class="fas fa-user-plus "></i>Utilisateur</a
       >
     </li>
     <li class="{% if active_page == 'parametres' %}active{% endif %}">

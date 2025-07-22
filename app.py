@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from read_data import read_data_from_db,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,vefification_utilisateur
+from read_data import read_data_from_db,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
 from Creat_data import creat_data_employee, creat_data_pointeuse
 from detecteur import recuperation_emprientes,get_etats_pointeuses
 from attendance import listen_attendance
@@ -24,11 +24,42 @@ app.secret_key = '&é1234azerty'
 
 CORS(app)
 
+# Simule une base d'utilisateurs en mémoire
+utilisateurs_db = [
+    {"username": "admin", "Email": "abc@gmail.com", "role": "admin"},
+    {"username": "user1", "Email": "abc@gmail.com", "role": "admin"}
+]
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if 'connecter' in session and session['connecter']:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        # Vérification des identifiants
+        utilisateur = verification_utilisateur(username, password)
+        if utilisateur:
+            session['connecter'] = True
+            session['username'] = username
+            flash("Connexion réussie !", "success")
+            return redirect(url_for('index'))
+        else:
+            flash("Identifiants incorrects. Veuillez réessayer.", "danger")
+    
+    return render_template('login.html')
+
 
 @app.route('/')
 def index():
+    if 'connecter' not in session or not session['connecter']:
+        return redirect(url_for('login'))
+
     pointeuses = get_etats_pointeuses()
-    return render_template('index.html',active_page='index', pointeuses=pointeuses)
+    return render_template('index.html', active_page='index', pointeuses=pointeuses)
+
 
 @app.route('/employee', methods=['POST'])
 def enregistrement():
@@ -359,6 +390,22 @@ def enregistrement_appareils():
 @app.route('/parametres')
 def intf_Parametres():
     return render_template('parametre.html', active_page='parametres')
+
+@app.route('/utilisateurs')
+def lister_utilisateurs():
+    return render_template('utilisateurs.html', utilisateurs=utilisateurs_db)
+
+@app.route('/utilisateurs/ajouter', methods=['GET', 'POST'])
+def ajouter_utilisateur():
+    if request.method == 'POST':
+        username = request.form['username']
+        role = request.form['role']
+
+        # Tu peux ajouter un contrôle ici (doublon, etc.)
+        utilisateurs_db.append({"username": username, "role": role})
+        flash(f"Utilisateur '{username}' ajouté avec succès", "success")
+        return redirect(url_for('lister_utilisateurs'))
+    return render_template('ajouter_utilisateur.html')
 
 @app.route('/logout')
 def logout():

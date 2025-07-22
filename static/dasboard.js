@@ -48,17 +48,6 @@ function chargerDonneesDashboard() {
         // Barre pour nouveaux employés (à 0% pour l'instant)
         document.getElementById("bar-new-employee").style.width = "0%";
       }
-
-      // AFFICHAGE DES POURCENTAGES DANS LES ÉLÉMENTS DE TEXTE
-      if (document.getElementById("pourcentage-actifs-mois")) {
-        document.getElementById("pourcentage-actifs-mois").textContent = data.pourcentage_actifs_mois + "%";
-      }
-      if (document.getElementById("pourcentage-retards-mois")) {
-        document.getElementById("pourcentage-retards-mois").textContent = data.pourcentage_retards_mois + "%";
-      }
-      if (document.getElementById("pourcentage-inactifs-mois")) {
-        document.getElementById("pourcentage-inactifs-mois").textContent = data.pourcentage_inactifs_mois + "%";
-      }
     })
     .catch(error =>
       console.error("Erreur lors du chargement du dashboard :", error)
@@ -77,7 +66,7 @@ function afficherActivites(activites) {
     if (heures < 16 || (heures === 16 && minutes >= 45)) {
       observation = "Arrivée enregistrée";
       color = "text-success";
-    } else if(heures > 16 || (heures === 16 && minutes >= 45)){
+    } else if(heures > 17 || (heures === 17 && minutes >= 30)){
       observation = "Départ enregistré";
       color = "text-danger";
     }
@@ -172,8 +161,8 @@ function afficherCharts(data) {
 }
 
 
-// // Lancer une fois au chargement
-// document.addEventListener("DOMContentLoaded", () => {
-//   chargerDonneesDashboard();
-//   setInterval(chargerDonneesDashboard, 5000); // recharge toutes les 5s
-// });
+// Lancer une fois au chargement
+document.addEventListener("DOMContentLoaded", () => {
+  chargerDonneesDashboard();
+  setInterval(chargerDonneesDashboard, 5000); // recharge toutes les 5s
+});

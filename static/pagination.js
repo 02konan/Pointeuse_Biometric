@@ -1,4 +1,4 @@
-const rowsPerPage = 100;
+const rowsPerPage = 25;
   let currentPage = 1;
 
   document.addEventListener("DOMContentLoaded", () => {

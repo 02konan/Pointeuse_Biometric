@@ -1,0 +1,77 @@
+{% extends 'index.html' %}
+{% block content %}
+<div id="attendance-content" class="content-section">
+  <div class="container-fluid p-4">
+    <div class="card mb-4">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Liste des utilisateurs</h5>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ajoutModal">
+          Ajouter un utilisateur
+        </button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover" id="Table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nom d'utilisateur</th>
+                <th>Email</th>
+                <th>Rôle</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in utilisateurs %}
+              <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.Email }}</td>
+                <td><span class="badge bg-info">{{ u.role }}</span></td>
+                <td>
+                  <button class="btn btn-sm btn-outline-secondary" disabled>
+                    <i class="fas fa-edit"></i>
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal d'ajout utilisateur -->
+<div class="modal fade" id="ajoutModal" tabindex="-1" aria-labelledby="ajoutModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form class="modal-content" method="POST">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ajoutModalLabel">Ajouter un utilisateur</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Nom d'utilisateur</label>
+          <input type="text" class="form-control" name="username" required />
+          <label class="form-label">Email</label>
+          <input type="email" class="form-control" name="Email" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Rôle</label>
+          <select name="role" class="form-select" required>
+            <option value="admin">admin</option>
+            <option value="user">user</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-success">Créer</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
