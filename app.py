@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from read_data import read_data_from_db,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
-from Creat_data import creat_data_employee, creat_data_pointeuse
+from read_data import read_data_from_db,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
+from Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from detecteur import recuperation_emprientes,get_etats_pointeuses
 from attendance import listen_attendance
 from werkzeug.utils import secure_filename
@@ -24,12 +24,10 @@ app.secret_key = '&é1234azerty'
 # db.create_all()
 
 CORS(app)
-
-# Simule une base d'utilisateurs en mémoire
-utilisateurs_db = [
-    {"username": "admin", "Email": "abc@gmail.com", "role": "admin"},
-    {"username": "user1", "Email": "abc@gmail.com", "role": "admin"}
-]
+@app.before_request
+def before_request():
+    if 'connecter' not in session:
+        session['connecter'] = False
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -52,7 +50,6 @@ def login():
     
     return render_template('login.html')
 
-
 @app.route('/')
 def index():
     if 'connecter' not in session or not session['connecter']:
@@ -60,7 +57,6 @@ def index():
 
     pointeuses = get_etats_pointeuses()
     return render_template('index.html', active_page='index', pointeuses=pointeuses)
-
 
 @app.route('/employee', methods=['POST'])
 def enregistrement():
@@ -365,7 +361,7 @@ def liste_rapports():
             })
 
     return jsonify(fichiers)
-# API POINTAGES
+
 @app.route("/api/pointages/<matricule>", methods=["GET"])
 def get_pointages(matricule):
     try:
@@ -432,23 +428,25 @@ def intf_Parametres():
 
 @app.route('/utilisateurs')
 def lister_utilisateurs():
-    return render_template('utilisateurs.html', utilisateurs=utilisateurs_db)
+    idrole=read_idrole()
+    idsection= read_idsection()
+    return render_template('utilisateurs.html',roles=idrole, sections=idsection, active_page='utilisateurs')
 
 @app.route('/utilisateurs/ajouter', methods=['GET', 'POST'])
 def ajouter_utilisateur():
     if request.method == 'POST':
-        username = request.form['username']
-        role = request.form['role']
-
-        # Tu peux ajouter un contrôle ici (doublon, etc.)
-        utilisateurs_db.append({"username": username, "role": role})
-        flash(f"Utilisateur '{username}' ajouté avec succès", "success")
-        return redirect(url_for('lister_utilisateurs'))
-    return render_template('ajouter_utilisateur.html')
+        NomUtilisateur = request.form['nomuser']
+        EmailUtilisateur = request.form['Email']
+        RoleUtilisateur = int(request.form['role'])
+        SectionUtilisateur = int(request.form['section'])
+        passUtilisateur = request.form['pass']
+        cret_User(NomUtilisateur, EmailUtilisateur,passUtilisateur, RoleUtilisateur, SectionUtilisateur)
+    return redirect(url_for('lister_utilisateurs'))
 
 @app.route('/logout')
 def logout():
-    session.pop('connecter', None)
+    session.clear()
+    flash("Déconnexion réussie", "success")
     return redirect(url_for('login'))
 
 

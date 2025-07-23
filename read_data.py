@@ -195,6 +195,32 @@ def verification_utilisateur(username, password):
     except Exception as e:
         print("Erreur générale :", e)
         return False
+def read_idsection():
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql = "SELECT IDSection, NomSection FROM section"
+                cursor.execute(sql)
+                result = cursor.fetchall()
+                return result
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)
+def read_idrole():
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql = "SELECT id, nom FROM roles"
+                cursor.execute(sql)
+                result = cursor.fetchall()  # récupère toutes les lignes
+                return result  # renvoie une liste de tuples (id, nom)
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+        return []
+    except Exception as e:
+        print("Erreur générale :", e)
+        return []
 
 def generer_presence(date_debut, date_fin):
     try:

@@ -9,7 +9,7 @@ def is_pingable(ip):
 def get_etats_pointeuses():
     db = connexion()
     cursor = db.cursor()
-    cursor.execute("SELECT id, AdresseIp,NomPointeuse,Emplacement,Serie,Model FROM pointeuse LIMIT 4")
+    cursor.execute("SELECT idPointeuse, AdresseIp,NomPointeuse,Emplacement,Serie,Model FROM pointeuse LIMIT 4")
     pointeuses = cursor.fetchall()
     cursor.close()
     db.close()
@@ -24,7 +24,7 @@ def recuperation_emprientes():
     db = connexion()
     cursor = db.cursor()
 
-    cursor.execute("SELECT id, AdresseIp FROM pointeuse")
+    cursor.execute("SELECT idPointeuse, AdresseIp FROM pointeuse")
     pointeuses = cursor.fetchall()
     cursor.close()
     db.close()

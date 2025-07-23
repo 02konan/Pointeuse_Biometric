@@ -47,7 +47,7 @@
 <!-- Modal d'ajout utilisateur -->
 <div class="modal fade" id="ajoutModal" tabindex="-1" aria-labelledby="ajoutModalLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form class="modal-content" method="POST">
+    <form class="modal-content" action="/utilisateurs/ajouter" method="POST">
       <div class="modal-header">
         <h5 class="modal-title" id="ajoutModalLabel">Ajouter un utilisateur</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
@@ -55,15 +55,24 @@
       <div class="modal-body">
         <div class="mb-3">
           <label class="form-label">Nom d'utilisateur</label>
-          <input type="text" class="form-control" name="username" required />
+          <input type="text" class="form-control" name="nomuser" required />
           <label class="form-label">Email</label>
           <input type="email" class="form-control" name="Email" required />
+          <label class="form-label">Section</label>
+          <select name="section" class="form-select" required>
+             {% for section in sections %}
+             <option value="{{ section[0] }}">{{ section[1] }}</option>
+             {% endfor %}
+          </select>
+          <label class="form-label">Mot de pass</label>
+          <input type="password" class="form-control" name="pass" required />
         </div>
         <div class="mb-3">
           <label class="form-label">Rôle</label>
           <select name="role" class="form-select" required>
-            <option value="admin">admin</option>
-            <option value="user">user</option>
+             {% for role in roles %}
+             <option value="{{ role[0] }}">{{ role[1] }}</option>
+             {% endfor %}
           </select>
         </div>
       </div>

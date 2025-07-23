@@ -154,7 +154,7 @@
               <input list="Matriucle" type="text" class="form-control" name="idEmploye" required />
               <datalist id="Matriucle">
                 {% for resultat in user_id %}
-                <option value="{{ resultat }}" />
+                <option value="{{ resultat }}"/>
                 {% endfor %}
               </datalist>
             </div>
@@ -201,8 +201,7 @@
             <label for="photo" class="form-label">Photo</label>
             <input class="form-control" type="file" name="image" />
           </div>
-
-          <!-- 📌 Zone pour empreinte digitale -->
+          
           <div class="mb-3">
             <label class="form-label">Enregistrement de l'empreinte</label>
             <div class="input-group">
