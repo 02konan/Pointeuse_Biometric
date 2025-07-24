@@ -221,7 +221,21 @@ def read_idrole():
     except Exception as e:
         print("Erreur générale :", e)
         return []
-
+def read_utilisateur():
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql="""SELECT utilisateurs.nom, email,mot_de_passe,roles.nom as roles ,Nomsection
+                 FROM utilisateurs
+                 join section on section.IDSection=utilisateurs.IDSection
+                 join roles on roles.id=utilisateurs.role_id"""
+                cursor.execute(sql)
+                result=cursor.fetchall()
+                return result
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)
 def generer_presence(date_debut, date_fin):
     try:
         with connexion() as conn:

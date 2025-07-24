@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from read_data import read_data_from_db,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
+from read_data import read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
 from Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from detecteur import recuperation_emprientes,get_etats_pointeuses
 from attendance import listen_attendance
@@ -430,7 +430,19 @@ def intf_Parametres():
 def lister_utilisateurs():
     idrole=read_idrole()
     idsection= read_idsection()
-    return render_template('utilisateurs.html',roles=idrole, sections=idsection, active_page='utilisateurs')
+    data=read_utilisateur()
+    table = []
+    if data is not None:
+        for donnee in data:
+            information = {
+                'Nom': donnee[0],
+                'Email': donnee[1],
+                'Motpass': donnee[2],
+                'role': donnee[3],
+                'section': donnee[4]
+            }
+            table.append(information)
+    return render_template('utilisateurs.html',utilisateurs=table,roles=idrole, sections=idsection, active_page='utilisateurs')
 
 @app.route('/utilisateurs/ajouter', methods=['GET', 'POST'])
 def ajouter_utilisateur():
