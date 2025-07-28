@@ -366,18 +366,25 @@ def liste_rapports():
 def get_pointages(matricule):
     try:
         conn = connexion()
-        cursor = conn.cursor()  # pas de dictionary=True ici
-
+        cursor = conn.cursor()  
         query = """
-            SELECT DATE(date_pointage) AS date_pointage,
-                   MIN(TIME(date_pointage)) AS heure_entree,
-                   MAX(TIME(date_pointage)) AS heure_sortie,
-                   Matricule
-            FROM pointages,empreintes
-            WHERE Matricule = %s
-            GROUP BY DATE(date_pointage)
-            ORDER BY date_pointage DESC
-            LIMIT 30
+            SELECT 
+         DATE(date_pointage) AS date_pointage,
+         MIN(TIME(date_pointage)) AS heure_entree,
+         MAX(TIME(date_pointage)) AS heure_sortie,
+         employe.nom,
+         employe.prenom
+         FROM 
+         pointages, empreintes, employe
+         WHERE 
+         employe.matricule = empreintes.matricule 
+         AND pointages.IDEmploye = empreintes.IDEmploye
+         AND empreintes.Matricule =%s 
+         GROUP BY 
+         DATE(date_pointage)
+         ORDER BY 
+         date_pointage DESC
+         LIMIT 30;
         """
         cursor.execute(query, (matricule,))
         rows = cursor.fetchall()
@@ -389,17 +396,17 @@ def get_pointages(matricule):
                 "date_pointage": str(row[0]),
                 "heure_entree": str(row[1]),
                 "heure_sortie": str(row[2]),
-                "Matricule": str(row[3])
+                "Nom_Prenom": str(row[3]) + " " + str(row[4])
             })
 
         return jsonify(result)
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
     finally:
         cursor.close()
         conn.close()
+
 @app.route('/rapports')
 def intf_rapports():
     return render_template('rapport.html', active_page='rapports')
@@ -461,7 +468,6 @@ def logout():
     flash("Déconnexion réussie", "success")
     return redirect(url_for('login'))
 
-
 if __name__ == '__main__':
     thread = threading.Thread(target=listen_attendance)
     thread.daemon = True
@@ -470,4 +476,4 @@ if __name__ == '__main__':
     recuperation.daemon = True
     recuperation.start()
 
-    app.run(debug=True)
+    app.run(host='0.0.0.0',port=500,debug=True)

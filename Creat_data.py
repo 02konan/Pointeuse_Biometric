@@ -40,15 +40,27 @@ def creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuse
             conn.commit()
     except pymysql.MySQLError as e:
         print(f"Erreur MySQL : {e}")
-def cret_User(Nom, Email, password, role, IDsection):
+def cret_User(id,Nom, Email, password, role, IDsection):
     try:
         with connexion() as conn:
             with conn.cursor() as curseur:
-                sql = """
-                INSERT INTO `utilisateurs` (`nom`, `email`, `mot_de_passe`, `role_id`, `IDSection`)
-                VALUES (%s, %s, %s, %s, %s)
-                """
-                curseur.execute(sql, (Nom, Email, password, role, IDsection))
+                curseur.execute("SELECT COUNT(*) FROM utilisateurs WHERE id = %s", (id,))
+                existe = curseur.fetchone()[0]
+                if existe:
+                    sql = """
+                    UPDATE utilisateurs
+                    SET nom=%s, email=%s, mot_de_passe=%s, role_id=%s, IDSection=%s
+                    WHERE id=%s
+                    """
+                    curseur.execute(sql, (Nom, Email, password, role, IDsection, id))
+                    print("Utilisateur mis à jour avec succès.")
+                else:
+                    sql = """
+                    INSERT INTO `utilisateurs` (`nom`, `email`, `mot_de_passe`, `role_id`, `IDSection`)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """
+                    curseur.execute(sql, (Nom, Email, password, role, IDsection))
+                    print("Nouvel utilisateur inséré avec succès.")
             conn.commit()
     except pymysql.MySQLError as e:
         print(f"Erreur MySQL : {e}")
