@@ -13,6 +13,7 @@ import threading
 import os
 app = Flask(__name__, static_folder='static', template_folder='template')
 app.secret_key = '&é1234azerty'
+app.permanent_session_lifetime = timedelta(minutes=10)
 
 # app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('LIEN_DE_LABASE')
 # app.config['SQLALCHEMY_BINDS'] = {
@@ -29,6 +30,27 @@ def before_request():
     if 'connecter' not in session:
         session['connecter'] = False
 
+def login_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'connecter' not in session or not session['connecter']:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def role_required(role):
+    def decorator(f):
+        from functools import wraps
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'role' not in session or session['role'].lower() != role.lower():
+                flash("Accès refusé : vous n'avez pas les droits nécessaires.", "danger")
+                return redirect(url_for('index'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if 'connecter' in session and session['connecter']:
@@ -43,6 +65,7 @@ def login():
         if utilisateur:
             # Enregistrer l'utilisateur dans la session
             session['connecter'] = True
+            session.permanent = True
             session['username'] = username
             session['role'] = utilisateur['nom_roles']
             # Redirection selon le rôle
@@ -57,6 +80,7 @@ def login():
     return render_template('login.html')
 
 @app.route('/')
+@login_required
 def index():
     if 'connecter' not in session or not session['connecter']:
         return redirect(url_for('login'))
@@ -65,6 +89,8 @@ def index():
     return render_template('index.html', active_page='index', pointeuses=pointeuses)
 
 @app.route('/employee', methods=['POST'])
+@login_required
+@role_required('admin')
 def enregistrement():
     nom = request.form['nom']
     prenom = request.form['prenom']
@@ -88,6 +114,7 @@ def enregistrement():
     return redirect(url_for('intf_employee'))
 
 @app.route('/api/dashboard', methods=['GET'])
+@login_required
 def dashboard_data():
     data = read_data_from_db()
     if data:
@@ -119,6 +146,8 @@ def dashboard_data():
     return jsonify({})
 
 @app.route('/employee')
+@login_required
+@role_required('admin')
 def intf_employee():
     data = read_data_employe()
     id_employee=read_matricule()
@@ -139,6 +168,7 @@ def intf_employee():
     return render_template('employee.html', active_page='employee', resultats=table,user_id=id_employee)
 
 @app.route('/presence')
+@login_required
 def intf_presence():
     data = read_data_presence()
     table = []
@@ -185,6 +215,7 @@ def intf_presence():
     return render_template('presence.html', active_page='presence', resultats=table)
 
 @app.route('/api/fiche_presence', methods=['POST'])
+@login_required
 def api_fiche_presence():
     data_json = request.get_json()
     date_debut = data_json.get('date_debut')
@@ -221,6 +252,7 @@ def api_fiche_presence():
         })
 
 @app.route('/api/fiche_retards', methods=['POST'])
+@login_required
 def fiche_retards():
     data_json = request.get_json()
     date_debut_retard = data_json.get('date_debut_retard')
@@ -257,6 +289,7 @@ def fiche_retards():
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
 
 @app.route('/api/fiche_absence', methods=['POST'])
+@login_required
 def fiche_absence():
     data_json = request.get_json()
     date_debut_absence = data_json.get('date_debut_absence')
@@ -293,6 +326,7 @@ def fiche_absence():
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
 
 @app.route('/api/fiche_presence_unique', methods=['POST'])
+@login_required
 def fiche_presence_unique():
     data_json = request.get_json()
     matricule = data_json.get('matricule')
@@ -329,6 +363,7 @@ def fiche_presence_unique():
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
 
 @app.route('/telechargement/<nom>')
+@login_required
 def telecharger_rapport(nom):
     chemin = os.path.join('uploads', nom)
     if os.path.exists(chemin):
@@ -336,6 +371,7 @@ def telecharger_rapport(nom):
     return "Fichier non trouvé", 404
 
 @app.route('/impression/<nom>')
+@login_required
 def imprimer_rapport(nom):
     chemin = os.path.join('uploads', nom)
     if os.path.exists(chemin):
@@ -343,6 +379,7 @@ def imprimer_rapport(nom):
     return "Fichier non trouvé", 404
 
 @app.route('/suppression/<nom>', methods=['DELETE'])
+@login_required
 def supprimer_rapport(nom):
     chemin = os.path.join('uploads', nom)
     if os.path.exists(chemin):
@@ -351,6 +388,8 @@ def supprimer_rapport(nom):
     return jsonify({"error": "Fichier introuvable"}), 404
 
 @app.route('/api/liste_rapports')
+@login_required
+@role_required('admin')
 def liste_rapports():
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
     fichiers = []
@@ -369,6 +408,7 @@ def liste_rapports():
     return jsonify(fichiers)
 
 @app.route("/api/pointages/<matricule>", methods=["GET"])
+@login_required
 def get_pointages(matricule):
     try:
         conn = connexion()
@@ -408,10 +448,14 @@ def get_pointages(matricule):
         conn.close()
 
 @app.route('/rapports')
+@role_required('admin')
+@login_required
 def intf_rapports():
     return render_template('rapport.html', active_page='rapports')
 
 @app.route('/appareils')
+@login_required
+@role_required('admin')
 def intf_appareils():
     idsection= read_idsection()
     data= get_etats_pointeuses()
@@ -419,6 +463,7 @@ def intf_appareils():
     return render_template('materiel.html', active_page='appareils',resultats=data,sections=idsection)
 
 @app.route('/add-device', methods=['POST'])
+@login_required
 def enregistrement_appareils():
     pointeuseN = request.form['pointeuseN']
     pointeuseM = request.form['pointeuseM']
@@ -432,10 +477,12 @@ def enregistrement_appareils():
     return redirect(url_for('intf_appareils'))
 
 @app.route('/parametres')
+@login_required
 def intf_Parametres():
     return render_template('parametre.html', active_page='parametres')
 
 @app.route('/utilisateurs')
+@login_required
 def lister_utilisateurs():
     idrole=read_idrole()
     idsection= read_idsection()
@@ -455,6 +502,8 @@ def lister_utilisateurs():
     return render_template('utilisateurs.html',utilisateurs=table,roles=idrole, sections=idsection, active_page='utilisateurs')
 
 @app.route('/utilisateurs/ajouter', methods=['GET', 'POST'])
+@login_required
+@role_required('admin')
 def ajouter_utilisateur():
     if request.method == 'POST':
         NomUtilisateur = request.form['nomuser']
