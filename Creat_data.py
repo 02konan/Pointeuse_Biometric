@@ -40,7 +40,7 @@ def creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuse
             conn.commit()
     except pymysql.MySQLError as e:
         print(f"Erreur MySQL : {e}")
-def cret_User(id,Nom, Email, password, role, IDsection):
+def cret_User(Nom, Email, password, role, IDsection):
     try:
         with connexion() as conn:
             with conn.cursor() as curseur:
@@ -57,7 +57,7 @@ def cret_User(id,Nom, Email, password, role, IDsection):
                 else:
                     sql = """
                     INSERT INTO `utilisateurs` (`nom`, `email`, `mot_de_passe`, `role_id`, `IDSection`)
-                    VALUES (%s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s)
                     """
                     curseur.execute(sql, (Nom, Email, password, role, IDsection))
                     print("Nouvel utilisateur inséré avec succès.")

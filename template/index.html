@@ -41,11 +41,19 @@
         {%include "Sidebar.html"%}
         <div class="main-content">
             {% block content %}
-            {% if active_page == 'index' %}{%include "Dashboard.html"%}{% endif %}
+            {% if active_page == 'index' %}
+                {% if session['role']|lower == 'admin' %}
+                    {% include "Dashboard.html" %}
+                {% elif session['role']|lower == 'user' %}
+                    {% include "DashboardUser.html" %}
+                {% else %}
+                    {% include "login.html" %}
+                {% endif %}
+            {% endif %}
             {% endblock %}
         </div>
     </div>
-{%include "footer.html"%}   
+        {%include "footer.html"%}   
     <script>
       window.addEventListener('load', function() {
         document.getElementById('loader').style.display = 'none';

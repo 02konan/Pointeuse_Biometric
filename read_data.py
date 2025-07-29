@@ -20,8 +20,6 @@ def read_data_from_db():
         with data_base.cursor() as cursor:
             # DONNÉES GÉNÉRALES
             sql1 = "SELECT COUNT(Matricule) FROM empreintes"
-            
-            # DONNÉES PAR JOUR (2025-02-10)
             sql2 = """SELECT COUNT(DISTINCT IDEmploye) AS nb_personnes
                       FROM (
                       SELECT IDEmploye
@@ -185,16 +183,29 @@ def verification_utilisateur(username, password):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql = "SELECT nom FROM utilisateurs WHERE nom = %s AND mot_de_passe = %s"
+                sql = """
+                SELECT utilisateurs.nom as nom_utilisateur, roles.nom as nom_roles, utilisateurs.mot_de_passe
+                FROM utilisateurs
+                JOIN roles ON utilisateurs.role_id = roles.id
+                WHERE utilisateurs.nom = %s AND utilisateurs.mot_de_passe = %s
+                """
                 cursor.execute(sql, (username, password))
                 result = cursor.fetchone()
-                return result is not None
+                if result:
+                    # Retourne un dictionnaire avec les infos utiles
+                    return {
+                        'nom_utilisateur': result[0],
+                        'nom_roles': result[1],
+                        'mot_de_passe': result[2]
+                    }
+                else:
+                    return None
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)
-        return False
+        return None
     except Exception as e:
         print("Erreur générale :", e)
-        return False
+        return None
 def read_idsection():
     try:
         with connexion() as conn:

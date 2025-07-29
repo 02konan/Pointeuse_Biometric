@@ -41,13 +41,19 @@ def login():
         # Vérification des identifiants
         utilisateur = verification_utilisateur(username, password)
         if utilisateur:
+            # Enregistrer l'utilisateur dans la session
             session['connecter'] = True
             session['username'] = username
-            flash("Connexion réussie !", "success")
-            return redirect(url_for('index'))
+            session['role'] = utilisateur['nom_roles']
+            # Redirection selon le rôle
+            if utilisateur['nom_roles'].lower() == 'admin':
+                return redirect(url_for('index'))
+            elif utilisateur['nom_roles'].lower() == 'user':
+                return redirect(url_for('index'))
+            else:
+                return redirect(url_for('index'))
         else:
             flash("Identifiants incorrects. Veuillez réessayer.", "danger")
-    
     return render_template('login.html')
 
 @app.route('/')

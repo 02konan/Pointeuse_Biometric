@@ -52,59 +52,101 @@
     </div>
   </div>
 </div>
-<!-- Modal d'édition utilisateur -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+<!-- Modal pour ajouter un utilisateur -->
+<div class="modal fade" id="ajoutModal" tabindex="-1" aria-labelledby="ajoutModalLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form class="modal-content" action="/utilisateurs/ajouter" method="POST">
+    <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="editModalLabel">Modifier l'utilisateur</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        <h5 class="modal-title" id="ajoutModalLabel">Ajouter un utilisateur</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        {% for section in sections %}
-        <input type="hidden" name="iduser" value="{{ section[0] }}" id="edit-id" />
-        {% endfor %}
-        <div class="mb-3">
-          <label class="form-label">Nom d'utilisateur</label>
-          <input type="text" class="form-control" name="nomuser" id="edit-nom" required />
-          <label class="form-label">Email</label>
-          <input type="email" class="form-control" name="Email" id="edit-email" required />
-          <label class="form-label">Mot de pass</label>
-          <input type="password" class="form-control" name="pass" id="edit-pass" required />
-          <label class="form-label">Section</label>
-          <select name="section" class="form-select" id="edit-section" required>
-            <option selected disabled value="">Choisir...</option>
-             {% for section in sections %}
-             <option value="{{ section[0] }}">{{ section[1] }}</option>
-             {% endfor %}
-          </select>
+      <form id="addUserForm" method="POST" action="{{ url_for('ajouter_utilisateur') }}">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="nom" class="form-label">Nom d'utilisateur</label>
+            <input type="text" class="form-control" id="nom" name="nomuser" required>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="Email" required>
+          </div>
+          <div class="mb-3">
+            <label for="motpass" class="form-label">Mot de passe</label>
+            <input type="password" class="form-control" id="motpass" name="pass" required>
+          </div>
+          <div class="mb-3">
+            <label for="role" class="form-label">Role</label>
+            <select class="form-select" id="role" name="role">
+              <option value="">Sélectionner un rôle</option>
+              {% for role in roles %}
+              <option value="{{ role[0] }}">{{ role[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="section" class="form-label">Section</label>
+            <select class="form-select" id="section" name="section">
+              <option value="">Sélectionner une section</option>
+              {% for section in sections %}
+              <option value="{{ section[0] }}">{{ section[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
-        <div class="mb-3">
-          <label class="form-label">Rôle</label>
-          <select name="role" class="form-select" id="edit-role" required>
-             {% for role in roles %}
-             <option value="{{ role[0] }}">{{ role[1] }}</option>
-             {% endfor %}
-          </select>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Enregistrez</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-primary">Enregistrer</button>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </div>
-<script>
-document.querySelectorAll('.btn-edit-user').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    document.getElementById('edit-id').value = btn.getAttribute('data-id');
-    document.getElementById('edit-nom').value = btn.getAttribute('data-nom');
-    document.getElementById('edit-email').value = btn.getAttribute('data-email');
-    document.getElementById('edit-pass').value = btn.getAttribute('data-pass');
-    document.getElementById('edit-section').value = btn.getAttribute('data-section');
-    document.getElementById('edit-role').value = btn.getAttribute('data-role');
-  });
-});
-</script>
+<!-- Modal pour éditer un utilisateur -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editModalLabel">Modifier l'utilisateur</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editUserForm">
+        <div class="modal-body">
+          <input type="hidden" id="editUserId" name="id">
+          <div class="mb-3">
+            <label for="editNom" class="form-label">Nom d'utilisateur</label>
+            <input type="text" class="form-control" id="editNom" name="nomuser" required>
+          </div>
+          <div class="mb-3">
+            <label for="editEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="editEmail" name="Email" required>
+          </div>
+          <div class="mb-3">
+            <label for="editMotpass" class="form-label">Mot de passe</label>
+            <input type="password" class="form-control" id="editMotpass" name="pass">
+          </div>
+          <div class="mb-3">
+            <label for="editRole" class="form-label">Role</label>
+            <select class="form-select" id="editRole" name="role">
+              {% for role in roles %}
+              <option value="{{ role[0] }}">{{ role[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="editSection" class="form-label">Section</label>
+            <select class="form-select" id="editSection" name="section">
+              {% for section in sections %}
+              <option value="{{ section[0] }}">{{ section[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+          <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}
