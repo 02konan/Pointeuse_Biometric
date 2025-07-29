@@ -27,15 +27,15 @@ def creat_data_employee(idEmploye, nom, prenom, telephone, address, email, poste
             conn.commit()
     except pymysql.MySQLError as e:
         print(f"Erreur MySQL : {e}")
-def creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType):
+def creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType, pointeuseiDsection):
     try:
         with connexion() as conn:
             with conn.cursor() as curseur:
                 sql = """
-                INSERT INTO pointeuse (`NomPointeuse`, `Model`, `Emplacement`, `AdresseIP`,`Serie`, `Type`)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO pointeuse (`NomPointeuse`, `Model`, `Emplacement`, `AdresseIP`,`Serie`, `Type`,`IDSection`)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 """
-                curseur.execute(sql, (pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType))
+                curseur.execute(sql, (pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType, pointeuseiDsection))
                 print(curseur.rowcount, "enregistrement(s) inséré(s) avec succès.")
             conn.commit()
     except pymysql.MySQLError as e:
@@ -49,7 +49,7 @@ def cret_User(id,Nom, Email, password, role, IDsection):
                 if existe:
                     sql = """
                     UPDATE utilisateurs
-                    SET nom=%s, email=%s, mot_de_passe=%s, role_id=%s, IDSection=%s
+                    SET nom=%s, email=%s,role_id=%s, IDSection=%s
                     WHERE id=%s
                     """
                     curseur.execute(sql, (Nom, Email, password, role, IDsection, id))

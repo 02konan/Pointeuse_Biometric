@@ -372,19 +372,13 @@ def get_pointages(matricule):
          DATE(date_pointage) AS date_pointage,
          MIN(TIME(date_pointage)) AS heure_entree,
          MAX(TIME(date_pointage)) AS heure_sortie,
-         employe.nom,
-         employe.prenom
+         empreintes.Matricule as Nom_Prenom
          FROM 
-         pointages, empreintes, employe
+         pointages, empreintes
          WHERE 
-         employe.matricule = empreintes.matricule 
-         AND pointages.IDEmploye = empreintes.IDEmploye
-         AND empreintes.Matricule =%s 
-         GROUP BY 
-         DATE(date_pointage)
+         empreintes.Matricule =%s and DATE(date_pointage) = CURRENT_DATE()
          ORDER BY 
          date_pointage DESC
-         LIMIT 30;
         """
         cursor.execute(query, (matricule,))
         rows = cursor.fetchall()
@@ -396,7 +390,7 @@ def get_pointages(matricule):
                 "date_pointage": str(row[0]),
                 "heure_entree": str(row[1]),
                 "heure_sortie": str(row[2]),
-                "Nom_Prenom": str(row[3]) + " " + str(row[4])
+                "Nom_Prenom": str(row[3])
             })
 
         return jsonify(result)
@@ -413,10 +407,11 @@ def intf_rapports():
 
 @app.route('/appareils')
 def intf_appareils():
+    idsection= read_idsection()
     data= get_etats_pointeuses()
     
-    return render_template('materiel.html', active_page='appareils',resultats=data)
-    
+    return render_template('materiel.html', active_page='appareils',resultats=data,sections=idsection)
+
 @app.route('/add-device', methods=['POST'])
 def enregistrement_appareils():
     pointeuseN = request.form['pointeuseN']
@@ -425,7 +420,8 @@ def enregistrement_appareils():
     Adresseip = request.form['Adresseip']
     pointeuseSerie = request.form['pointeuseSerie']
     pointeuseType = request.form['pointeuseType']
-    creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType)
+    pointeuseiDsection = request.form['pointeuseiDsection']
+    creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType,pointeuseiDsection)
     flash("Appareil enregistré avec succès !", "success")
     return redirect(url_for('intf_appareils'))
 
@@ -442,11 +438,12 @@ def lister_utilisateurs():
     if data is not None:
         for donnee in data:
             information = {
-                'Nom': donnee[0],
-                'Email': donnee[1],
-                'Motpass': donnee[2],
-                'role': donnee[3],
-                'section': donnee[4]
+                'id': donnee[0],
+                'Nom': donnee[1],
+                'Email': donnee[2],
+                'Motpass': donnee[3],
+                'role': donnee[4],
+                'section': donnee[5]
             }
             table.append(information)
     return render_template('utilisateurs.html',utilisateurs=table,roles=idrole, sections=idsection, active_page='utilisateurs')

@@ -16,9 +16,11 @@
           <table class="table table-hover" id="Table">
             <thead>
               <tr>
+                <th type="hidden" >id</th>
                 <th>Nom d'utilisateur</th>
                 <th>Email</th>
                 <th>Mot de pass</th>
+                <th>Role</th>
                 <th>Section</th>
                 <th>Actions</th>
               </tr>
@@ -26,15 +28,20 @@
             <tbody>
               {% for u in utilisateurs %}
               <tr>
+                <td type="hidden" >{{ u.id }}</td>
                 <td>{{ u.Nom }}</td>
                 <td>{{ u.Email }}</td>
                 <td>{{ u.Motpass }}</td>
                 <td><span class="badge bg-info">{{ u.role }}</span></td>
                 <td><span class="badge bg-info">{{ u.section }}</span></td>
                 <td>
-                  <a href="" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="">
+                  <a href="#" class="btn btn-sm btn-outline-secondary btn-edit-user" data-bs-toggle="modal" data-bs-target="#editModal" 
+                    data-id="{{ u.id }}" data-nom="{{ u.Nom }}" data-email="{{ u.Email }}" data-section="{{ u.section }}" data-role="{{ u.role }}">
                     <i class="fas fa-edit"></i>
-                  </a href="">
+                  </a>
+                  <a href="" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="">
+                    <i class="fas fa-trash"></i>
+                  </a>
                 </td>
               </tr>
               {% endfor %}
@@ -45,32 +52,36 @@
     </div>
   </div>
 </div>
-<!-- Modal d'ajout utilisateur -->
-<div class="modal fade" id="ajoutModal" tabindex="-1" aria-labelledby="ajoutModalLabel" aria-hidden="true">
+<!-- Modal d'édition utilisateur -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <form class="modal-content" action="/utilisateurs/ajouter" method="POST">
       <div class="modal-header">
-        <h5 class="modal-title" id="ajoutModalLabel">Ajouter un utilisateur</h5>
+        <h5 class="modal-title" id="editModalLabel">Modifier l'utilisateur</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
       <div class="modal-body">
+        {% for section in sections %}
+        <input type="hidden" name="iduser" value="{{ section[0] }}" id="edit-id" />
+        {% endfor %}
         <div class="mb-3">
           <label class="form-label">Nom d'utilisateur</label>
-          <input type="text" class="form-control" name="nomuser" required />
+          <input type="text" class="form-control" name="nomuser" id="edit-nom" required />
           <label class="form-label">Email</label>
-          <input type="email" class="form-control" name="Email" required />
+          <input type="email" class="form-control" name="Email" id="edit-email" required />
+          <label class="form-label">Mot de pass</label>
+          <input type="password" class="form-control" name="pass" id="edit-pass" required />
           <label class="form-label">Section</label>
-          <select name="section" class="form-select" required>
+          <select name="section" class="form-select" id="edit-section" required>
+            <option selected disabled value="">Choisir...</option>
              {% for section in sections %}
              <option value="{{ section[0] }}">{{ section[1] }}</option>
              {% endfor %}
           </select>
-          <label class="form-label">Mot de pass</label>
-          <input type="password" class="form-control" name="pass" required />
         </div>
         <div class="mb-3">
           <label class="form-label">Rôle</label>
-          <select name="role" class="form-select" required>
+          <select name="role" class="form-select" id="edit-role" required>
              {% for role in roles %}
              <option value="{{ role[0] }}">{{ role[1] }}</option>
              {% endfor %}
@@ -78,10 +89,22 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="submit" class="btn btn-primary">Créer</button>
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
       </div>
     </form>
   </div>
 </div>
+<script>
+document.querySelectorAll('.btn-edit-user').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    document.getElementById('edit-id').value = btn.getAttribute('data-id');
+    document.getElementById('edit-nom').value = btn.getAttribute('data-nom');
+    document.getElementById('edit-email').value = btn.getAttribute('data-email');
+    document.getElementById('edit-pass').value = btn.getAttribute('data-pass');
+    document.getElementById('edit-section').value = btn.getAttribute('data-section');
+    document.getElementById('edit-role').value = btn.getAttribute('data-role');
+  });
+});
+</script>
 {% endblock %}

@@ -1,6 +1,6 @@
 import pymysql
 from base_donnee import connexion
-  
+
 def read_matricule():
     try:
         with connexion() as conn:
@@ -26,7 +26,7 @@ def read_data_from_db():
                       FROM (
                       SELECT IDEmploye
                       FROM pointages
-                      WHERE DATE(date_pointage) = '2025-04-30'
+                      WHERE DATE(date_pointage) = CURRENT_DATE()
                       GROUP BY IDEmploye
                       HAVING 
                       MIN(TIME(date_pointage)) <= '08:00:00'
@@ -39,13 +39,13 @@ def read_data_from_db():
             sql4 = """SELECT COUNT(*)
                      FROM empreintes e
                      LEFT JOIN pointages p ON e.IDEmploye = p.IDEmploye 
-                         AND DATE(p.date_pointage) = '2025-04-30'
+                         AND DATE(p.date_pointage) = CURRENT_DATE()
                      WHERE p.IDEmploye IS NULL;"""
             
             sql5 = """SELECT DISTINCT empreintes.Matricule,pointages.date_pointage
                      FROM pointages
                      JOIN empreintes on pointages.IDEmploye=empreintes.IDEmploye
-                     WHERE DATE(date_pointage)='2025-04-30'
+                     WHERE DATE(date_pointage)=CURRENT_DATE()
                      ORDER BY date_pointage DESC LIMIT 5;"""
 
             # NOUVELLES REQUÊTES PAR MOIS (Février 2025)
@@ -157,7 +157,7 @@ def read_data_presence():
   TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
 FROM pointages eu
 JOIN empreintes e ON e.IDEmploye = eu.IDEmploye
-WHERE DATE(eu.date_pointage)='2025-04-30'
+WHERE DATE(eu.date_pointage)=CURRENT_DATE()
 GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
 HAVING COUNT(DISTINCT eu.date_pointage) >= 2
 ORDER BY temps_presence;
@@ -225,7 +225,7 @@ def read_utilisateur():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql="""SELECT utilisateurs.nom, email,mot_de_passe,roles.nom as roles ,Nomsection
+                sql="""SELECT utilisateurs.id,utilisateurs.nom, email,mot_de_passe,roles.nom as roles ,Nomsection
                  FROM utilisateurs
                  join section on section.IDSection=utilisateurs.IDSection
                  join roles on roles.id=utilisateurs.role_id"""

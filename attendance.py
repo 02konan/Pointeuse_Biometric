@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import platform
 import os
 from base_donnee import connexion
-ZK_IP = '192.168.1.212'
+ZK_IP = '192.168.1.201'
 ZK_PORT = 4370
 
 RECONNECT_DELAY = 5 

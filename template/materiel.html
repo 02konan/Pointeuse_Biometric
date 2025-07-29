@@ -105,12 +105,11 @@
                     </div>
                     <div class="mb-3">
                         <label for="deviceModel" class="form-label">Section</label>
-                        <select class="form-select" name="pointeuseM" required>
+                        <select class="form-select" name="pointeuseiDsection" required>
                             <option selected disabled value="">Choisir...</option>
-                            <option>Cocody</option>
-                            <option>Koumassi</option>
-                            <option>Marcory</option>
-                            <option>Adjame</option>
+                             {% for section in sections %}
+             <option value="{{ section[0] }}">{{ section[1] }}</option>
+             {% endfor %}
                         </select>
                     </div>
                     <div class="mb-3">
