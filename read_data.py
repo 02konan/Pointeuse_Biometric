@@ -180,11 +180,12 @@ def read_data_pointeuse():
     except Exception as e:
         print("Erreur générale :", e)
 def verification_utilisateur(username, password):
+    
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
-                SELECT utilisateurs.nom as nom_utilisateur, roles.nom as nom_roles, utilisateurs.mot_de_passe
+                SELECT utilisateurs.nom as nom_utilisateur, roles.nom as nom_roles, utilisateurs.mot_de_passe, roles.id as role_id, utilisateurs.IDSection as id_section
                 FROM utilisateurs
                 JOIN roles ON utilisateurs.role_id = roles.id
                 WHERE utilisateurs.nom = %s AND utilisateurs.mot_de_passe = %s
@@ -196,10 +197,18 @@ def verification_utilisateur(username, password):
                     return {
                         'nom_utilisateur': result[0],
                         'nom_roles': result[1],
-                        'mot_de_passe': result[2]
+                        'mot_de_passe': result[2],
+                        'role_id': result[3],
+                        'id_section': result[4]
                     }
                 else:
                     return None
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+        return None
+    except Exception as e:
+        print("Erreur générale :", e)
+        return None
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)
         return None

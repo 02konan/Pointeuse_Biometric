@@ -64,10 +64,11 @@ def login():
         utilisateur = verification_utilisateur(username, password)
         if utilisateur:
             # Enregistrer l'utilisateur dans la session
-            session['connecter'] = True
             session.permanent = True
+            session['connecter'] = True
             session['username'] = username
             session['role'] = utilisateur['nom_roles']
+            session['section'] = utilisateur['id_section']
             # Redirection selon le rôle
             if utilisateur['nom_roles'].lower() == 'admin':
                 return redirect(url_for('index'))
@@ -448,7 +449,6 @@ def get_pointages(matricule):
         conn.close()
 
 @app.route('/rapports')
-@role_required('admin')
 @login_required
 def intf_rapports():
     return render_template('rapport.html', active_page='rapports')

@@ -20,58 +20,62 @@ def get_etats_pointeuses():
         etats.append({"id":pointeuse_id, "ip": ip, "etat": etat, "Nom": Nom, "Localisation": Localisation, "Serie": Serie, "Modele": Modele})
     return etats
 
-def recuperation_emprientes():
-    db = connexion()
-    cursor = db.cursor()
+import time
 
-    cursor.execute("SELECT idPointeuse, AdresseIp FROM pointeuse")
-    pointeuses = cursor.fetchall()
-    cursor.close()
-    db.close()
+def recuperation_emprientes(period=300):
+    while True:
+        db = connexion()
+        cursor = db.cursor()
+        cursor.execute("SELECT idPointeuse, AdresseIp FROM pointeuse")
+        pointeuses = cursor.fetchall()
+        cursor.close()
+        db.close()
 
-    for pointeuse_id, ip in pointeuses:
-        print(f"\n📡 Vérification de la pointeuse N°{pointeuse_id} à l'adresse {ip}")
-        
-        if is_pingable(ip):
-            print(f"✅ {ip} est en ligne. Connexion...")
+        for pointeuse_id, ip in pointeuses:
+            print(f"\n📡 Vérification de la pointeuse N°{pointeuse_id} à l'adresse {ip}")
+            
+            if is_pingable(ip):
+                print(f"✅ {ip} est en ligne. Connexion...")
 
-            zk = ZK(ip, port=4370, timeout=10)
-            try:
-                conn = zk.connect()
-                conn.disable_device()
+                zk = ZK(ip, port=4370, timeout=10)
+                try:
+                    conn = zk.connect()
+                    conn.disable_device()
 
-                users = conn.get_users()
-                for user in users:
-                    for fid in range(10):
-                        template = conn.get_user_template(user.uid, fid)
-                        if template and template.size > 0:
-                            print(f'Empreinte utilisateur {user.name} (uid {user.uid}) - Finger ID {fid} : {template.size} octets')
+                    users = conn.get_users()
+                    for user in users:
+                        for fid in range(10):
+                            template = conn.get_user_template(user.uid, fid)
+                            if template and template.size > 0:
+                                print(f'Empreinte utilisateur {user.name} (uid {user.uid}) - Finger ID {fid} : {template.size} octets')
 
-                            db = connexion()
-                            cursor = db.cursor()
+                                db2 = connexion()
+                                cursor2 = db2.cursor()
 
-                            cursor.execute("SELECT IDEmploye FROM empreintes WHERE IDEmploye=%s AND IDEmpreinte=%s", (user.user_id, fid))
-                            if cursor.fetchone():
-                                print("⚠️ Déjà enregistré.")
-                            else:
-                                print(f"Tentative d'insertion : user_id={user.user_id}, name={user.name}, fid={fid}, taille={template.size}")
-                                cursor.execute("INSERT INTO `empreintes`(`IDEmploye`, `Matricule`, `IDEmpreinte`, `Empreintes`, `IDPointeuse`) VALUES (%s, %s, %s, %s, %s)",
-                                               (user.user_id, user.name, fid, template.template, pointeuse_id))
-                                print("✅ Empreinte enregistrée.")
-                            
-                            db.commit()
-                            cursor.close()
-                            db.close()
+                                cursor2.execute("SELECT IDEmploye FROM empreintes WHERE IDEmploye=%s AND IDEmpreinte=%s", (user.user_id, fid))
+                                if cursor2.fetchone():
+                                    print("⚠️ Déjà enregistré.")
+                                else:
+                                    print(f"Tentative d'insertion : user_id={user.user_id}, name={user.name}, fid={fid}, taille={template.size}")
+                                    cursor2.execute("INSERT INTO `empreintes`(`IDEmploye`, `Matricule`, `IDEmpreinte`, `Empreintes`, `IDPointeuse`) VALUES (%s, %s, %s, %s, %s)",
+                                                   (user.user_id, user.name, fid, template.template, pointeuse_id))
+                                    print("✅ Empreinte enregistrée.")
+                                
+                                db2.commit()
+                                cursor2.close()
+                                db2.close()
 
-                conn.enable_device()
-                conn.disconnect()
-                
+                    conn.enable_device()
+                    conn.disconnect()
+                    
 
-            except Exception as e:
-                print(f"❌ Erreur de connexion avec {ip} : {e}")
-            except pymysql.MySQLError as e:
-                print(f"❌ Erreur MySQL : {e}")    
-        else:
-            print(f"❌ {ip} ne répond pas au ping.")
-            print("⚠️ Vérifiez la connexion réseau ou l'alimentation de la pointeuse.")
+                except Exception as e:
+                    print(f"❌ Erreur de connexion avec {ip} : {e}")
+                except pymysql.MySQLError as e:
+                    print(f"❌ Erreur MySQL : {e}")    
+            else:
+                print(f"❌ {ip} ne répond pas au ping.")
+                print("⚠️ Vérifiez la connexion réseau ou l'alimentation de la pointeuse.")
+        print(f"[INFO] Nouvelle vérification des empreintes dans {period} secondes...")
+        time.sleep(period)
 
