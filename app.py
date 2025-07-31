@@ -10,6 +10,7 @@ from database.db import db
 from base_donnee import connexion
 from datetime import datetime,timedelta
 import threading
+from eduflowApi import api_programme,sync_programme_periodique
 import os
 app = Flask(__name__, static_folder='static', template_folder='template')
 app.secret_key = '&é1234azerty'
@@ -29,7 +30,6 @@ CORS(app)
 def before_request():
     if 'connecter' not in session:
         session['connecter'] = False
-
 def login_required(f):
     from functools import wraps
     @wraps(f)
@@ -51,15 +51,13 @@ def role_required(role):
         return decorated_function
     return decorator
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET','POST'])
 def login():
     if 'connecter' in session and session['connecter']:
         return redirect(url_for('index'))
-
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-
         # Vérification des identifiants
         utilisateur = verification_utilisateur(username, password)
         if utilisateur:
@@ -409,7 +407,6 @@ def liste_rapports():
     return jsonify(fichiers)
 
 @app.route("/api/pointages/<matricule>", methods=["GET"])
-@login_required
 def get_pointages(matricule):
     try:
         conn = connexion()
@@ -520,6 +517,9 @@ def logout():
     flash("Déconnexion réussie", "success")
     return redirect(url_for('login'))
 
+@app.route('/api/emploi_du_temps', methods=['GET'])
+def api_eduflow():
+    return api_programme()
 if __name__ == '__main__':
     thread = threading.Thread(target=listen_attendance)
     thread.daemon = True
@@ -527,5 +527,8 @@ if __name__ == '__main__':
     recuperation = threading.Thread(target=recuperation_emprientes)
     recuperation.daemon = True
     recuperation.start()
+    thread_sync = threading.Thread(target=sync_programme_periodique, args=(300,))
+    thread_sync.daemon = True
+    thread_sync.start()
 
     app.run(host='0.0.0.0',port=500,debug=True)
