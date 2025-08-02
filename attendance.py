@@ -30,6 +30,7 @@ def get_pointeuses():
     return result
 
 def listen_attendance():
+    global last_processed_timestamp
     last_processed_timestamp = dernier_pointage()
     print(f"[INFO] Dernier pointage déjà traité : {last_processed_timestamp}")
 
@@ -43,45 +44,38 @@ def listen_attendance():
 
             zk = ZK(ip_str, port=int(4370), timeout=20)
             try:
-                print(f"[INFO] Connexion à la pointeuse {ip_str}...")
+                print(f"[INFO] Connexion à la pointeuse {ip_str} (ID {ip[1]})...")
                 conn = zk.connect()
                 conn.disable_device()
                 print(f"[INFO] Écoute des nouveaux pointages sur {ip_str}...")
 
-                while True:
-                    attendances = conn.get_attendance()
+                attendances = conn.get_attendance()
+                for record in attendances:
+                    if last_processed_timestamp is None or record.timestamp > last_processed_timestamp:
+                        db = connexion()
+                        cursor = db.cursor()
 
-                    for record in attendances:
-                        if last_processed_timestamp is None or record.timestamp > last_processed_timestamp:
-                            db = connexion()
-                            cursor = db.cursor()
+                        time_min = record.timestamp - timedelta(seconds=5)
+                        time_max = record.timestamp + timedelta(seconds=5)
+                        delete_sql = """
+                            DELETE FROM pointages 
+                            WHERE IDEmploye = %s AND date_pointage BETWEEN %s AND %s
+                        """
+                        cursor.execute(delete_sql, (record.user_id, time_min, time_max))
 
-                            # Supprimer les doublons proches (±5s)
-                            time_min = record.timestamp - timedelta(seconds=5)
-                            time_max = record.timestamp + timedelta(seconds=5)
-                            delete_sql = """
-                                DELETE FROM pointages 
-                                WHERE IDEmploye = %s AND date_pointage BETWEEN %s AND %s
-                            """
-                            cursor.execute(delete_sql, (record.user_id, time_min, time_max))
+                        insert_sql = """
+                            INSERT INTO pointages (IDEmploye, date_pointage, idPointeuse) 
+                            VALUES (%s, %s, %s)
+                        """
+                        cursor.execute(insert_sql, (record.user_id, record.timestamp, ip[1]))
+                        db.commit()
+                        db.close()
 
-                            # Insérer le nouveau pointage
-                            insert_sql = """
-                                INSERT INTO pointages (IDEmploye, date_pointage,idPointeuse) 
-                                VALUES (%s, %s, %s)
-                            """
-                            cursor.execute(insert_sql, (record.user_id, record.timestamp, ip[1]))
-                            db.commit()
-                            db.close()
+                        last_processed_timestamp = record.timestamp
+                        print(f"[NOUVEAU] ID: {record.user_id} | Heure: {record.timestamp}")
 
-                            last_processed_timestamp = record.timestamp
-                            retour_pointeur=f"[NOUVEAU] ID: {record.user_id} | Heure: {record.timestamp}"
+                time.sleep(5)
 
-                    time.sleep(2)
-                    if last_processed_timestamp is not None:
-                        print(f"[INFO] Dernier pointage traité : {last_processed_timestamp}")
-                    else:
-                        print("[INFO] Aucun pointage traité jusqu'à présent.")
             except Exception as e:
                 print(f"[ERREUR] {e}")
                 print(f"[INFO] Reconnexion à {ip_str} dans {RECONNECT_DELAY} secondes...")
@@ -94,5 +88,6 @@ def listen_attendance():
                     print(f"[INFO] Déconnecté proprement de la pointeuse {ip_str}.")
                 except:
                     pass
+
          
         
