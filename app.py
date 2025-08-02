@@ -139,8 +139,6 @@ def dashboard_data():
             'employes_retard_mois': employes_retard_mois,
             'moyenne_presence_mois': round(moyenne_presence_mois, 2) if moyenne_presence_mois else 0,
             'total_pointages_mois': total_pointages_mois
-           
-            
         })
     return jsonify({})
 

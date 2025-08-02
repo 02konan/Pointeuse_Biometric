@@ -20,19 +20,25 @@ def read_data_from_db():
         with data_base.cursor() as cursor:
             # DONNÉES GÉNÉRALES
             sql1 = "SELECT COUNT(Matricule) FROM empreintes"
-            sql2 = """SELECT COUNT(DISTINCT IDEmploye) AS nb_personnes
-                      FROM (
-                      SELECT IDEmploye
-                      FROM pointages
-                      WHERE DATE(date_pointage) = CURRENT_DATE()
-                      GROUP BY IDEmploye
-                      HAVING 
-                      MIN(TIME(date_pointage)) <= '08:00:00'
-                      AND MAX(TIME(date_pointage)) >= '16:30:00'
-                      ) AS personnes_presentes;
+            sql2 = """SELECT COUNT(*) AS nb_presences FROM (
+  SELECT eu.IDEmploye
+  FROM pointages eu
+  JOIN empreintes e ON e.IDEmploye = eu.IDEmploye
+  WHERE DATE(eu.date_pointage) = CURRENT_DATE()
+  GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
+  HAVING COUNT(DISTINCT eu.date_pointage) >= 2
+) AS liste_presences;
                    """
             
-            sql3 = "SELECT COUNT(DISTINCT IDEmploye) FROM pointages WHERE DATE(date_pointage) = CURRENT_DATE() AND TIME(date_pointage) > '08:00:00';"
+            sql3 = """SELECT COUNT(*) AS nb_retardataires
+FROM (
+  SELECT IDEmploye
+  FROM pointages
+  WHERE DATE(date_pointage) = CURRENT_DATE()
+  GROUP BY IDEmploye
+  HAVING MIN(TIME(date_pointage)) > '08:00:00'
+) AS retardataires;
+"""
             
             sql4 = """SELECT COUNT(*)
                      FROM empreintes e

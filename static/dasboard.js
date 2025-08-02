@@ -58,16 +58,16 @@ function afficherActivites(activites) {
   const container = document.getElementById("recent-activity-list");
   container.innerHTML = "";
 
-  activites.forEach(([id, date, status]) => {
+  activites.forEach(([id, date]) => {
     const heures = new Date(date).getHours();
     const minutes = new Date(date).getMinutes();
-    let observation = "";
+    let status = "";
     let color="";
     if (heures < 16 || (heures === 16 && minutes >= 45)) {
-      observation = "Arrivée enregistrée";
+      status = "Arrivée enregistrée";
       color = "text-success";
     } else if(heures > 17 || (heures === 17 && minutes >= 30)){
-      observation = "Départ enregistré";
+      status = "Départ enregistré";
       color = "text-danger";
     }
 
@@ -81,7 +81,7 @@ function afficherActivites(activites) {
         </div>
         <div>
           <h6 class="mb-0">${id}</h6>
-          <small class="${color}">${observation}</small>
+          <small class="${color}">${status}</small>
         </div>
       </div>
       <span class="text-muted">${new Date(date).toLocaleString()}</span>
