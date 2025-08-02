@@ -32,7 +32,7 @@ def read_data_from_db():
                       ) AS personnes_presentes;
                    """
             
-            sql3 = "SELECT COUNT(DISTINCT IDEmploye) FROM pointages WHERE DATE(date_pointage) = '2025-04-30' AND TIME(date_pointage) > '08:00:00';"
+            sql3 = "SELECT COUNT(DISTINCT IDEmploye) FROM pointages WHERE DATE(date_pointage) = CURRENT_DATE() AND TIME(date_pointage) > '08:00:00';"
             
             sql4 = """SELECT COUNT(*)
                      FROM empreintes e

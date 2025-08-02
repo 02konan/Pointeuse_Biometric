@@ -13,7 +13,7 @@ def is_pingable(ip):
     return response == 0
 
 
-def get_last_pointage_timestamp():
+def dernier_pointage():
     db = connexion()
     cursor = db.cursor()
     cursor.execute("SELECT MAX(date_pointage) FROM Pointages")
@@ -30,7 +30,7 @@ def get_pointeuses():
     return result
 
 def listen_attendance():
-    last_processed_timestamp = get_last_pointage_timestamp()
+    last_processed_timestamp = dernier_pointage()
     print(f"[INFO] Dernier pointage déjà traité : {last_processed_timestamp}")
 
     while True:
