@@ -115,15 +115,13 @@ def enregistrement():
 @app.route('/api/dashboard', methods=['GET'])
 @login_required
 def dashboard_data():
-    data = read_data_from_db()
+    data = read_data_from_db(session['section'])
     if data:
-        # Décomposition des données (quotidiennes + mensuelles)
         total_eleves, presents, retard, activites, total_absents, \
         employes_actifs_mois, jours_travailles_mois, employes_retard_mois, \
-        moyenne_presence_mois, total_pointages_mois= data
+        = data
         
         return jsonify({
-            # DONNÉES QUOTIDIENNES (jour spécifique)
             'total_eleves': total_eleves,
             'presents': presents,
             'retard': retard,
@@ -137,8 +135,7 @@ def dashboard_data():
             'employes_actifs_mois': employes_actifs_mois,
             'jours_travailles_mois': jours_travailles_mois,
             'employes_retard_mois': employes_retard_mois,
-            'moyenne_presence_mois': round(moyenne_presence_mois, 2) if moyenne_presence_mois else 0,
-            'total_pointages_mois': total_pointages_mois
+            
         })
     return jsonify({})
 
@@ -454,7 +451,6 @@ def intf_rapports():
 def intf_appareils():
     idsection= read_idsection()
     data= get_etats_pointeuses()
-    
     return render_template('materiel.html', active_page='appareils',resultats=data,sections=idsection)
 
 @app.route('/add-device', methods=['POST'])
@@ -466,8 +462,7 @@ def enregistrement_appareils():
     Adresseip = request.form['Adresseip']
     pointeuseSerie = request.form['pointeuseSerie']
     pointeuseType = request.form['pointeuseType']
-    pointeuseiDsection = request.form['pointeuseiDsection']
-    creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType,pointeuseiDsection)
+    creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType)
     flash("Appareil enregistré avec succès !", "success")
     return redirect(url_for('intf_appareils'))
 

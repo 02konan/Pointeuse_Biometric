@@ -27,15 +27,15 @@ def creat_data_employee(idEmploye, nom, prenom, telephone, address, email, poste
             conn.commit()
     except pymysql.MySQLError as e:
         print(f"Erreur MySQL : {e}")
-def creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType, pointeuseiDsection):
+def creat_data_pointeuse(pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType):
     try:
         with connexion() as conn:
             with conn.cursor() as curseur:
                 sql = """
-                INSERT INTO pointeuse (`NomPointeuse`, `Model`, `Emplacement`, `AdresseIP`,`Serie`, `Type`,`IDSection`)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO pointeuse (`NomPointeuse`, `Model`, `Emplacement`, `AdresseIP`,`Serie`, `Type`)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """
-                curseur.execute(sql, (pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType, pointeuseiDsection))
+                curseur.execute(sql, (pointeuseN, pointeuseM, pointeuseP, Adresseip,pointeuseSerie, pointeuseType))
                 print(curseur.rowcount, "enregistrement(s) inséré(s) avec succès.")
             conn.commit()
     except pymysql.MySQLError as e:
