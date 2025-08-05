@@ -16,14 +16,14 @@ app = Flask(__name__, static_folder='static', template_folder='template')
 app.secret_key = '&é1234azerty'
 app.permanent_session_lifetime = timedelta(minutes=10)
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('LIEN_DE_LABASE')
-# app.config['SQLALCHEMY_BINDS'] = {
-#     'default': os.getenv('LIEN_DE_LABASE')
-# }
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# db.init_app(app)
-# with app.app_context():
-# db.create_all()
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('LIEN_DE_LABASE','postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a/biopro')
+app.config['SQLALCHEMY_BINDS'] = {
+    'default': os.getenv('LIEN_DE_LABASE','postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a/biopro')
+}
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+with app.app_context():
+ db.create_all()
 
 CORS(app)
 @app.before_request
@@ -164,7 +164,7 @@ def intf_employee():
 @app.route('/presence')
 @login_required
 def intf_presence():
-    data = read_data_presence()
+    data = read_data_presence(session['section'])
     table = []
     for donnee in data:
      arrivee = donnee[3]
@@ -172,7 +172,6 @@ def intf_presence():
      heur_travaille = donnee[5]
      statut = "Absent"
      couleur = "danger"
-
      if arrivee:
         if isinstance(arrivee, timedelta):
             total_seconds = int(arrivee.total_seconds())
@@ -186,7 +185,7 @@ def intf_presence():
         if heure_arrivee <= heure_limite:
             statut = "Présent"
             couleur = "success"
-        else:
+        elif heure_arrivee > heure_limite and heur_travaille >= timedelta(hours=9):
             statut="En retard"
             couleur = "warning"
         if heur_travaille < timedelta(hours=9):
@@ -218,7 +217,7 @@ def api_fiche_presence():
     if not date_debut or not date_fin:
         return jsonify({'error': 'Les dates sont obligatoires.'}), 400
 
-    data = generer_presence(date_debut, date_fin)
+    data = generer_presence(date_debut, date_fin,session['section'])
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
     os.makedirs(uploads_dir, exist_ok=True)
 
@@ -241,7 +240,7 @@ def api_fiche_presence():
             "type": "Présence",
             "nom": filename,
             "periode": f"{date_debut} → {date_fin}",
-            "auteur": "Système",
+            "auteur": session['username'],
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
 
@@ -255,7 +254,7 @@ def fiche_retards():
     if not date_debut_retard or not date_fin_retard:
         return jsonify({'error': 'Les dates sont obligatoires.'}), 400
 
-    data = generer_retard(date_debut_retard, date_fin_retard)
+    data = generer_retard(date_debut_retard, date_fin_retard,session['section'])
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
     os.makedirs(uploads_dir, exist_ok=True)
 
@@ -292,7 +291,7 @@ def fiche_absence():
     if not date_debut_absence or not date_fin_absence:
         return jsonify({'error': 'Les dates sont obligatoires.'}), 400
 
-    data = generer_absence(date_debut_absence, date_fin_absence)
+    data = generer_absence(date_debut_absence, date_fin_absence,session['section'])
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
     os.makedirs(uploads_dir, exist_ok=True)
 
@@ -314,7 +313,7 @@ def fiche_absence():
             "type": "absences",
             "nom": filename,
             "periode": f"{date_debut_absence} → {date_fin_absence}",
-            "auteur": "Système",
+            "auteur": session['username'],
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
@@ -395,7 +394,7 @@ def liste_rapports():
                 "nom": nom,
                 "type": type_rapport,
                 "periode": "Inconnue",
-                "auteur": "Système",
+                "auteur": session['username'],
                 "date": datetime.fromtimestamp(os.path.getctime(os.path.join(uploads_dir, nom))).strftime("%Y-%m-%d %H:%M")
             })
 

@@ -60,6 +60,14 @@
         <i class="fas fa-cog "></i>Paramètres</a
       >
     </li>
+    <li class="{% if active_page == 'parametres' %}active{% endif %}">
+      <a
+        class="text-white text-decoration-none"
+        href="{{ url_for('intf_Parametres') }}"
+      >
+        <i class="fas fa-calendar-check"></i>Programme</a
+      >
+    </li>
   </ul>
   <div class="sidebar-footer">
     <a href="/logout" class="btn btn-sm btn-outline-light">
@@ -104,7 +112,7 @@
         <i class="fas fa-user-plus "></i>Utilisateur</a
       >
     </li>
-    <li class="{% if active_page == 'parametres' %}active{% endif %}">
+     <li class="{% if active_page == 'parametres' %}active{% endif %}">
       <a
         class="text-white text-decoration-none"
         href="{{ url_for('intf_Parametres') }}"

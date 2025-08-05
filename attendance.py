@@ -64,10 +64,10 @@ def listen_attendance():
                         cursor.execute(delete_sql, (record.user_id, time_min, time_max))
 
                         insert_sql = """
-                            INSERT INTO pointages (IDEmploye, date_pointage, idPointeuse) 
-                            VALUES (%s, %s, %s)
+                            INSERT INTO pointages (IDEmploye, date_pointage, jour_pointage,idPointeuse) 
+                            VALUES (%s, %s, %s, %s)
                         """
-                        cursor.execute(insert_sql, (record.user_id, record.timestamp, ip[1]))
+                        cursor.execute(insert_sql, (record.user_id, record.timestamp, record.timestamp.date(), ip[1]))
                         db.commit()
                         db.close()
 

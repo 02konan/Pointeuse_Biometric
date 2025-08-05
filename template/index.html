@@ -25,9 +25,9 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                         <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profil</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Paramètres</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('intf_Parametres') }}"><i class="fas fa-cog me-2"></i> Paramètres</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#" id="dropdown-logout"><i class="fas fa-sign-out-alt me-2"></i> Déconnexion</a></li>
+                        <li><a class="dropdown-item" href="/logout" id="dropdown-logout"><i class="fas fa-sign-out-alt me-2"></i> Déconnexion</a></li>
                     </ul>
                 </div>
             </div>

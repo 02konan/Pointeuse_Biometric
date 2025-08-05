@@ -1,11 +1,17 @@
 from database.db import db
-
 class Pointage(db.Model):
-    _tablename_ = 'pointages'
+    __tablename__ = 'pointages'
 
     id = db.Column(db.Integer, primary_key=True)
-    enseignant_id = db.Column(db.Integer, db.ForeignKey('enseignants.id'), nullable=False)
-    type_pointage = db.Column(db.String(10), nullable=False)  # 'arrivee' ou 'depart'
-    date_heure = db.Column(db.DateTime, server_default=db.func.now())
+    IDEmploye = db.Column(db.Integer, db.ForeignKey('employe.id'), nullable=False)
+    date_pointage = db.Column(db.DateTime, nullable=False)
+    IDPointeuse = db.Column(db.Integer, db.ForeignKey('pointeuse.idPointeuse'), nullable=False)
+    jour_pointage = db.Column(db.String(50), nullable=False)
 
-    enseignant = db.relationship('Enseignant', back_populates='pointages')
+    # Relations
+    employe = db.relationship('Employe', back_populates='pointages')
+    pointeuse = db.relationship('Pointeuse', back_populates='pointages')
+    pointage_programmes = db.relationship('PointageProgramme', back_populates='pointage', cascade='all, delete-orphan')
+
+    def __repr__(self):
+        return f'<Pointage {self.id}: Employé {self.IDEmploye} le {self.date_pointage}>'
