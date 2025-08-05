@@ -16,10 +16,18 @@ app = Flask(__name__, static_folder='static', template_folder='template')
 app.secret_key = '&é1234azerty'
 app.permanent_session_lifetime = timedelta(minutes=10)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('LIEN_DE_LABASE','postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a/biopro')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
+    'LIEN_DE_LABASE',
+    'postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a.oregon-postgres.render.com:5432/biopro'
+)
+
 app.config['SQLALCHEMY_BINDS'] = {
-    'default': os.getenv('LIEN_DE_LABASE','postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a/biopro')
+    'default': os.getenv(
+        'LIEN_DE_LABASE',
+        'postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a.oregon-postgres.render.com:5432/biopro'
+    )
 }
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 with app.app_context():
