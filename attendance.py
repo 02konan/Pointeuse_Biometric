@@ -67,12 +67,16 @@ def listen_attendance():
                             INSERT INTO pointages (IDEmploye, date_pointage, jour_pointage,idPointeuse) 
                             VALUES (%s, %s, %s, %s)
                         """
-                        cursor.execute(insert_sql, (record.user_id, record.timestamp, record.timestamp.date(), ip[1]))
+                        date_str=record.timestamp
+                        
+                        jour_semaine=["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi","Dimanche"]
+                        jour=jour_semaine[date_str.weekday()]
+                        cursor.execute(insert_sql, (record.user_id, date_str,jour, ip[1]))
                         db.commit()
                         db.close()
 
                         last_processed_timestamp = record.timestamp
-                        print(f"[NOUVEAU] ID: {record.user_id} | Heure: {record.timestamp}")
+                        print(f"[NOUVEAU] ID: {record.user_id} | Heure: {record.timestamp} | jour: {jour}")
 
                 time.sleep(5)
 
