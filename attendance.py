@@ -93,5 +93,37 @@ def listen_attendance():
                 except:
                     pass
 
-         
-        
+def programme_attendance():
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                pointage_sql="SELECT id,IDEmploye,jour_pointage from pointages"
+                cursor.execute(pointage_sql)
+                pointage_programme=cursor.fetchall()
+                for pointage in pointage_programme:
+                    id_programme=pointage[0]
+                    ID_Employe=pointage[1]
+                    jour=pointage[2]
+                    Programme_sql = """
+                        SELECT `IDProgramme`, `professeur_id`, `professeur_nom`, `jour`, `heure_arrivee`, `heure_depart`, `duree_cours` 
+                        FROM Programme 
+                        WHERE professeur_id = %s AND jour = %s
+                    """
+                    cursor.execute(Programme_sql,(ID_Employe,jour))
+                    programme_verifie=cursor.fetchall()
+                    for programme in programme_verifie:
+                        IDProgramme=programme[0]
+                        if programme:
+                           insert_sql = """
+                                INSERT INTO pointage_programe (IDProgramme, IDPointage, EstValider) 
+                                VALUES (%s, %s, %s)
+                            """
+                           cursor.execute(insert_sql, (IDProgramme, id_programme, 1))
+                           print(f"[INFO] Pointage pour le programme {IDProgramme} inséré avec succès.")
+                        else:
+                            print(f"[INFO] Aucun programme trouvé pour l'employé {ID_Employe} le {jour}.")
+                conn.commit()
+    except pymysql.MySQLError as e:
+        print(f"[ERREUR] Erreur MySQL : {e}")
+    except Exception as e:
+        print(f"[ERREUR] Erreur : {e}")
