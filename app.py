@@ -532,4 +532,4 @@ if __name__ == '__main__':
     thread_pointage.daemon = True
     thread_pointage.start()
 
-    app.run(host='0.0.0.0',port=500,debug=True)
+    app.run(host='0.0.0.0',port=5000,debug=False)
