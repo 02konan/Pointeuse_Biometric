@@ -102,7 +102,7 @@ FROM pointages p
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
 WHERE YEAR(p.date_pointage) = 2025
-  AND MONTH(p.date_pointage) = 4
+  AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
   AND TIME(p.date_pointage) > '08:30:00'
   AND NOT EXISTS (
     SELECT 1
