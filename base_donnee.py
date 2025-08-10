@@ -2,7 +2,11 @@ import pymysql
 import os
 
 def connexion():
-    host = 'mysql-biopro.alwaysdata.net'
-    dbname = 'biopro_db'
-    username = 'biopro'
-    password ='BioPro205ifsm'
+    connection = pymysql.connect(
+        host='mysql-biopro.alwaysdata.net',
+        db='biopro_db',
+        user='biopro',
+        password='BioPro205ifsm'
+    )
+    return connection
+    
