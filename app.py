@@ -18,12 +18,12 @@ app.permanent_session_lifetime = timedelta(minutes=10)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
     'LIEN_DE_LABASE',
-    'postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a.oregon-postgres.render.com:5432/biopro'
+    'postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a.oregon-postgres.render.com/biopro'
 )
 app.config['SQLALCHEMY_BINDS'] = {
     'default': os.getenv(
         'LIEN_DE_LABASE',
-        'postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a.oregon-postgres.render.com:5432/biopro'
+        'postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a.oregon-postgres.render.com/biopropostgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a.oregon-postgres.render.com/biopro'
     )
 }
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
