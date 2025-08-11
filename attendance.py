@@ -105,8 +105,8 @@ def programme_attendance():
                     ID_Employe=pointage[1]
                     jour=pointage[2]
                     Programme_sql = """
-                        SELECT `IDProgramme`, `professeur_id`, `professeur_nom`, `jour`, `heure_arrivee`, `heure_depart`, `duree_cours` 
-                        FROM Programme 
+                        SELECT IDProgramme, professeur_id, professeur_nom, jour, heure_arrivee, heure_depart, duree_cours 
+                        FROM programme 
                         WHERE professeur_id = %s AND jour = %s
                     """
                     cursor.execute(Programme_sql,(ID_Employe,jour))

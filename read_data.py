@@ -169,7 +169,7 @@ def read_data_employe():
  try:
     with connexion() as conn:
         with conn.cursor() as cursor:
-            sql="SELECT * FROM `Employe`"
+            sql="SELECT * FROM employe"
             cursor.execute(sql)
             result=cursor.fetchall()
     return result         
