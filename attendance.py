@@ -16,7 +16,7 @@ def is_pingable(ip):
 def dernier_pointage():
     db = connexion()
     cursor = db.cursor()
-    cursor.execute("SELECT MAX(date_pointage) FROM Pointages")
+    cursor.execute("SELECT MAX(date_pointage) FROM pointages")
     result = cursor.fetchone()
     db.close()
     return result[0] if result and result[0] else None
