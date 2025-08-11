@@ -34,6 +34,18 @@ app.permanent_session_lifetime = timedelta(minutes=10)
 CORS(app)
 @app.before_request
 def before_request():
+    thread = threading.Thread(target=listen_attendance)
+    thread.daemon = True
+    thread.start()
+    recuperation = threading.Thread(target=recuperation_emprientes)
+    recuperation.daemon = True
+    recuperation.start()
+    thread_sync = threading.Thread(target=sync_programme_periodique, args=(300,))
+    thread_sync.daemon = True
+    thread_sync.start()
+    thread_pointage = threading.Thread(target=programme_attendance)
+    thread_pointage.daemon = True
+    thread_pointage.start()
     if 'connecter' not in session:
         session['connecter'] = False
 def login_required(f):
@@ -519,17 +531,17 @@ def logout():
 def api_eduflow():
     return api_programme()
 if __name__ == '__main__':
-    thread = threading.Thread(target=listen_attendance)
-    thread.daemon = True
-    thread.start()
-    recuperation = threading.Thread(target=recuperation_emprientes)
-    recuperation.daemon = True
-    recuperation.start()
-    thread_sync = threading.Thread(target=sync_programme_periodique, args=(300,))
-    thread_sync.daemon = True
-    thread_sync.start()
-    thread_pointage = threading.Thread(target=programme_attendance)
-    thread_pointage.daemon = True
-    thread_pointage.start()
+    # thread = threading.Thread(target=listen_attendance)
+    # thread.daemon = True
+    # thread.start()
+    # recuperation = threading.Thread(target=recuperation_emprientes)
+    # recuperation.daemon = True
+    # recuperation.start()
+    # thread_sync = threading.Thread(target=sync_programme_periodique, args=(300,))
+    # thread_sync.daemon = True
+    # thread_sync.start()
+    # thread_pointage = threading.Thread(target=programme_attendance)
+    # thread_pointage.daemon = True
+    # thread_pointage.start()
 
     app.run(host='0.0.0.0',port=5000,debug=False)
