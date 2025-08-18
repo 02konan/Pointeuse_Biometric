@@ -2,7 +2,7 @@ import os
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
-from read_data import generer_presence,generer_retard,generer_absence,generer_unique_presence
+from programme.read_data import generer_presence,generer_retard,generer_absence,generer_unique_presence
 
 def format_timedelta(tdelta):
     total_seconds = int(tdelta.total_seconds())

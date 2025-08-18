@@ -1,7 +1,7 @@
 import os
 import pymysql
 from zk import ZK, const
-from base_donnee import connexion
+from programme.base_donnee import connexion
 def is_pingable(ip):
     response = os.system(f"ping -n 1 -w 1000 {ip}" if os.name == "nt" else f"ping -c 1 -W 1 {ip}")
     return response == 0

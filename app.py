@@ -1,51 +1,25 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from read_data import read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
-from Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
-from detecteur import recuperation_emprientes,get_etats_pointeuses
-from attendance import listen_attendance,programme_attendance
+import webview
+from programme.read_data import read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
+from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
+from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
+from programme.attendance import listen_attendance,programme_attendance
 from werkzeug.utils import secure_filename
-from gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
+from programme.gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
 from flask_cors import CORS
 from database.db import db
-from base_donnee import connexion
+from programme.base_donnee import connexion
 from datetime import datetime,timedelta
 import threading
-from eduflowApi import api_programme,sync_programme_periodique
+from programme.eduflowApi import api_programme,sync_programme_periodique
 import os
 app = Flask(__name__, static_folder='static', template_folder='template')
 app.secret_key = '&é1234azerty'
 app.permanent_session_lifetime = timedelta(minutes=10)
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
-#     'LIEN_DE_LABASE',
-#     'postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a.oregon-postgres.render.com/biopro'
-# )
-# app.config['SQLALCHEMY_BINDS'] = {
-#     'default': os.getenv(
-#         'LIEN_DE_LABASE',
-#         'postgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a.oregon-postgres.render.com/biopropostgresql://samuel:1w5TthXfpgN3CggvDnhwTv8pkgAmP9ok@dpg-d28u4ibuibrs73dvlrk0-a.oregon-postgres.render.com/biopro'
-#     )
-# }
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# db.init_app(app)
-# with app.app_context():
-#  db.create_all()
-
 CORS(app)
 @app.before_request
 def before_request():
-    thread = threading.Thread(target=listen_attendance)
-    thread.daemon = True
-    thread.start()
-    recuperation = threading.Thread(target=recuperation_emprientes)
-    recuperation.daemon = True
-    recuperation.start()
-    thread_sync = threading.Thread(target=sync_programme_periodique, args=(300,))
-    thread_sync.daemon = True
-    thread_sync.start()
-    thread_pointage = threading.Thread(target=programme_attendance)
-    thread_pointage.daemon = True
-    thread_pointage.start()
     if 'connecter' not in session:
         session['connecter'] = False
 def login_required(f):
@@ -530,18 +504,20 @@ def logout():
 @app.route('/api/emploi_du_temps', methods=['GET'])
 def api_eduflow():
     return api_programme()
+
+
 if __name__ == '__main__':
-    # thread = threading.Thread(target=listen_attendance)
-    # thread.daemon = True
-    # thread.start()
-    # recuperation = threading.Thread(target=recuperation_emprientes)
-    # recuperation.daemon = True
-    # recuperation.start()
-    # thread_sync = threading.Thread(target=sync_programme_periodique, args=(300,))
-    # thread_sync.daemon = True
-    # thread_sync.start()
-    # thread_pointage = threading.Thread(target=programme_attendance)
-    # thread_pointage.daemon = True
-    # thread_pointage.start()
+    thread = threading.Thread(target=listen_attendance)
+    thread.daemon = True
+    thread.start()
+    recuperation = threading.Thread(target=recuperation_emprientes)
+    recuperation.daemon = True
+    recuperation.start()
+    thread_sync = threading.Thread(target=sync_programme_periodique, args=(300,))
+    thread_sync.daemon = True
+    thread_sync.start()
+    thread_pointage = threading.Thread(target=programme_attendance)
+    thread_pointage.daemon = True
+    thread_pointage.start()
 
     app.run(host='0.0.0.0',port=5000,debug=False)
