@@ -12,7 +12,7 @@ def connexion():
 # def connexion():
 #     connection = pymysql.connect(
 #         host='localhost',
-#         db='biopro_db',
+#         db='bioprodb',
 #         user='root',
 #         password=''
 #     )

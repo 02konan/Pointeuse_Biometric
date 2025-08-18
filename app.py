@@ -56,7 +56,6 @@ def login():
             session['connecter'] = True
             session['username'] = username
             session['role'] = utilisateur['nom_roles']
-            session['id_user'] = utilisateur['identifiant']
             session['section'] = utilisateur['id_section']
             # Redirection selon le rôle
             if utilisateur['nom_roles'].lower() == 'admin':
@@ -385,7 +384,6 @@ def liste_rapports():
             fichiers.append({
                 "nom": nom,
                 "type": type_rapport,
-                "periode": "Inconnue",
                 "auteur": session['username'],
                 "date": datetime.fromtimestamp(os.path.getctime(os.path.join(uploads_dir, nom))).strftime("%Y-%m-%d %H:%M")
             })
