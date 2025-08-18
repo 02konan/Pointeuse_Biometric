@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
 from programme.read_data import read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
-from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
+from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User,creat_rapports
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,programme_attendance
 from werkzeug.utils import secure_filename
@@ -56,6 +56,7 @@ def login():
             session['connecter'] = True
             session['username'] = username
             session['role'] = utilisateur['nom_roles']
+            session['id_user'] = utilisateur['identifiant']
             session['section'] = utilisateur['id_section']
             # Redirection selon le rôle
             if utilisateur['nom_roles'].lower() == 'admin':
@@ -225,6 +226,7 @@ def api_fiche_presence():
 
     if pdfexecut and os.path.exists(chemin_pdf):
         send_file(chemin_pdf, as_attachment=True)
+        creat_rapports(filename, session['username'])
         return jsonify({
             "success": True,
             "type": "Présence",

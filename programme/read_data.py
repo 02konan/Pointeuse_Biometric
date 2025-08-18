@@ -223,7 +223,7 @@ def verification_utilisateur(username, password):
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
-                SELECT utilisateurs.nom as nom_utilisateur, roles.nom as nom_roles, utilisateurs.mot_de_passe, roles.id as role_id, utilisateurs.IDSection as id_section
+                SELECT utilisateurs.id as identifiant,utilisateurs.nom as nom_utilisateur, roles.nom as nom_roles, utilisateurs.mot_de_passe, roles.id as role_id, utilisateurs.IDSection as id_section
                 FROM utilisateurs
                 JOIN roles ON utilisateurs.role_id = roles.id
                 WHERE utilisateurs.nom = %s AND utilisateurs.mot_de_passe = %s

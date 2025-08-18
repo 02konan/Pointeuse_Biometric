@@ -9,4 +9,12 @@ def connexion():
         password='BioPro205ifsm'
     )
     return connection
+# def connexion():
+#     connection = pymysql.connect(
+#         host='localhost',
+#         db='biopro_db',
+#         user='root',
+#         password=''
+#     )
+#     return connection
     
