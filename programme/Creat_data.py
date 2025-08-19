@@ -1,18 +1,19 @@
 from programme.base_donnee import connexion
 import pymysql
-def creat_rapports(fichier, utilisateur):
+def creat_rapports(fichier, utilisateur,id_utilisateur):
     try:
         with connexion() as conn:
             with conn.cursor() as curseur:
-                sql = """
-                INSERT INTO rapports (fichier, utilisateur)
-                VALUES (%s, %s)
-                """
-                curseur.execute(sql, (fichier, utilisateur))
-                print("Rapport créé avec succès.")
+                sql = "INSERT INTO rapports (fichier, utilisateur,id_utilisateur) VALUES (%s, %s, %s)"
+                print(f"Tentative insertion: {fichier}, {utilisateur}")
+                curseur.execute(sql, (fichier, utilisateur,id_utilisateur))
             conn.commit()
+            print("Insertion réussie")
+            return True
     except pymysql.MySQLError as e:
         print(f"Erreur MySQL : {e}")
+        return False
+
 def creat_data_employee(idEmploye, nom, prenom, telephone, address, email, poste, photo_path, date, section):
     try:
         with connexion() as conn:

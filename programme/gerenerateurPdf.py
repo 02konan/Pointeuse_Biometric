@@ -74,7 +74,7 @@ def generer_fiche_retards_pdf(filename=None, data=None):
     os.makedirs(uploads_dir, exist_ok=True)
     
     if filename is None:
-        filename = 'fiche_presence.pdf'
+        filename = 'fiche_retard.pdf'
     file_path = os.path.join(uploads_dir, filename)
 
     c = canvas.Canvas(file_path, pagesize=A4)

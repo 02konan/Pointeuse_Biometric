@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ligne.innerHTML = `
       <td>${data.nom}</td>
       <td>${data.type}</td>
-      <td>${data.periode}</td>
       <td>${data.auteur}</td>
       <td>${data.date}</td>
       <td>

@@ -12,7 +12,6 @@ def is_pingable(ip):
     response = os.system(f"ping -n 1 -w 1000 {ip}" if os.name == "nt" else f"ping -c 1 -W 1 {ip}")
     return response == 0
 
-
 def dernier_pointage():
     db = connexion()
     cursor = db.cursor()
@@ -101,7 +100,7 @@ def programme_attendance():
                 cursor.execute(pointage_sql)
                 pointage_programme=cursor.fetchall()
                 for pointage in pointage_programme:
-                    id_programme=pointage[0]
+                    id_pointage=pointage[0]
                     ID_Employe=pointage[1]
                     jour=pointage[2]
                     Programme_sql = """
@@ -114,14 +113,20 @@ def programme_attendance():
                     for programme in programme_verifie:
                         IDProgramme=programme[0]
                         if programme:
+                           update_sql = """
+                                UPDATE pointage_programe 
+                                SET EstValider = %s 
+                                WHERE IDProgramme = %s AND IDPointage = %s
+                            """
+                           cursor.execute(update_sql, (True, IDProgramme, id_pointage))
+                           print(f"[INFO] Pointage pour le programme {IDProgramme} mis à jour avec succès.")
+                        else:
                            insert_sql = """
                                 INSERT INTO pointage_programe (IDProgramme, IDPointage, EstValider) 
                                 VALUES (%s, %s, %s)
                             """
-                           cursor.execute(insert_sql, (IDProgramme, id_programme, 1))
+                           cursor.execute(insert_sql, (IDProgramme, id_pointage, True))
                            print(f"[INFO] Pointage pour le programme {IDProgramme} inséré avec succès.")
-                        else:
-                            print(f"[INFO] Aucun programme trouvé pour l'employé {ID_Employe} le {jour}.")
                 conn.commit()
     except pymysql.MySQLError as e:
         print(f"[ERREUR] Erreur MySQL : {e}")

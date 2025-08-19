@@ -1,6 +1,7 @@
 import os
 import pymysql
 from zk import ZK, const
+import time
 from programme.base_donnee import connexion
 def is_pingable(ip):
     response = os.system(f"ping -n 1 -w 1000 {ip}" if os.name == "nt" else f"ping -c 1 -W 1 {ip}")
@@ -19,8 +20,6 @@ def get_etats_pointeuses():
         etat = "En ligne" if is_pingable(ip) else "Hors ligne"
         etats.append({"id":pointeuse_id, "ip": ip, "etat": etat, "Nom": Nom, "Localisation": Localisation, "Serie": Serie, "Modele": Modele})
     return etats
-
-import time
 
 def recuperation_emprientes(period=300):
     while True:

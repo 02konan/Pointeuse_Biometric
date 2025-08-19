@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from programme.read_data import read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
+from programme.read_data import read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User,creat_rapports
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,programme_attendance
@@ -55,6 +55,7 @@ def login():
             session.permanent = True
             session['connecter'] = True
             session['username'] = username
+            session['identifiant'] = utilisateur['identifiants']
             session['role'] = utilisateur['nom_roles']
             session['section'] = utilisateur['id_section']
             # Redirection selon le rôle
@@ -222,18 +223,15 @@ def api_fiche_presence():
         compteur += 1
 
     pdfexecut = generer_fiche_presence_pdf(chemin_pdf, data)
-
     if pdfexecut and os.path.exists(chemin_pdf):
-        send_file(chemin_pdf, as_attachment=True)
-        creat_rapports(filename, session['username'])
         return jsonify({
-            "success": True,
             "type": "Présence",
             "nom": filename,
             "periode": f"{date_debut} → {date_fin}",
             "auteur": session['username'],
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
+    return jsonify({"success": False, "message": "Fichier PDF introuvable"}), 404
 
 @app.route('/api/fiche_retards', methods=['POST'])
 @login_required
@@ -518,4 +516,4 @@ if __name__ == '__main__':
     thread_pointage.daemon = True
     thread_pointage.start()
 
-    app.run(host='0.0.0.0',port=5000,debug=False)
+    app.run(host='0.0.0.0',port=5000,debug=True)

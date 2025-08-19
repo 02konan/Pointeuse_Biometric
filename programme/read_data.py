@@ -1,6 +1,23 @@
 import pymysql
 from programme.base_donnee import connexion
-
+def read_raports(utilisateur_name):
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql = """
+                SELECT r.fichier
+                FROM rapports r
+                JOIN utilisateurs u ON r.utilisateur = u.id
+                where r.utilisateur = %s
+                ORDER BY r.date_creation DESC;
+                """
+                cursor.execute(sql, (utilisateur_name,))
+                result = cursor.fetchall()
+                return result
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)
 def read_matricule():
     try:
         with connexion() as conn:
@@ -223,7 +240,7 @@ def verification_utilisateur(username, password):
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
-                SELECT utilisateurs.nom as nom_utilisateur, roles.nom as nom_roles, utilisateurs.mot_de_passe, roles.id as role_id, utilisateurs.IDSection as id_section
+                SELECT utilisateurs.id as identifiants, utilisateurs.nom as nom_utilisateur, roles.nom as nom_roles, utilisateurs.mot_de_passe, roles.id as role_id, utilisateurs.IDSection as id_section
                 FROM utilisateurs
                 JOIN roles ON utilisateurs.role_id = roles.id
                 WHERE utilisateurs.nom = %s AND utilisateurs.mot_de_passe = %s
@@ -233,11 +250,12 @@ def verification_utilisateur(username, password):
                 if result:
                     # Retourne un dictionnaire avec les infos utiles
                     return {
-                        'nom_utilisateur': result[0],
-                        'nom_roles': result[1],
-                        'mot_de_passe': result[2],
-                        'role_id': result[3],
-                        'id_section': result[4]
+                        'identifiants': result[0],
+                        'nom_utilisateur': result[1],
+                        'nom_roles': result[2],
+                        'mot_de_passe': result[3],
+                        'role_id': result[4],
+                        'id_section': result[5]
                     }
                 else:
                     return None
