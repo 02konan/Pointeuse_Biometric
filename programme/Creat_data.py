@@ -5,10 +5,8 @@ def creat_rapports(fichier, utilisateur,id_utilisateur,type):
         with connexion() as conn:
             with conn.cursor() as curseur:
                 sql = "INSERT INTO rapports (fichier, utilisateur,id_utilisateur,type) VALUES (%s, %s, %s, %s)"
-                print(f"Tentative insertion: {fichier}, {utilisateur}")
                 curseur.execute(sql, (fichier, utilisateur,id_utilisateur,type))
             conn.commit()
-            print("Insertion réussie")
             return True
     except pymysql.MySQLError as e:
         print(f"Erreur MySQL : {e}")

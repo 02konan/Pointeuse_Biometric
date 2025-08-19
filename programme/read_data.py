@@ -5,11 +5,10 @@ def read_raports(utilisateur_name):
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
-                SELECT r.fichier
+                SELECT r.fichier, u.nom
                 FROM rapports r
-                JOIN utilisateurs u ON r.utilisateur = u.id
-                where r.utilisateur = %s
-                ORDER BY r.date_creation DESC;
+                JOIN utilisateurs u ON r.id_utilisateur = u.id
+                WHERE u.nom =%s
                 """
                 cursor.execute(sql, (utilisateur_name,))
                 result = cursor.fetchall()

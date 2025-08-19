@@ -373,18 +373,36 @@ def supprimer_rapport(nom):
 @login_required
 @role_required('admin')
 def liste_rapports():
+    """
+    Liste les rapports PDF présents dans uploads ET en base pour l'utilisateur courant.
+    """
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+    uploads_list = sorted(os.listdir(uploads_dir), reverse=True)
+
+    # Récupération des fichiers en base pour cet utilisateur
+    base_list = read_raports(session['username'])
+
+    # Transformer la liste de tuples (chemin complet, nom) en ensemble de noms de fichiers
+    fichiers_base = {os.path.basename(row[0]) for row in base_list} if base_list else set()
+
+    # Ne garder que les fichiers qui sont présents dans les deux sources
+    uploads_list = [f for f in uploads_list if f in fichiers_base]
+
     fichiers = []
-    for nom in sorted(os.listdir(uploads_dir), reverse=True):
+    for nom in uploads_list:
         if nom.endswith(".pdf"):
             type_rapport = "Présence" if "presence" in nom.lower() else "Absence"
             fichiers.append({
                 "nom": nom,
                 "type": type_rapport,
                 "auteur": session['username'],
-                "date": datetime.fromtimestamp(os.path.getctime(os.path.join(uploads_dir, nom))).strftime("%Y-%m-%d %H:%M")
+                "date": datetime.fromtimestamp(
+                    os.path.getctime(os.path.join(uploads_dir, nom))
+                ).strftime("%Y-%m-%d %H:%M")
             })
+
     return jsonify(fichiers)
+
 
 @app.route("/api/pointages/<matricule>", methods=["GET"])
 def get_pointages(matricule):
