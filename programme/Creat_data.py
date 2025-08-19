@@ -1,12 +1,12 @@
 from programme.base_donnee import connexion
 import pymysql
-def creat_rapports(fichier, utilisateur,id_utilisateur):
+def creat_rapports(fichier, utilisateur,id_utilisateur,type):
     try:
         with connexion() as conn:
             with conn.cursor() as curseur:
-                sql = "INSERT INTO rapports (fichier, utilisateur,id_utilisateur) VALUES (%s, %s, %s)"
+                sql = "INSERT INTO rapports (fichier, utilisateur,id_utilisateur,type) VALUES (%s, %s, %s, %s)"
                 print(f"Tentative insertion: {fichier}, {utilisateur}")
-                curseur.execute(sql, (fichier, utilisateur,id_utilisateur))
+                curseur.execute(sql, (fichier, utilisateur,id_utilisateur,type))
             conn.commit()
             print("Insertion réussie")
             return True

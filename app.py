@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
 from programme.read_data import read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
-from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User,creat_rapports
+from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,programme_attendance
 from werkzeug.utils import secure_filename
@@ -222,7 +222,7 @@ def api_fiche_presence():
         chemin_pdf = os.path.join(uploads_dir, filename)
         compteur += 1
 
-    pdfexecut = generer_fiche_presence_pdf(chemin_pdf, data)
+    pdfexecut = generer_fiche_presence_pdf(session['username'],session['identifiant'],chemin_pdf, data)
     if pdfexecut and os.path.exists(chemin_pdf):
         return jsonify({
             "type": "Présence",
@@ -257,7 +257,7 @@ def fiche_retards():
         chemin_pdf = os.path.join(uploads_dir, filename)
         compteur += 1
 
-    pdfexecut = generer_fiche_retards_pdf(chemin_pdf, data)
+    pdfexecut = generer_fiche_retards_pdf(session['username'],session['identifiant'],chemin_pdf, data)
 
     if pdfexecut and os.path.exists(chemin_pdf):
         return jsonify({
@@ -294,7 +294,7 @@ def fiche_absence():
         chemin_pdf = os.path.join(uploads_dir, filename)
         compteur += 1
 
-    pdfexecut = generer_fiche_absence_pdf(chemin_pdf, data)
+    pdfexecut = generer_fiche_absence_pdf(session['username'],session['identifiant'],chemin_pdf, data)
 
     if pdfexecut and os.path.exists(chemin_pdf):
         return jsonify({
@@ -375,7 +375,6 @@ def supprimer_rapport(nom):
 def liste_rapports():
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
     fichiers = []
-
     for nom in sorted(os.listdir(uploads_dir), reverse=True):
         if nom.endswith(".pdf"):
             type_rapport = "Présence" if "presence" in nom.lower() else "Absence"
@@ -385,7 +384,6 @@ def liste_rapports():
                 "auteur": session['username'],
                 "date": datetime.fromtimestamp(os.path.getctime(os.path.join(uploads_dir, nom))).strftime("%Y-%m-%d %H:%M")
             })
-
     return jsonify(fichiers)
 
 @app.route("/api/pointages/<matricule>", methods=["GET"])

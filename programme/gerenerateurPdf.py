@@ -2,6 +2,7 @@ import os
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
+from programme.Creat_data import creat_rapports
 from programme.read_data import generer_presence,generer_retard,generer_absence,generer_unique_presence
 
 def format_timedelta(tdelta):
@@ -10,7 +11,7 @@ def format_timedelta(tdelta):
     minutes = (total_seconds % 3600) // 60
     seconds = total_seconds % 60
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-def generer_fiche_presence_pdf(filename=None, data=None):
+def generer_fiche_presence_pdf(utilisateur,id_utilisateur,filename=None, data=None):
     if data is None:
         data = generer_presence()
 
@@ -21,6 +22,8 @@ def generer_fiche_presence_pdf(filename=None, data=None):
     if filename is None:
         filename = 'fiche_presence.pdf'
     file_path = os.path.join(uploads_dir, filename)
+    if file_path:
+        creat_rapports(file_path,utilisateur,id_utilisateur,'Presence')
 
     c = canvas.Canvas(file_path, pagesize=A4)
     width, height = A4
@@ -65,7 +68,7 @@ def generer_fiche_presence_pdf(filename=None, data=None):
             print("Exception :", e)
 
     c.save()
-def generer_fiche_retards_pdf(filename=None, data=None):
+def generer_fiche_retards_pdf(utilisateur,id_utilisateur,filename=None, data=None):
     if data is None:
         data = generer_retard()
 
@@ -76,6 +79,8 @@ def generer_fiche_retards_pdf(filename=None, data=None):
     if filename is None:
         filename = 'fiche_retard.pdf'
     file_path = os.path.join(uploads_dir, filename)
+    if file_path:
+        creat_rapports(file_path,utilisateur,id_utilisateur,'retard')
 
     c = canvas.Canvas(file_path, pagesize=A4)
     width, height = A4
@@ -120,7 +125,7 @@ def generer_fiche_retards_pdf(filename=None, data=None):
             print("Exception :", e)
 
     c.save()
-def generer_fiche_absence_pdf(filename=None, data=None):
+def generer_fiche_absence_pdf(utilisateur,id_utilisateur,filename=None, data=None):
     if data is None:
         data = generer_absence()
 
@@ -131,6 +136,8 @@ def generer_fiche_absence_pdf(filename=None, data=None):
     if filename is None:
         filename = 'fiche_absence.pdf'
     file_path = os.path.join(uploads_dir, filename)
+    if file_path:
+        creat_rapports(file_path,utilisateur,id_utilisateur,'Absence')
 
     c = canvas.Canvas(file_path, pagesize=A4)
     width, height = A4
