@@ -3,6 +3,7 @@ from programme.read_data import read_raports,read_data_from_db,read_utilisateur,
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,programme_attendance
+from programme.insertion import insertion_
 from werkzeug.utils import secure_filename
 from programme.gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
 from flask_cors import CORS
@@ -373,21 +374,11 @@ def supprimer_rapport(nom):
 @login_required
 @role_required('admin')
 def liste_rapports():
-    """
-    Liste les rapports PDF présents dans uploads ET en base pour l'utilisateur courant.
-    """
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
     uploads_list = sorted(os.listdir(uploads_dir), reverse=True)
-
-    # Récupération des fichiers en base pour cet utilisateur
     base_list = read_raports(session['username'])
-
-    # Transformer la liste de tuples (chemin complet, nom) en ensemble de noms de fichiers
     fichiers_base = {os.path.basename(row[0]) for row in base_list} if base_list else set()
-
-    # Ne garder que les fichiers qui sont présents dans les deux sources
     uploads_list = [f for f in uploads_list if f in fichiers_base]
-
     fichiers = []
     for nom in uploads_list:
         if nom.endswith(".pdf"):
@@ -400,10 +391,7 @@ def liste_rapports():
                     os.path.getctime(os.path.join(uploads_dir, nom))
                 ).strftime("%Y-%m-%d %H:%M")
             })
-
     return jsonify(fichiers)
-
-
 @app.route("/api/pointages/<matricule>", methods=["GET"])
 def get_pointages(matricule):
     try:
@@ -474,6 +462,11 @@ def enregistrement_appareils():
 def intf_Parametres():
     return render_template('parametre.html', active_page='parametres')
 
+@app.route('/programme')
+@login_required
+def intf_Programme():
+    return render_template('programme.html', active_page='programme')
+
 @app.route('/utilisateurs')
 @login_required
 def lister_utilisateurs():
@@ -517,7 +510,6 @@ def logout():
 def api_eduflow():
     return api_programme()
 
-
 if __name__ == '__main__':
     thread = threading.Thread(target=listen_attendance)
     thread.daemon = True
@@ -531,5 +523,8 @@ if __name__ == '__main__':
     thread_pointage = threading.Thread(target=programme_attendance)
     thread_pointage.daemon = True
     thread_pointage.start()
+    thread_insertion = threading.Thread(target=insertion_)
+    thread_insertion.daemon = True
+    thread_insertion.start()
 
     app.run(host='0.0.0.0',port=5000,debug=True)

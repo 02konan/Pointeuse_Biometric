@@ -40,17 +40,17 @@ def api_programme():
                         if existe:
                             sql = """
                             UPDATE Programme
-                            SET professeur_nom=%s, type=%s, statut=%s,heure_arrivee=%s, heure_depart=%s, duree_cours=%s
+                            SET professeur_code=%s,professeur_nom=%s, jour=%s, type=%s, statut=%s,heure_arrivee=%s, heure_depart=%s, duree_cours=%s
                             WHERE professeur_id=%s AND jour=%s
                             """
-                            curseur.execute(sql, (professeur_nom, Type, Statut, heure_arrivee, heure_depart, duree_cours, professeur_id, jour))
+                            curseur.execute(sql, (professeur_code, professeur_nom, jour, Type, Statut, heure_arrivee, heure_depart, duree_cours, professeur_id, jour))
                             print("Programme mis à jour avec succès.")
                         else:
                             sql = """
-                            INSERT INTO Programme (professeur_id, professeur_nom,jour, type, statut, heure_arrivee, heure_depart, duree_cours)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                            INSERT INTO Programme (professeur_id,professeur_code, professeur_nom,jour, type, statut, heure_arrivee, heure_depart, duree_cours)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                             """
-                            curseur.execute(sql, (professeur_id, professeur_nom, jour, Type, Statut, heure_arrivee, heure_depart, duree_cours))
+                            curseur.execute(sql, (professeur_id, professeur_code, professeur_nom, jour, Type, Statut, heure_arrivee, heure_depart, duree_cours))
                             print("Nouveau programme inséré avec succès.")
                 conn.commit()
             return {"success": True}

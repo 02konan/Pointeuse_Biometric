@@ -197,22 +197,22 @@ def read_data_presence(section_name):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql="""SELECT 
+                sql="""SELECT
   eu.IDEmploye,
   e.Matricule,
   DATE(eu.date_pointage) AS date_pointage,
   MIN(TIME(eu.date_pointage)) AS heure_arrivee,
   MAX(TIME(eu.date_pointage)) AS heure_depart,
   TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
-FROM pointages eu
-JOIN empreintes e ON e.IDEmploye = eu.IDEmploye
-JOIN pointeuse pt ON pt.idPointeuse = eu.idPointeuse
-JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE DATE(eu.date_pointage) IN (CURRENT_DATE(), DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
+  FROM pointages eu
+  JOIN empreintes e ON e.IDEmploye = eu.IDEmploye
+  JOIN pointeuse pt ON pt.idPointeuse = eu.idPointeuse
+  JOIN section s ON s.idPointeuse = pt.idPointeuse
+  WHERE DATE(eu.date_pointage) IN (CURRENT_DATE(), DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
   AND s.IDSection = %s
-GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
-HAVING COUNT(*) >= 2
-ORDER BY date_pointage DESC, temps_presence;
+  GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
+  HAVING COUNT(*) >= 2
+  ORDER BY date_pointage DESC, temps_presence;
                       """
                 cursor.execute(sql, (section_name,))
                 result=cursor.fetchall()
