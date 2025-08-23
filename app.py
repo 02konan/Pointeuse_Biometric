@@ -402,11 +402,11 @@ def get_pointages(matricule):
          DATE(date_pointage) AS date_pointage,
          MIN(TIME(date_pointage)) AS heure_entree,
          MAX(TIME(date_pointage)) AS heure_sortie,
-         empreintes.Matricule as Nom_Prenom
+         empreintes.Nom as Nom_Prenom
          FROM 
          pointages, empreintes
          WHERE 
-         empreintes.Matricule =%s and DATE(date_pointage) = CURRENT_DATE()
+         empreintes.IDEmploye =%s and DATE(date_pointage) = CURRENT_DATE()
          ORDER BY 
          date_pointage DESC
         """
