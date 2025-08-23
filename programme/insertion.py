@@ -20,7 +20,7 @@ def get_employes():
     try:
         with connexion() as db:
             cursor = db.cursor()
-            cursor.execute("SELECT professeur_code, professeur_nom FROM programme")  # <-- corrige ici
+            cursor.execute("SELECT DISTINCT(professeur_code), professeur_nom FROM programme")
             return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("❌ Erreur lors de la récupération des employés :", e)
@@ -45,8 +45,12 @@ def insertion_():
             for emp in employes:
                 code, nom = emp
                 try:
-                    conn.set_user(code, nom)
-                    print(f"[INFO] Employé {nom} (Code: {code}) inséré avec succès.")
+                    user_exists = any(user.user_id == str(code) for user in conn.get_users())
+                    if user_exists:
+                        print(f"[INFO] L'employé {nom} (Code: {code}) existe déjà sur la pointeuse.")
+                    else:
+                        conn.set_user(user_id=str(code), name=str(nom))
+                        print(f"[INFO] Employé {nom} (Code: {code}) inséré avec succès.")
                 except Exception as e:
                     print(f"[ERREUR] Échec de l'insertion pour {nom} (Code: {code}) : {e}")
 

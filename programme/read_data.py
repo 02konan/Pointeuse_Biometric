@@ -21,7 +21,7 @@ def read_matricule():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql = "SELECT DISTINCT(Matricule) FROM empreintes"
+                sql = "SELECT DISTINCT(Nom) FROM empreintes"
                 cursor.execute(sql)
                 result = cursor.fetchall()
                 return [row[0] for row in result]
@@ -36,7 +36,7 @@ def read_data_from_db(section_name):
         with data_base.cursor() as cursor:
             # DONNÉES GÉNÉRALES
             sql1 = """
-SELECT COUNT(e.Matricule) AS total_employes
+SELECT COUNT(e.Nom) AS total_employes
 FROM empreintes e
 JOIN pointeuse pt ON pt.idPointeuse = e.IDPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
@@ -46,11 +46,11 @@ WHERE s.IDSection =%s;
 FROM (
   SELECT p.IDEmploye
   FROM pointages p
-  JOIN empreintes e ON e.IDEmploye = p.IDEmploye
+  JOIN empreintes e ON e.Nom = p.IDEmploye
   JOIN section s ON s.idPointeuse = p.idPointeuse
   WHERE DATE(p.date_pointage) = CURRENT_DATE()
     AND s.IDSection = %s
-  GROUP BY p.IDEmploye, DATE(p.date_pointage), e.Matricule
+  GROUP BY p.IDEmploye, DATE(p.date_pointage), e.Nom
   HAVING COUNT(*) >= 2
 ) AS liste_presences;
                    """
@@ -78,7 +78,7 @@ WHERE section.IDSection =%s AND pointages.IDEmploye IS NULL;
 
 """
             
-            sql5 = """SELECT DISTINCT e.Matricule, p.date_pointage
+            sql5 = """SELECT DISTINCT e.Nom, p.date_pointage
 FROM pointages p
 JOIN empreintes e ON p.IDEmploye = e.IDEmploye
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
@@ -199,18 +199,18 @@ def read_data_presence(section_name):
             with conn.cursor() as cursor:
                 sql="""SELECT
   eu.IDEmploye,
-  e.Matricule,
+  e.Nom,
   DATE(eu.date_pointage) AS date_pointage,
   MIN(TIME(eu.date_pointage)) AS heure_arrivee,
   MAX(TIME(eu.date_pointage)) AS heure_depart,
   TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
   FROM pointages eu
-  JOIN empreintes e ON e.IDEmploye = eu.IDEmploye
+  JOIN empreintes e ON e.Nom = eu.IDEmploye
   JOIN pointeuse pt ON pt.idPointeuse = eu.idPointeuse
   JOIN section s ON s.idPointeuse = pt.idPointeuse
   WHERE DATE(eu.date_pointage) IN (CURRENT_DATE(), DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
-  AND s.IDSection = %s
-  GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
+  AND s.IDSection =%s
+  GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Nom
   HAVING COUNT(*) >= 2
   ORDER BY date_pointage DESC, temps_presence;
                       """
@@ -318,18 +318,18 @@ def generer_presence(date_debut, date_fin,section_name):
                 sql = """
                 SELECT 
   eu.IDEmploye,
-  e.Matricule,
+  e.Nom,
   DATE(eu.date_pointage) AS date_pointage,
   MIN(TIME(eu.date_pointage)) AS heure_arrivee,
   MAX(TIME(eu.date_pointage)) AS heure_depart,
   TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
 FROM pointages eu
-JOIN empreintes e ON e.IDEmploye = eu.IDEmploye
+JOIN empreintes e ON e.Nom = eu.IDEmploye
 JOIN pointeuse pt ON pt.idPointeuse = eu.idPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
 WHERE DATE(eu.date_pointage) BETWEEN %s AND %s
   AND s.IDSection = %s
-GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
+GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Nom
 HAVING COUNT(*) >= 2
 ORDER BY date_pointage;
 
@@ -349,7 +349,7 @@ def generer_retard(date_debut_retard, date_fin_retard,section_name):
             sql = """
              SELECT 
   eu.IDEmploye,
-  e.Matricule,
+  e.Nom,
   DATE(eu.date_pointage) AS date_pointage,
   MIN(TIME(eu.date_pointage)) AS heure_arrivee,
   MAX(TIME(eu.date_pointage)) AS heure_depart,
@@ -360,7 +360,7 @@ JOIN pointeuse pt ON e.IDPointeuse = pt.idPointeuse
 JOIN section s ON pt.idPointeuse = s.idPointeuse
 WHERE DATE(eu.date_pointage) BETWEEN %s AND %s
   AND s.IDSection = %s
-GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
+GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Nom
 HAVING 
   COUNT(*) >= 2
   AND MIN(TIME(eu.date_pointage)) BETWEEN '08:00:00' AND '18:30:00'
@@ -381,7 +381,7 @@ def generer_absence(date_debut_absence, date_fin_absence,section_name):
             sql = """
             SELECT 
   eu.IDEmploye,
-  e.Matricule,
+  e.Nom,
   DATE(eu.date_pointage) AS date_pointage,
   MIN(TIME(eu.date_pointage)) AS heure_arrivee,
   MAX(TIME(eu.date_pointage)) AS heure_depart,
@@ -393,7 +393,7 @@ JOIN section s ON s.idPointeuse = p.idPointeuse
 WHERE DATE(eu.date_pointage) BETWEEN %s AND %s
   AND s.IDSection = %s
   AND eu.IDEmploye != 0
-GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
+GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Nom
 HAVING COUNT(*) < 2
 ORDER BY date_pointage;
 
@@ -412,7 +412,7 @@ def generer_unique_presence(Matricule):
             sql = """
             SELECT 
               eu.IDEmploye,
-              e.Matricule,
+              e.Nom,
               DATE(eu.date_pointage) AS Date_pointage,
               MIN(TIME(eu.date_pointage)) AS date_arrivee,
               MAX(TIME(eu.date_pointage)) AS date_depart,
