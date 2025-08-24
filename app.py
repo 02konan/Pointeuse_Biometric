@@ -430,7 +430,39 @@ def get_pointages(matricule):
     finally:
         cursor.close()
         conn.close()
+@app.route('/api/programme/<matricule>', methods=['GET'])
+def api_programme_route(matricule):
+    try:
+        conn = connexion()
+        cursor = conn.cursor()
+        query = """
+            SELECT professeur_code,jour, type, heure_arrivee, heure_depart, duree_cours,professeur_nom
+            FROM Programme
+            WHERE professeur_code = %s
+            ORDER BY jour DESC
+        """
+        cursor.execute(query, (matricule,))
+        rows = cursor.fetchall()
 
+        programmes = []
+        for row in rows:
+            programmes.append({
+                "professeur_code": row[0],
+                "journee": str(row[1]),
+                "EmploiDuTmp": row[2],
+                "heure_arrivee": str(row[3]),
+                "heure_depart": str(row[4]),
+                "duree_cours": str(row[5]),
+                "professeur_nom": str(row[6]),
+            })
+
+        return jsonify(programmes)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 @app.route('/rapports')
 @login_required
 def intf_rapports():
