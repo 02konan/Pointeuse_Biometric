@@ -39,69 +39,63 @@ def read_matricule():
 # === DASHBOARD SECTION ===
 def read_data_from_db(section_name):
     try:
-        with connexion() as data_base:
-            with data_base.cursor() as cursor:
-                # Total employés
-                sql1 = """
-                SELECT COUNT(e.IDEmploye) AS total_employes
-                FROM empreintes e
-                JOIN pointeuse pt ON pt.idPointeuse = e.IDPointeuse
-                JOIN section s ON s.idPointeuse = pt.idPointeuse
-                WHERE s.IDSection = %s;
-                """
+        data_base = connexion()
 
-                # Présences du jour
-                sql2 = """
-                SELECT COUNT(*) AS nb_presences
-                FROM (
-                  SELECT p.IDEmploye
-                  FROM pointages p
-                  JOIN empreintes e ON e.IDEmploye = p.IDEmploye
-                  JOIN section s ON s.idPointeuse = p.idPointeuse
-                  WHERE DATE(p.date_pointage) = CURRENT_DATE()
-                    AND s.IDSection = %s
-                  GROUP BY p.IDEmploye
-                  HAVING COUNT(*) >= 2
-                ) AS liste_presences;
-                """
+        with data_base.cursor() as cursor:
+            # DONNÉES GÉNÉRALES
+            sql1 = """
+SELECT COUNT(e.Nom) AS total_employes
+FROM empreintes e
+JOIN pointeuse pt ON pt.idPointeuse = e.IDPointeuse
+JOIN section s ON s.idPointeuse = pt.idPointeuse
+WHERE s.IDSection =%s;
+"""
+            sql2 = """SELECT COUNT(*) AS nb_presences
+FROM (
+  SELECT p.IDEmploye
+  FROM pointages p
+  JOIN empreintes e ON e.Nom = p.IDEmploye
+  JOIN section s ON s.idPointeuse = p.idPointeuse
+  WHERE DATE(p.date_pointage) = CURRENT_DATE()
+    AND s.IDSection = %s
+  GROUP BY p.IDEmploye, DATE(p.date_pointage), e.Nom
+  HAVING COUNT(*) >= 2
+) AS liste_presences;
+                   """
+            
+            sql3 = """SELECT COUNT(*) AS nb_retardataires
+FROM (
+  SELECT p.IDEmploye
+  FROM pointages p
+  JOIN section s ON s.idPointeuse = p.idPointeuse
+  WHERE DATE(p.date_pointage) = CURRENT_DATE()
+    AND s.IDSection =%s AND p.IDEmploye!=0
+  GROUP BY p.IDEmploye
+  HAVING MIN(TIME(p.date_pointage)) > '08:00:00'
+) AS retardataires;
 
-                # Retardataires du jour
-                sql3 = """
-                SELECT COUNT(*) AS nb_retardataires
-                FROM (
-                  SELECT p.IDEmploye
-                  FROM pointages p
-                  JOIN section s ON s.idPointeuse = p.idPointeuse
-                  WHERE DATE(p.date_pointage) = CURRENT_DATE()
-                    AND s.IDSection = %s AND p.IDEmploye != 0
-                  GROUP BY p.IDEmploye
-                  HAVING MIN(TIME(p.date_pointage)) > '08:00:00'
-                ) AS retardataires;
-                """
+"""
+            
+            sql4 = """SELECT COUNT(*)
+FROM empreintes
+LEFT JOIN pointages ON pointages.IDEmploye = empreintes.IDEmploye
+  AND DATE(pointages.date_pointage) = CURRENT_DATE()
+LEFT JOIN pointeuse ON pointeuse.idPointeuse = empreintes.IDPointeuse
+LEFT JOIN section ON section.idPointeuse = pointeuse.idPointeuse
+WHERE section.IDSection =%s AND pointages.IDEmploye IS NULL;
 
-                # Absents du jour
-                sql4 = """
-                SELECT COUNT(*)
-                FROM empreintes e
-                LEFT JOIN pointages p ON p.IDEmploye = e.IDEmploye
-                  AND DATE(p.date_pointage) = CURRENT_DATE()
-                LEFT JOIN pointeuse pt ON pt.idPointeuse = e.IDPointeuse
-                LEFT JOIN section s ON s.idPointeuse = pt.idPointeuse
-                WHERE s.IDSection = %s AND p.IDEmploye IS NULL;
-                """
-
-                # Activité récente
-                sql5 = """
-                SELECT DISTINCT e.IDEmploye, p.date_pointage
-                FROM pointages p
-                JOIN empreintes e ON p.IDEmploye = e.IDEmploye
-                JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
-                JOIN section s ON s.idPointeuse = pt.idPointeuse
-                WHERE DATE(p.date_pointage) = CURRENT_DATE()
-                  AND s.IDSection = %s
-                ORDER BY p.date_pointage DESC
-                LIMIT 5;
-                """
+"""
+            
+            sql5 = """SELECT DISTINCT e.Nom, p.date_pointage
+FROM pointages p
+JOIN empreintes e ON p.IDEmploye = e.IDEmploye
+JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+JOIN section s ON s.idPointeuse = pt.idPointeuse
+WHERE DATE(p.date_pointage) = CURRENT_DATE()
+  AND s.IDSection =%s
+ORDER BY p.date_pointage DESC
+LIMIT 5;
+"""
 
                 # Actifs du mois
                 sql6_mois = """
@@ -204,24 +198,23 @@ def read_data_presence(section_name):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql = """
-                SELECT
-                  eu.IDEmploye,
-                  e.Nom,
-                  DATE(eu.date_pointage) AS date_pointage,
-                  MIN(TIME(eu.date_pointage)) AS heure_arrivee,
-                  MAX(TIME(eu.date_pointage)) AS heure_depart,
-                  TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
-                FROM pointages eu
-                JOIN empreintes e ON e.IDEmploye = eu.IDEmploye 
-                JOIN pointeuse pt ON pt.idPointeuse = eu.idPointeuse
-                JOIN section s ON s.idPointeuse = pt.idPointeuse
-                WHERE DATE(eu.date_pointage) IN (CURRENT_DATE(), DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
-                  AND s.IDSection = %s
-                GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Nom
-                HAVING COUNT(*) >= 2
-                ORDER BY date_pointage DESC, temps_presence;
-                """
+                sql="""SELECT
+  eu.IDEmploye,
+  e.Nom,
+  DATE(eu.date_pointage) AS date_pointage,
+  MIN(TIME(eu.date_pointage)) AS heure_arrivee,
+  MAX(TIME(eu.date_pointage)) AS heure_depart,
+  TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
+  FROM pointages eu
+  JOIN empreintes e ON e.Nom = eu.IDEmploye
+  JOIN pointeuse pt ON pt.idPointeuse = eu.idPointeuse
+  JOIN section s ON s.idPointeuse = pt.idPointeuse
+  WHERE DATE(eu.date_pointage) IN (CURRENT_DATE(), DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
+  AND s.IDSection =%s
+  GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Nom
+  HAVING COUNT(*) >= 2
+  ORDER BY date_pointage DESC, temps_presence;
+                      """
                 cursor.execute(sql, (section_name,))
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
