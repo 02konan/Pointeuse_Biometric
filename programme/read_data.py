@@ -36,7 +36,7 @@ def read_data_from_db(section_name):
         with data_base.cursor() as cursor:
             # DONNÉES GÉNÉRALES
             sql1 = """
-SELECT COUNT(e.Nom) AS total_employes
+SELECT COUNT(e.IDEmploye) AS total_employes
 FROM empreintes e
 JOIN pointeuse pt ON pt.idPointeuse = e.IDPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
@@ -46,11 +46,11 @@ WHERE s.IDSection =%s;
 FROM (
   SELECT p.IDEmploye
   FROM pointages p
-  JOIN empreintes e ON e.Nom = p.IDEmploye
+  JOIN empreintes e ON e.IDEmploye = p.IDEmploye
   JOIN section s ON s.idPointeuse = p.idPointeuse
   WHERE DATE(p.date_pointage) = CURRENT_DATE()
     AND s.IDSection = %s
-  GROUP BY p.IDEmploye, DATE(p.date_pointage), e.Nom
+  GROUP BY p.IDEmploye, DATE(p.date_pointage), e.IDEmploye
   HAVING COUNT(*) >= 2
 ) AS liste_presences;
                    """
@@ -78,7 +78,7 @@ WHERE section.IDSection =%s AND pointages.IDEmploye IS NULL;
 
 """
             
-            sql5 = """SELECT DISTINCT e.Nom, p.date_pointage
+            sql5 = """SELECT DISTINCT e.IDEmploye, p.date_pointage
 FROM pointages p
 JOIN empreintes e ON p.IDEmploye = e.IDEmploye
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
@@ -204,15 +204,15 @@ def read_data_presence(section_name):
   MIN(TIME(eu.date_pointage)) AS heure_arrivee,
   MAX(TIME(eu.date_pointage)) AS heure_depart,
   TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
-  FROM pointages eu
-  JOIN empreintes e ON e.Nom = eu.IDEmploye
-  JOIN pointeuse pt ON pt.idPointeuse = eu.idPointeuse
-  JOIN section s ON s.idPointeuse = pt.idPointeuse
-  WHERE DATE(eu.date_pointage) IN (CURRENT_DATE(), DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
-  AND s.IDSection =%s
-  GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Nom
-  HAVING COUNT(*) >= 2
-  ORDER BY date_pointage DESC, temps_presence;
+FROM pointages eu
+LEFT JOIN empreintes e    ON e.IDEmploye    = eu.IDEmploye 
+LEFT JOIN pointeuse pt    ON pt.idPointeuse = eu.idPointeuse
+LEFT JOIN section s       ON s.idPointeuse  = pt.idPointeuse
+WHERE DATE(eu.date_pointage) IN (CURRENT_DATE(), DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
+AND s.IDSection =%s
+GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Nom
+HAVING COUNT(DISTINCT eu.date_pointage) >= 2
+ORDER BY date_pointage DESC, temps_presence;
                       """
                 cursor.execute(sql, (section_name,))
                 result=cursor.fetchall()

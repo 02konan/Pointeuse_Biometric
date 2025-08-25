@@ -442,7 +442,7 @@ def api_programme_route(matricule):
         conn = connexion()
         cursor = conn.cursor()
         query = """
-            SELECT professeur_code,jour, type, heure_arrivee, heure_depart, duree_cours,professeur_nom
+            SELECT professeur_code,jour, type, heure_arrivee, heure_depart, duree_cours,professeur_nom, Matiere 
             FROM Programme
             WHERE professeur_code = %s
             ORDER BY jour DESC
@@ -460,6 +460,7 @@ def api_programme_route(matricule):
                 "heure_depart": str(row[4]),
                 "duree_cours": str(row[5]),
                 "professeur_nom": str(row[6]),
+                "Matiere": str(row[7]),
             })
 
         return jsonify(programmes)
