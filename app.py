@@ -399,16 +399,22 @@ def get_pointages(matricule):
         cursor = conn.cursor()  
         query = """
             SELECT 
-         DATE(date_pointage) AS date_pointage,
-         MIN(TIME(date_pointage)) AS heure_entree,
-         MAX(TIME(date_pointage)) AS heure_sortie,
-         empreintes.Nom as Nom_Prenom
-         FROM 
-         pointages, empreintes
-         WHERE 
-         empreintes.IDEmploye =%s and DATE(date_pointage) = CURRENT_DATE()
-         ORDER BY 
-         date_pointage DESC
+    DATE(p.date_pointage) AS date_pointage,
+    MIN(TIME(p.date_pointage)) AS heure_entree,
+    MAX(TIME(p.date_pointage)) AS heure_sortie,
+    e.Nom AS Nom_Prenom
+FROM 
+    pointages p
+JOIN 
+    empreintes e ON e.IDEmploye = p.IDEmploye
+WHERE 
+    e.IDEmploye =%s
+    AND DATE(p.date_pointage) = CURRENT_DATE()
+GROUP BY 
+    DATE(p.date_pointage), e.Nom
+ORDER BY 
+    date_pointage DESC;
+
         """
         cursor.execute(query, (matricule,))
         rows = cursor.fetchall()
