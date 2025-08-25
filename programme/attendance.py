@@ -96,17 +96,31 @@ def programme_attendance():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                pointage_sql="SELECT id,IDEmploye,jour_pointage from pointages"
+                pointage_sql="""
+SELECT 
+  ID,
+  IDEmploye,
+  DATE(date_pointage) AS jour_pointage,
+  TIMESTAMPDIFF(
+      MINUTE, 
+      MIN(date_pointage), 
+      MAX(date_pointage)
+  ) AS duree_minutes
+FROM pointages
+GROUP BY IDEmploye, DATE(date_pointage)
+ORDER BY jour_pointage DESC;
+"""
                 cursor.execute(pointage_sql)
                 pointage_programme=cursor.fetchall()
                 for pointage in pointage_programme:
                     id_pointage=pointage[0]
                     ID_Employe=pointage[1]
                     jour=pointage[2]
+                    duree_minutes=pointage[3]
                     Programme_sql = """
-                        SELECT IDProgramme, professeur_id, professeur_nom, jour, heure_arrivee, heure_depart, duree_cours 
+                        SELECT IDProgramme, professeur_id,professeur_code, professeur_nom, jour, heure_arrivee, heure_depart, duree_cours 
                         FROM Programme 
-                        WHERE professeur_id = %s AND jour = %s
+                        WHERE professeur_code = %s AND jour = %s
                     """
                     cursor.execute(Programme_sql,(ID_Employe,jour))
                     programme_verifie=cursor.fetchall()
@@ -115,17 +129,17 @@ def programme_attendance():
                         if programme:
                            update_sql = """
                                 UPDATE pointage_programe 
-                                SET EstValider = %s 
+                                SET EstValider = %s, Duree= %s 
                                 WHERE IDProgramme = %s AND IDPointage = %s
                             """
-                           cursor.execute(update_sql, (True, IDProgramme, id_pointage))
+                           cursor.execute(update_sql, (True, duree_minutes, IDProgramme, id_pointage))
                            print(f"[INFO] Pointage pour le programme {IDProgramme} mis à jour avec succès.")
                         else:
                            insert_sql = """
                                 INSERT INTO pointage_programe (IDProgramme, IDPointage, EstValider) 
-                                VALUES (%s, %s, %s)
+                                VALUES (%s, %s, %s, %s)
                             """
-                           cursor.execute(insert_sql, (IDProgramme, id_pointage, True))
+                           cursor.execute(insert_sql, (IDProgramme, id_pointage, True, duree_minutes))
                            print(f"[INFO] Pointage pour le programme {IDProgramme} inséré avec succès.")
                 conn.commit()
     except pymysql.MySQLError as e:
