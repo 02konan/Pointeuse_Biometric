@@ -38,9 +38,8 @@ def read_matricule():
 
 # === DASHBOARD SECTION ===
 def read_data_from_db(section_name):
+    data_base = connexion()
     try:
-        data_base = connexion()
-
         with data_base.cursor() as cursor:
             # DONNÉES GÉNÉRALES
             sql1 = """
@@ -52,131 +51,123 @@ WHERE s.IDSection =%s;
 """
             sql2 = """SELECT COUNT(*) AS nb_presences
 FROM (
-  SELECT p.IDEmploye
-  FROM pointages p
-  JOIN empreintes e ON e.Nom = p.IDEmploye
-  JOIN section s ON s.idPointeuse = p.idPointeuse
-  WHERE DATE(p.date_pointage) = CURRENT_DATE()
-    AND s.IDSection = %s
-  GROUP BY p.IDEmploye, DATE(p.date_pointage), e.Nom
-  HAVING COUNT(*) >= 2
+    SELECT p.IDEmploye
+    FROM pointages p
+    JOIN empreintes e ON e.Nom = p.IDEmploye
+    JOIN section s ON s.idPointeuse = p.idPointeuse
+    WHERE DATE(p.date_pointage) = CURRENT_DATE()
+        AND s.IDSection = %s
+    GROUP BY p.IDEmploye, DATE(p.date_pointage), e.Nom
+    HAVING COUNT(*) >= 2
 ) AS liste_presences;
-                   """
-            
+"""
             sql3 = """SELECT COUNT(*) AS nb_retardataires
 FROM (
-  SELECT p.IDEmploye
-  FROM pointages p
-  JOIN section s ON s.idPointeuse = p.idPointeuse
-  WHERE DATE(p.date_pointage) = CURRENT_DATE()
-    AND s.IDSection =%s AND p.IDEmploye!=0
-  GROUP BY p.IDEmploye
-  HAVING MIN(TIME(p.date_pointage)) > '08:00:00'
+    SELECT p.IDEmploye
+    FROM pointages p
+    JOIN section s ON s.idPointeuse = p.idPointeuse
+    WHERE DATE(p.date_pointage) = CURRENT_DATE()
+        AND s.IDSection =%s AND p.IDEmploye!=0
+    GROUP BY p.IDEmploye
+    HAVING MIN(TIME(p.date_pointage)) > '08:00:00'
 ) AS retardataires;
-
 """
-            
             sql4 = """SELECT COUNT(*)
 FROM empreintes
 LEFT JOIN pointages ON pointages.IDEmploye = empreintes.IDEmploye
-  AND DATE(pointages.date_pointage) = CURRENT_DATE()
+    AND DATE(pointages.date_pointage) = CURRENT_DATE()
 LEFT JOIN pointeuse ON pointeuse.idPointeuse = empreintes.IDPointeuse
 LEFT JOIN section ON section.idPointeuse = pointeuse.idPointeuse
 WHERE section.IDSection =%s AND pointages.IDEmploye IS NULL;
-
 """
-            
             sql5 = """SELECT DISTINCT e.Nom, p.date_pointage
 FROM pointages p
 JOIN empreintes e ON p.IDEmploye = e.IDEmploye
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
 WHERE DATE(p.date_pointage) = CURRENT_DATE()
-  AND s.IDSection =%s
+    AND s.IDSection =%s
 ORDER BY p.date_pointage DESC
 LIMIT 5;
 """
+            # Actifs du mois
+            sql6_mois = """
+SELECT COUNT(DISTINCT sous.IDEmploye) AS employes_actifs_mois
+FROM (
+        SELECT p.IDEmploye
+        FROM pointages p
+        JOIN empreintes e ON e.IDEmploye = p.IDEmploye
+        JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+        JOIN section s ON s.idPointeuse = pt.idPointeuse
+        WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
+            AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
+            AND s.IDSection = %s
+        GROUP BY p.IDEmploye, DATE(p.date_pointage)
+        HAVING COUNT(p.date_pointage) >= 2
+) AS sous;
+"""
+            # Jours travaillés dans le mois
+            sql7_mois = """
+SELECT COUNT(DISTINCT DATE(p.date_pointage)) AS jours_travailles
+FROM pointages p
+JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+JOIN section s ON s.idPointeuse = pt.idPointeuse
+WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
+    AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
+    AND s.IDSection = %s;
+"""
+            # Retards du mois
+            sql8_mois = """
+SELECT COUNT(DISTINCT p.IDEmploye) AS employes_retard_mois
+FROM pointages p
+JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+JOIN section s ON s.idPointeuse = pt.idPointeuse
+WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
+    AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
+    AND TIME(p.date_pointage) > '08:30:00'
+    AND NOT EXISTS (
+        SELECT 1
+        FROM pointages p2
+        WHERE p2.IDEmploye = p.IDEmploye
+            AND DATE(p2.date_pointage) = DATE(p.date_pointage)
+            AND TIME(p2.date_pointage) <= '08:30:00'
+    )
+    AND s.IDSection = %s;
+"""
+            # --- Exécution ---
+            cursor.execute(sql1, (section_name,))
+            total_eleves = cursor.fetchone()[0]
 
-                # Actifs du mois
-                sql6_mois = """
-                SELECT COUNT(DISTINCT sous.IDEmploye) AS employes_actifs_mois
-                FROM (
-                    SELECT p.IDEmploye
-                    FROM pointages p
-                    JOIN empreintes e ON e.IDEmploye = p.IDEmploye
-                    JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
-                    JOIN section s ON s.idPointeuse = pt.idPointeuse
-                    WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
-                      AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
-                      AND s.IDSection = %s
-                    GROUP BY p.IDEmploye, DATE(p.date_pointage)
-                    HAVING COUNT(p.date_pointage) >= 2
-                ) AS sous;
-                """
+            cursor.execute(sql2, (section_name,))
+            total_Presents = cursor.fetchone()[0]
 
-                # Jours travaillés dans le mois
-                sql7_mois = """
-                SELECT COUNT(DISTINCT DATE(p.date_pointage)) AS jours_travailles
-                FROM pointages p
-                JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
-                JOIN section s ON s.idPointeuse = pt.idPointeuse
-                WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
-                  AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
-                  AND s.IDSection = %s;
-                """
+            cursor.execute(sql3, (section_name,))
+            total_retard = cursor.fetchone()[0]
 
-                # Retards du mois
-                sql8_mois = """
-                SELECT COUNT(DISTINCT p.IDEmploye) AS employes_retard_mois
-                FROM pointages p
-                JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
-                JOIN section s ON s.idPointeuse = pt.idPointeuse
-                WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
-                  AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
-                  AND TIME(p.date_pointage) > '08:30:00'
-                  AND NOT EXISTS (
-                    SELECT 1
-                    FROM pointages p2
-                    WHERE p2.IDEmploye = p.IDEmploye
-                      AND DATE(p2.date_pointage) = DATE(p.date_pointage)
-                      AND TIME(p2.date_pointage) <= '08:30:00'
-                  )
-                  AND s.IDSection = %s;
-                """
+            cursor.execute(sql4, (section_name,))
+            total_absents = cursor.fetchone()[0]
 
-                # --- Exécution ---
-                cursor.execute(sql1, (section_name,))
-                total_eleves = cursor.fetchone()[0]
+            cursor.execute(sql5, (section_name,))
+            activite_recentes = cursor.fetchall()
 
-                cursor.execute(sql2, (section_name,))
-                total_Presents = cursor.fetchone()[0]
+            cursor.execute(sql6_mois, (section_name,))
+            employes_actifs_mois = cursor.fetchone()[0]
 
-                cursor.execute(sql3, (section_name,))
-                total_retard = cursor.fetchone()[0]
+            cursor.execute(sql7_mois, (section_name,))
+            jours_travailles_mois = cursor.fetchone()[0]
 
-                cursor.execute(sql4, (section_name,))
-                total_absents = cursor.fetchone()[0]
+            cursor.execute(sql8_mois, (section_name,))
+            employes_retard_mois = cursor.fetchone()[0]
 
-                cursor.execute(sql5, (section_name,))
-                activite_recentes = cursor.fetchall()
-
-                cursor.execute(sql6_mois, (section_name,))
-                employes_actifs_mois = cursor.fetchone()[0]
-
-                cursor.execute(sql7_mois, (section_name,))
-                jours_travailles_mois = cursor.fetchone()[0]
-
-                cursor.execute(sql8_mois, (section_name,))
-                employes_retard_mois = cursor.fetchone()[0]
-
-                return (
+            return (
                     total_eleves, total_Presents, total_retard, activite_recentes, total_absents,
-                    employes_actifs_mois, jours_travailles_mois, employes_retard_mois
-                )
-    except pymysql.MySQLError as e:
-        print("Erreur MySQL :", e)
+                    employes_actifs_mois, jours_travailles_mois, employes_retard_mois,employes_actifs_mois
+                    , jours_travailles_mois, employes_retard_mois
+            )
     except Exception as e:
-        print("Erreur générale :", e)
+        print("Erreur lors de la lecture des données du tableau de bord :", e)
+        return None
+                     
 
 
 # === EMPLOYÉS ===
@@ -290,13 +281,10 @@ def read_idrole():
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)
-        return []
     except Exception as e:
         print("Erreur générale :", e)
-        return []
 
-
-def read_utilisateur():
+def read_utilisateurs():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
