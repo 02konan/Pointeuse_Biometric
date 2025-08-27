@@ -337,7 +337,7 @@
   
     .sidebar-header span,
     .sidebar-menu li span {
-      display: none;
+      display: inline-block;
     }
   
     .sidebar.expanded .sidebar-header span,

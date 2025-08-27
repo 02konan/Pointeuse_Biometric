@@ -47,7 +47,7 @@ SELECT COUNT(e.Nom) AS total_employes
 FROM empreintes e
 JOIN pointeuse pt ON pt.idPointeuse = e.IDPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE s.IDSection =%s;
+WHERE s.IDSection = %s;
 """
             sql2 = """SELECT COUNT(*) AS nb_presences
 FROM (
@@ -88,7 +88,7 @@ JOIN section s ON s.idPointeuse = pt.idPointeuse
 WHERE DATE(p.date_pointage) = CURRENT_DATE()
     AND s.IDSection =%s
 ORDER BY p.date_pointage DESC
-LIMIT 5;
+LIMIT 10;
 """
             # Actifs du mois
             sql6_mois = """
@@ -161,8 +161,7 @@ WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
 
             return (
                     total_eleves, total_Presents, total_retard, activite_recentes, total_absents,
-                    employes_actifs_mois, jours_travailles_mois, employes_retard_mois,employes_actifs_mois
-                    , jours_travailles_mois, employes_retard_mois
+                    employes_actifs_mois, jours_travailles_mois, employes_retard_mois
             )
     except Exception as e:
         print("Erreur lors de la lecture des données du tableau de bord :", e)

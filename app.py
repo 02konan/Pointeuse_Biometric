@@ -110,8 +110,7 @@ def dashboard_data():
     data = read_data_from_db(session['section'])
     if data:
         total_eleves, presents, retard, activites, total_absents, \
-        employes_actifs_mois, jours_travailles_mois, employes_retard_mois, \
-        = data
+        employes_actifs_mois, jours_travailles_mois, employes_retard_mois = data
         
         return jsonify({
             'total_eleves': total_eleves,
