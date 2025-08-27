@@ -2,7 +2,6 @@ import pymysql
 from programme.base_donnee import connexion
 
 
-# === RAPPORTS ===
 def read_raports(utilisateur_name):
     try:
         with connexion() as conn:
@@ -21,7 +20,6 @@ def read_raports(utilisateur_name):
         print("Erreur générale :", e)
 
 
-# === MATRÍCULES ===
 def read_matricule():
     try:
         with connexion() as conn:
@@ -36,12 +34,10 @@ def read_matricule():
         print("Erreur générale :", e)
 
 
-# === DASHBOARD SECTION ===
 def read_data_from_db(section_name):
     data_base = connexion()
     try:
         with data_base.cursor() as cursor:
-            # DONNÉES GÉNÉRALES
             sql1 = """
 SELECT COUNT(e.Nom) AS total_employes
 FROM empreintes e
@@ -53,11 +49,12 @@ WHERE s.IDSection = %s;
 FROM (
     SELECT p.IDEmploye
     FROM pointages p
-    JOIN empreintes e ON e.Nom = p.IDEmploye
-    JOIN section s ON s.idPointeuse = p.idPointeuse
+    JOIN empreintes e ON e.IDEmploye = p.IDEmploye   -- liaison sur l’ID plutôt que sur le Nom
+    JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+    JOIN section s ON s.idPointeuse = pt.idPointeuse
     WHERE DATE(p.date_pointage) = CURRENT_DATE()
-        AND s.IDSection = %s
-    GROUP BY p.IDEmploye, DATE(p.date_pointage), e.Nom
+    AND s.IDSection =%s 
+    GROUP BY p.IDEmploye
     HAVING COUNT(*) >= 2
 ) AS liste_presences;
 """
@@ -67,18 +64,25 @@ FROM (
     FROM pointages p
     JOIN section s ON s.idPointeuse = p.idPointeuse
     WHERE DATE(p.date_pointage) = CURRENT_DATE()
-        AND s.IDSection =%s AND p.IDEmploye!=NULL
+      AND s.IDSection =1
+      AND p.IDEmploye IS NOT NULL
     GROUP BY p.IDEmploye
     HAVING MIN(TIME(p.date_pointage)) > '08:00:00'
 ) AS retardataires;
+
 """
-            sql4 = """SELECT COUNT(*)
-FROM empreintes
-LEFT JOIN pointages ON pointages.IDEmploye = empreintes.IDEmploye
-    AND DATE(pointages.date_pointage) = CURRENT_DATE()
-LEFT JOIN pointeuse ON pointeuse.idPointeuse = empreintes.IDPointeuse
-LEFT JOIN section ON section.idPointeuse = pointeuse.idPointeuse
-WHERE section.IDSection =%s AND pointages.IDEmploye IS NULL;
+            sql4 = """SELECT COUNT(*) AS nb_absents
+FROM empreintes e
+LEFT JOIN pointages p 
+       ON p.IDEmploye = e.IDEmploye 
+      AND DATE(p.date_pointage) = CURRENT_DATE()
+LEFT JOIN pointeuse pt 
+       ON pt.idPointeuse = e.IDPointeuse
+LEFT JOIN section s 
+       ON s.idPointeuse = pt.idPointeuse
+WHERE s.IDSection = %s
+  AND p.IDEmploye IS NULL;
+;
 """
             sql5 = """SELECT DISTINCT e.Nom, p.date_pointage
 FROM pointages p
@@ -166,10 +170,8 @@ WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
     except Exception as e:
         print("Erreur lors de la lecture des données du tableau de bord :", e)
         return None
-                     
 
 
-# === EMPLOYÉS ===
 def read_data_employe():
     try:
         with connexion() as conn:
@@ -182,8 +184,6 @@ def read_data_employe():
     except Exception as e:
         print("Erreur générale :", e)
 
-
-# === PRÉSENCE JOURNALIER ===
 def read_data_presence(section_name):
     try:
         with connexion() as conn:
@@ -201,11 +201,10 @@ JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
 JOIN pointages p ON pp.IDPointage = p.ID
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE DATE(p.date_pointage)=CURRENT_DATE()
-  AND s.IDSection =%s
-GROUP BY pr.professeur_code, DATE(p.date_pointage), pp.Duree, pp.status, s.IDSection
+WHERE DATE(p.date_pointage) ='2025-08-25'
+  AND s.IDSection = %s
+GROUP BY pr.professeur_code, DATE(p.date_pointage), pp.Duree, pp.status
 ORDER BY date_pointage DESC, temps_presence;
-
                       """
                 cursor.execute(sql, (section_name,))
                 return cursor.fetchall()
@@ -215,7 +214,6 @@ ORDER BY date_pointage DESC, temps_presence;
         print("Erreur générale :", e)
 
 
-# === POINTEUSES ===
 def read_data_pointeuse():
     try:
         with connexion() as conn:
@@ -228,7 +226,6 @@ def read_data_pointeuse():
         print("Erreur générale :", e)
 
 
-# === LOGIN ===
 def verification_utilisateur(username, password):
     try:
         with connexion() as conn:
@@ -261,7 +258,6 @@ def verification_utilisateur(username, password):
         return None
 
 
-# === SECTION / ROLE ===
 def read_idsection():
     try:
         with connexion() as conn:
@@ -304,7 +300,6 @@ def read_utilisateur():
         print("Erreur générale :", e)
 
 
-# === RAPPORTS PAR PÉRIODE ===
 def generer_presence(date_debut, date_fin, section_name):
     try:
         with connexion() as conn:
