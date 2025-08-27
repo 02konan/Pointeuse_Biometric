@@ -67,7 +67,7 @@ FROM (
     FROM pointages p
     JOIN section s ON s.idPointeuse = p.idPointeuse
     WHERE DATE(p.date_pointage) = CURRENT_DATE()
-        AND s.IDSection =%s AND p.IDEmploye!=0
+        AND s.IDSection =%s AND p.IDEmploye!=NULL
     GROUP BY p.IDEmploye
     HAVING MIN(TIME(p.date_pointage)) > '08:00:00'
 ) AS retardataires;
@@ -190,21 +190,23 @@ def read_data_presence(section_name):
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql="""SELECT
-  eu.IDEmploye,
-  e.Nom,
-  DATE(eu.date_pointage) AS date_pointage,
-  MIN(TIME(eu.date_pointage)) AS heure_arrivee,
-  MAX(TIME(eu.date_pointage)) AS heure_depart,
-  TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
-  FROM pointages eu
-  JOIN empreintes e ON e.Nom = eu.IDEmploye
-  JOIN pointeuse pt ON pt.idPointeuse = eu.idPointeuse
-  JOIN section s ON s.idPointeuse = pt.idPointeuse
-  WHERE DATE(eu.date_pointage) IN (CURRENT_DATE(), DATE_SUB(CURRENT_DATE(), INTERVAL 1 DAY))
+    pr.professeur_code,
+    DATE(p.date_pointage) AS date_pointage,
+    MIN(TIME(p.date_pointage)) AS heure_arrivee,
+    MAX(TIME(p.date_pointage)) AS heure_depart,
+    TIMEDIFF(MAX(p.date_pointage), MIN(p.date_pointage)) AS temps_presence,
+    pp.Duree,
+    pp.status
+FROM pointage_programe pp
+JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
+JOIN pointages p ON pp.IDPointage = p.ID
+JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+JOIN section s ON s.idPointeuse = pt.idPointeuse
+WHERE DATE(p.date_pointage)=CURRENT_DATE()
   AND s.IDSection =%s
-  GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Nom
-  HAVING COUNT(*) >= 2
-  ORDER BY date_pointage DESC, temps_presence;
+GROUP BY pr.professeur_code, DATE(p.date_pointage), pp.Duree, pp.status, s.IDSection
+ORDER BY date_pointage DESC, temps_presence;
+
                       """
                 cursor.execute(sql, (section_name,))
                 return cursor.fetchall()
@@ -284,7 +286,7 @@ def read_idrole():
     except Exception as e:
         print("Erreur générale :", e)
 
-def read_utilisateurs():
+def read_utilisateur():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:

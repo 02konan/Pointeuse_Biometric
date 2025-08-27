@@ -2,7 +2,7 @@ from flask import Flask, render_template, request,send_file, redirect, url_for, 
 from programme.read_data import read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
-from programme.attendance import listen_attendance,programme_attendance
+from programme.attendance import listen_attendance,programme_attendence
 from programme.insertion import insertion_
 from werkzeug.utils import secure_filename
 from programme.gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
@@ -559,7 +559,7 @@ if __name__ == '__main__':
     thread_sync = threading.Thread(target=sync_programme_periodique, args=(300,))
     thread_sync.daemon = True
     thread_sync.start()
-    thread_pointage = threading.Thread(target=programme_attendance)
+    thread_pointage = threading.Thread(target=programme_attendence)
     thread_pointage.daemon = True
     thread_pointage.start()
     thread_insertion = threading.Thread(target=insertion_)
