@@ -37,8 +37,9 @@
     <div class="bg-white py-2 px-4" style="min-height: 48px;">
         <!-- Tu peux ajouter ici du texte, des liens ou laisser vide pour juste combler l'espace -->
     </div>
-    <div id="dashboard">
-        {%include "Sidebar.html"%}
+        <div id="dashboard">
+                {%include "Sidebar.html"%}
+
         <div class="main-content">
             {% block content %}
             {% if active_page == 'index' %}

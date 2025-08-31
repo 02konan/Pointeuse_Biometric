@@ -94,61 +94,89 @@ def listen_attendance():
                     pass
 
 def programme_attendence():
-
-    locale.setlocale(locale.LC_TIME, "fr_FR.UTF-8")
-
-    sql_pointage="""
-                SELECT 
-                  ID,
-                  IDEmploye,
-                  jour_pointage,
-                  TIMESTAMPDIFF(
-                      MINUTE, 
-                      MIN(date_pointage), 
-                      MAX(date_pointage)
-                  ) AS duree_minutes
-                FROM pointages
-                GROUP BY IDEmploye, DATE(date_pointage)
-                Having count(*)>=2
-                ORDER BY jour_pointage DESC;
-            """
+    sql_pointage = """
+        SELECT 
+          ID,
+          IDEmploye,
+          DATE(date_pointage) AS jour_pointage,
+          MIN(TIME(date_pointage)) AS arrivee,
+          MAX(TIME(date_pointage)) AS depart,
+          TIMESTAMPDIFF(
+              MINUTE, 
+              MIN(date_pointage), 
+              MAX(date_pointage)
+          ) AS duree_minutes
+        FROM pointages
+        GROUP BY IDEmploye, DATE(date_pointage)
+        HAVING COUNT(*) >= 2
+        ORDER BY jour_pointage DESC;
+    """
     with connexion() as conn:
-            try:
-                with conn.cursor() as curseur:
-                    curseur.execute(sql_pointage)
-                    result = curseur.fetchall()
-                    for pointage in result:
-                        id_pointage=pointage[0]
-                        id_Employe=pointage[1]
-                        jour_pointage=pointage[2]
-                        duree_minutes=pointage[3]
-                        sql_programme="""
-                        SELECT IDProgramme, 
-                        professeur_id, professeur_code, 
-                        jour,duree_cours
-                        FROM Programme"""
-                        curseur.execute(sql_programme)
-                        results_programme=curseur.fetchall()
-                        for programme in results_programme:
-                            id_programme=programme[0]
-                            professeur_code=programme[2]
-                            jour=programme[3]
-                            duree_cours=programme[4]
-                            if jour==jour_pointage and id_Employe==professeur_code:
-                                if duree_minutes>=duree_cours:
-                                    statut="Présent"
-                                else:
-                                    statut="Absent"
-                                insert_Programme_pointage="""
-                                INSERT INTO pointage_programe (IDProgramme,IDPointage,Status,Duree)
-                                VALUES (%s,%s,%s,%s)
+        try:
+            with conn.cursor() as curseur:
+                curseur.execute(sql_pointage)
+                result = curseur.fetchall()
+
+                for pointage in result:
+                    id_pointage   = pointage[0]
+                    id_Employe    = pointage[1]
+                    jour_pointage = pointage[2]
+                    arrivee       = pointage[3]
+                    depart        = pointage[4]
+                    duree_minutes = pointage[5]
+
+                    sql_programme = """
+                        SELECT IDProgramme, professeur_id, professeur_code, 
+                               jour, duree_cours
+                        FROM Programme
+                    """
+                    curseur.execute(sql_programme)
+                    results_programme = curseur.fetchall()
+
+                    for programme in results_programme:
+                        id_programme    = programme[0]
+                        professeur_code = programme[2]
+                        jour            = programme[3]
+                        duree_cours     = programme[4]
+
+                        if jour == jour_pointage and id_Employe == professeur_code:
+                            # Détermination du statut
+                            if duree_minutes >= duree_cours:
+                                statut = "Présent"
+                            else:
+                                statut = "Absent"
+
+                            # --- UPDATE ---
+                            sql_update = """
+                                UPDATE pointage_programe
+                                SET Status = %s,
+                                    arrivee = %s,
+                                    depart = %s,
+                                    Duree_initial = %s,
+                                    Duree_finale = %s
+                                WHERE IDProgramme = %s AND IDPointage = %s
+                            """
+                            ligne = curseur.execute(sql_update, (
+                                statut, arrivee, depart, duree_cours, duree_minutes, id_programme, id_pointage
+                            ))
+
+                            # --- Si aucun UPDATE => INSERT ---
+                            if ligne == 0:
+                                insert_Programme_pointage = """
+                                    INSERT INTO pointage_programe 
+                                        (IDProgramme, IDPointage, Status, arrivee, depart, Duree_initial, Duree_finale)
+                                    VALUES (%s, %s, %s, %s, %s, %s, %s)
                                 """
-                                curseur.execute(insert_Programme_pointage,(id_programme,id_pointage,statut,duree_minutes))
-                                conn.commit()
+                                curseur.execute(insert_Programme_pointage, (
+                                    id_programme, id_pointage, statut, arrivee, depart, duree_cours, duree_minutes
+                                ))
+
+                conn.commit()
                 return True
-            except pymysql.MySQLError as e:
-                print(f"[ERREUR] MySQL: {e}")
-                return False
-            except Exception as e:
-                print(f"[ERREUR] Générale: {e}")
-                return False
+
+        except pymysql.MySQLError as e:
+            print(f"[ERREUR] MySQL: {e}")
+            return False
+        except Exception as e:
+            print(f"[ERREUR] Générale: {e}")
+            return False

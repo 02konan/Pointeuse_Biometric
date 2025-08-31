@@ -158,46 +158,45 @@ def intf_presence():
     data = read_data_presence(session['section'])
     table = []
     for donnee in data:
-     arrivee = donnee[3]
-     depart = donnee[4]
-     heur_travaille = donnee[5]
-     statut = "Absent"
-     couleur = "danger"
-     if arrivee:
-        if isinstance(arrivee, timedelta):
-            total_seconds = int(arrivee.total_seconds())
-            hours = total_seconds // 3600
-            minutes = (total_seconds % 3600) // 60
-            arrivee = f"{hours:02}:{minutes:02}"
-
-        heure_arrivee = datetime.strptime(arrivee, "%H:%M")
-        heure_limite = datetime.strptime("8:15", "%H:%M")
-
-        if heure_arrivee <= heure_limite:
-            statut = "Présent"
-            couleur = "success"
-        elif heure_arrivee > heure_limite and heur_travaille >= timedelta(hours=9):
-            statut="En retard"
-            couleur = "warning"
-        if heur_travaille < timedelta(hours=9):
-            statut = "Absent"
-            couleur = "danger"
-
-     resultat = {
-        'ID_employe': donnee[0],
-        'Nom': donnee[1],
-        'Date': donnee[2],
-        'arrivee': arrivee,
-        'depart': depart,
-        'Heures': heur_travaille,
-        'Statut': statut,
-        'couleur': couleur
-     }
-
-     table.append(resultat)
-    
+        code = donnee[0]
+        Nom = donnee[1]
+        arrive = donnee[2]
+        depart = donnee[3]
+        jour = donnee[4]
+        date = donnee[5]
+        Duree_initial = donnee[6]
+        Statut = donnee[7]
+        heur_arrivee = donnee[8]
+        temps_presence = donnee[9]
+        if Statut == "Present":
+            if arrive <= heur_arrivee:
+                Observtion = "Ponctuel"
+                couleur_st = "success"
+                couleur_ob = "success"
+            else:
+                Observtion = "En retard"
+                couleur_st = "success"
+                couleur_ob = "warning"
+        else:
+            Observtion = "Non pointé"
+            couleur_st = "danger"
+            couleur_ob = "danger"
+        resultat = {
+            'Matricule': code,
+            'Nom': Nom,
+            'arrivee': arrive,
+            'depart': depart,
+            'jour': jour,
+            'Date': date,
+            'Duree_initial': Duree_initial,
+            'Duree_presence': temps_presence,
+            'Statut': Statut,
+            'couleur_statut': couleur_st,
+            'Observation': Observtion,
+            'couleur_observation': couleur_ob
+        }
+        table.append(resultat)
     return render_template('presence.html', active_page='presence', resultats=table)
-
 @app.route('/api/fiche_presence', methods=['POST'])
 @login_required
 def api_fiche_presence():

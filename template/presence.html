@@ -34,17 +34,20 @@
                 <th>ID</th>
                 <th>Employé</th>
                 <th>Date</th>
+                <th>jour</th>
                 <th>Arrivée</th>
                 <th>Départ</th>
-                <th>Heures travaillées</th>
+                <th>Minutes Initiale</th>
+                <th>Minutes travaillées</th>
                 <th>Statut</th>
+                <th>Observation</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {% for attendance in resultats %}
               <tr>
-                <td>{{attendance.ID_employe}}</td>
+                <td>{{attendance.Matricule}}</td>
                 <td>
                   <div class="d-flex align-items-center">
                     <div class="avatar me-2">
@@ -57,12 +60,19 @@
                   </div>
                 </td>
                 <td>{{attendance.Date}}</td>
+                <td>{{attendance.jour}}</td>
                 <td>{{attendance.arrivee}}</td>
                 <td>{{attendance.depart}}</td>
-                <td>{{attendance.Heures}}</td>
+                <td><span class="text-success px-2 py-1" style="font-size:1em;">{{attendance.Duree_initial}}<span style="font-size:0.85em;">Min</span></span></td>
+                <td><span class="text-danger px-2 py-1" style="font-size:1em;">{{attendance.Duree_presence}}<span style="font-size:0.85em;">Min</span></span></td>
                 <td>
-                  <span class="badge bg-{{attendance.couleur}}"
+                  <span class="badge bg-{{attendance.couleur_statut}}"
                     >{{attendance.Statut}}</span
+                  >
+                </td>
+                <td>
+                  <span class="badge bg-{{attendance.couleur_observation}}"
+                    >{{attendance.Observation}}</span
                   >
                 </td>
                 <td>

@@ -348,17 +348,29 @@
   
   @media (max-width: 768px) {
     .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 0;
+      height: 100vh;
+      overflow-x: hidden;
+      transition: width 0.3s, transform 0.3s;
+      transform: translateX(-100%);
+      z-index: 2000;
     }
-  
-    .sidebar.expanded {
-      width: var(--sidebar-width);
+    .sidebar.open {
+      width: 220px;
+      transform: translateX(0);
+      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
     }
-  
+    .sidebar-menu li {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      display: block;
+    }
     .main-content {
       margin-left: 0;
     }
-  
     .main-content.sidebar-expanded {
       margin-left: 0;
     }

@@ -18,6 +18,23 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Gestion du menu actif dans la sidebar
+
+  // Masquer le bouton du header si la sidebar est ouverte sur mobile
+  const sidebarHeader = document.querySelector('.sidebar');
+  function updateToggleBtn() {
+    if(window.innerWidth <= 768 && sidebarHeader && sidebarHeader.classList.contains('open')) {
+      sidebarToggle.style.display = 'none';
+    } else {
+      sidebarToggle.style.display = '';
+    }
+  }
+  if(sidebarToggle && sidebarHeader) {
+    // Sur ouverture/fermeture sidebar
+    var observer = new MutationObserver(updateToggleBtn);
+    observer.observe(sidebarHeader, { attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('resize', updateToggleBtn);
+    updateToggleBtn();
+  }
   const sidebarMenuItems = document.querySelectorAll(".sidebar-menu li a");
   if (sidebarMenuItems.length > 0) {
     sidebarMenuItems.forEach((item) => {
@@ -78,4 +95,37 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (input && table) input.addEventListener('keyup', filterTable);
   if (statutSelect) statutSelect.addEventListener('change', filterTable);
+
+  var sidebar = document.querySelector('.sidebar');
+    var toggle = document.getElementById('sidebar-toggle');
+    var closeBtn = document.querySelector('.sidebar-close');
+    function updateCloseBtn() {
+      if(window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+        closeBtn.style.display = 'block';
+      } else {
+        closeBtn.style.display = 'none';
+      }
+    }
+    if (toggle && sidebar) {
+      toggle.addEventListener('click', function() {
+        sidebar.classList.toggle('open');
+        updateCloseBtn();
+      });
+      if(closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+          sidebar.classList.remove('open');
+          updateCloseBtn();
+          e.stopPropagation();
+        });
+      }
+      document.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+          if (!sidebar.contains(e.target) && e.target !== toggle) {
+            sidebar.classList.remove('open');
+            updateCloseBtn();
+          }
+        }
+      });
+      window.addEventListener('resize', updateCloseBtn);
+    }
 });
