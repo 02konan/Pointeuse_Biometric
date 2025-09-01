@@ -178,9 +178,9 @@ def intf_presence():
                 couleur_st = "success"
                 couleur_ob = "warning"
         else:
-            Observtion = "Non pointé"
+            Observtion = "En retard"
             couleur_st = "danger"
-            couleur_ob = "danger"
+            couleur_ob = "warning"
         resultat = {
             'Matricule': code,
             'Nom': Nom,
@@ -387,7 +387,7 @@ def liste_rapports():
                 "auteur": session['username'],
                 "date": datetime.fromtimestamp(
                     os.path.getctime(os.path.join(uploads_dir, nom))
-                ).strftime("%Y-%m-%d %H:%M")
+                ).strftime("%d-%m-%Y %H:%M")
             })
     return jsonify(fichiers)
 @app.route("/api/pointages/<matricule>", methods=["GET"])

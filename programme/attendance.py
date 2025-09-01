@@ -140,13 +140,10 @@ def programme_attendence():
                         duree_cours     = programme[4]
 
                         if jour == jour_pointage and id_Employe == professeur_code:
-                            # Détermination du statut
                             if duree_minutes >= duree_cours:
                                 statut = "Présent"
                             else:
                                 statut = "Absent"
-
-                            # --- UPDATE ---
                             sql_update = """
                                 UPDATE pointage_programe
                                 SET Status = %s,
