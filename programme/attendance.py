@@ -98,7 +98,7 @@ def programme_attendence():
         SELECT 
           ID,
           IDEmploye,
-          DATE(date_pointage) AS jour_pointage,
+          jour_pointage,
           MIN(TIME(date_pointage)) AS arrivee,
           MAX(TIME(date_pointage)) AS depart,
           TIMESTAMPDIFF(
@@ -180,3 +180,11 @@ def programme_attendence():
         except Exception as e:
             print(f"[ERREUR] Générale: {e}")
             return False
+
+# def synchro_attendance(periode=None):
+#     while True:
+#         listen_attendance()
+#         if periode:
+#             time.sleep(periode)
+#         programme_attendence()
+#         time.sleep(periode)
