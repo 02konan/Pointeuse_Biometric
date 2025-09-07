@@ -16,7 +16,7 @@ def get_etats_pointeuses():
     db.close()
 
     etats = []
-    for pointeuse_id, ip,Nom,Localisation,Serie,Modele in pointeuses:
+    for pointeuse_id, ip,Nom,Localisation,Serie,Modele, in pointeuses:
         etat = "En ligne" if is_pingable(ip) else "Hors ligne"
         etats.append({"id":pointeuse_id, "ip": ip, "etat": etat, "Nom": Nom, "Localisation": Localisation, "Serie": Serie, "Modele": Modele})
     return etats

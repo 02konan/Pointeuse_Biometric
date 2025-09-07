@@ -299,14 +299,12 @@ def read_utilisateur():
     except Exception as e:
         print("Erreur générale :", e)
 
-
 def generer_presence(date_debut, date_fin, section_name):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
-                SELECT 
-                  eu.IDEmploye,
+                SELECT
                   e.Nom,
                   DATE(eu.date_pointage) AS date_pointage,
                   MIN(TIME(eu.date_pointage)) AS heure_arrivee,
@@ -329,14 +327,12 @@ def generer_presence(date_debut, date_fin, section_name):
     except Exception as e:
         print("Erreur générale :", e)
 
-
 def generer_retard(date_debut_retard, date_fin_retard, section_name):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
-                SELECT 
-                  eu.IDEmploye,
+                SELECT
                   e.Nom,
                   DATE(eu.date_pointage) AS date_pointage,
                   MIN(TIME(eu.date_pointage)) AS heure_arrivee,
@@ -360,14 +356,12 @@ def generer_retard(date_debut_retard, date_fin_retard, section_name):
     except Exception as e:
         print("Erreur générale :", e)
 
-
 def generer_absence(date_debut_absence, date_fin_absence, section_name):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
-                SELECT 
-                  eu.IDEmploye,
+                SELECT
                   e.Nom,
                   DATE(eu.date_pointage) AS date_pointage,
                   MIN(TIME(eu.date_pointage)) AS heure_arrivee,
@@ -391,14 +385,12 @@ def generer_absence(date_debut_absence, date_fin_absence, section_name):
     except Exception as e:
         print("Erreur générale :", e)
 
-
 def generer_unique_presence(Matricule):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
-                SELECT 
-                  eu.IDEmploye,
+                SELECT
                   e.Nom,
                   DATE(eu.date_pointage) AS Date_pointage,
                   MIN(TIME(eu.date_pointage)) AS date_arrivee,

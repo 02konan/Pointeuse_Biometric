@@ -35,8 +35,7 @@ def generer_fiche_presence_pdf(utilisateur,id_utilisateur,filename=None, data=No
     # Fonction pour dessiner les en-têtes du tableau
     def dessiner_entete(y):
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(0.5 * cm, y, "ID")
-        c.drawString(2.5 * cm, y, "Matricule")
+        c.drawString(6 * cm, y, "Nom&Prenom")
         c.drawString(6 * cm, y, "Date de Pointage")
         c.drawString(10 * cm, y, "Heure d'Arrivée")
         c.drawString(14 * cm, y, "Heure de Départ")
@@ -48,14 +47,13 @@ def generer_fiche_presence_pdf(utilisateur,id_utilisateur,filename=None, data=No
 
     for row in data:
         try:
-            id_employe, matricule, date_pointage, heure_arrivee, heure_depart, temps_presence = row
+            matricule, date_pointage, heure_arrivee, heure_depart, temps_presence = row
 
             if y_position < 2 * cm:
                 c.showPage()
                 y_position = dessiner_entete(height - 2 * cm)
 
             c.setFont("Helvetica", 12)
-            c.drawString(0.5 * cm, y_position, str(id_employe))
             c.drawString(2.5 * cm, y_position, str(matricule))
             c.drawString(6 * cm, y_position, date_pointage.strftime("%Y-%m-%d"))
             c.drawString(10 * cm, y_position, format_timedelta(heure_arrivee))
@@ -92,7 +90,6 @@ def generer_fiche_retards_pdf(utilisateur,id_utilisateur,filename=None, data=Non
     # Fonction pour dessiner les en-têtes du tableau
     def dessiner_entete(y):
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(0.5 * cm, y, "ID")
         c.drawString(2.5 * cm, y, "Matricule")
         c.drawString(6 * cm, y, "Date de Pointage")
         c.drawString(10 * cm, y, "Heure d'Arrivée")
@@ -105,14 +102,13 @@ def generer_fiche_retards_pdf(utilisateur,id_utilisateur,filename=None, data=Non
 
     for row in data:
         try:
-            id_employe, matricule, date_pointage, heure_arrivee, heure_depart, temps_presence = row
+            matricule, date_pointage, heure_arrivee, heure_depart, temps_presence = row
 
             if y_position < 2 * cm:
                 c.showPage()
                 y_position = dessiner_entete(height - 2 * cm)
 
             c.setFont("Helvetica", 12)
-            c.drawString(0.5 * cm, y_position, str(id_employe))
             c.drawString(2.5 * cm, y_position, str(matricule))
             c.drawString(6 * cm, y_position, date_pointage.strftime("%Y-%m-%d"))
             c.drawString(10 * cm, y_position, format_timedelta(heure_arrivee))
@@ -149,7 +145,6 @@ def generer_fiche_absence_pdf(utilisateur,id_utilisateur,filename=None, data=Non
     # Fonction pour dessiner les en-têtes du tableau
     def dessiner_entete(y):
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(0.5 * cm, y, "ID")
         c.drawString(2.5 * cm, y, "Matricule")
         c.drawString(6 * cm, y, "Date de Pointage")
         c.drawString(10 * cm, y, "Heure d'Arrivée")
@@ -162,14 +157,13 @@ def generer_fiche_absence_pdf(utilisateur,id_utilisateur,filename=None, data=Non
 
     for row in data:
         try:
-            id_employe, matricule, date_pointage, heure_arrivee, heure_depart, temps_presence = row
+            matricule, date_pointage, heure_arrivee, heure_depart, temps_presence = row
 
             if y_position < 2 * cm:
                 c.showPage()
                 y_position = dessiner_entete(height - 2 * cm)
 
             c.setFont("Helvetica", 12)
-            c.drawString(0.5 * cm, y_position, str(id_employe))
             c.drawString(2.5 * cm, y_position, str(matricule))
             c.drawString(6 * cm, y_position, date_pointage.strftime("%Y-%m-%d"))
             c.drawString(10 * cm, y_position, format_timedelta(heure_arrivee))
@@ -183,7 +177,6 @@ def generer_fiche_absence_pdf(utilisateur,id_utilisateur,filename=None, data=Non
 
     c.save()
 def generer_presence_unique(Matricule=None, file_name=None, data=None):
-    # Récupération des données de présence si non fournies
     if data is None:
         data = generer_unique_presence(Matricule)
 

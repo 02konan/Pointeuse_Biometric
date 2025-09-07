@@ -15,21 +15,21 @@
       </form>
     </li>
 
-    <li class="{% if active_page == 'employee' %}active{% endif %}">
+    <!-- <li class="{% if active_page == 'employee' %}active{% endif %}">
       <form action="{{ url_for('intf_employee') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
           <i class="fas fa-users"></i> Employee
         </button>
       </form>
-    </li>
+    </li> -->
 
-    <li class="{% if active_page == 'programme' %}active{% endif %}">
+    <!-- <li class="{% if active_page == 'programme' %}active{% endif %}">
       <form action="{{ url_for('intf_Programme') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
           <i class="fas fa-calendar-check"></i> Programme
         </button>
       </form>
-    </li>
+    </li> -->
 
     <li class="{% if active_page == 'presence' %}active{% endif %}">
       <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
@@ -63,13 +63,13 @@
       </form>
     </li>
 
-    <li class="{% if active_page == 'parametres' %}active{% endif %}">
+    <!-- <li class="{% if active_page == 'parametres' %}active{% endif %}">
       <form action="{{ url_for('intf_Parametres') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
           <i class="fas fa-cog"></i> Paramètres
         </button>
       </form>
-    </li>
+    </li> -->
   </ul>
 
   <div class="sidebar-footer">
