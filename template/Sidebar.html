@@ -5,76 +5,82 @@
     <i class="fas fa-fingerprint"></i>
     <span>Biometric</span>
   </div>
+
   <ul class="sidebar-menu">
     <li class="{% if active_page == 'index' %}active{% endif %}">
-      <a class="text-white text-decoration-none" href="{{ url_for('index') }}">
-        <i class="fas fa-tachometer-alt"></i> Tableau de bord</a
-      >
+      <form action="{{ url_for('index') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-tachometer-alt"></i> Tableau de bord
+        </button>
+      </form>
     </li>
+
     <li class="{% if active_page == 'employee' %}active{% endif %}">
-      <a
-      
-        class="text-white text-decoration-none"
-        href="{{ url_for('intf_employee') }}"
-      >
-        <i class="fas fa-users"></i>Employee</a
-      >
+      <form action="{{ url_for('intf_employee') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-users"></i> Employee
+        </button>
+      </form>
     </li>
+
     <li class="{% if active_page == 'programme' %}active{% endif %}">
-      <a
-        class="text-white text-decoration-none"
-        href="{{ url_for('intf_Programme') }}"
-      >
-        <i class="fas fa-calendar-check"></i>Programme</a
-      >
+      <form action="{{ url_for('intf_Programme') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-calendar-check"></i> Programme
+        </button>
+      </form>
     </li>
+
     <li class="{% if active_page == 'presence' %}active{% endif %}">
-      <a
-        class="text-white text-decoration-none"
-        href="{{ url_for('intf_presence') }}"
-      >
-        <i class="fas fa-calendar-check"></i>Présences</a
-      >
+      <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-calendar-check"></i> Présences
+        </button>
+      </form>
     </li>
+
     <li class="{% if active_page == 'rapports' %}active{% endif %}">
-      <a
-        class="text-white text-decoration-none"
-        href="{{ url_for('intf_rapports') }}"
-      >
-        <i class="fas fa-chart-bar"></i>Rapports</a
-      >
+      <form action="{{ url_for('intf_rapports') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-chart-bar"></i> Rapports
+        </button>
+      </form>
     </li>
+
     <li class="{% if active_page == 'appareils' %}active{% endif %}">
-      <a
-        class="text-white text-decoration-none"
-        href="{{ url_for('intf_appareils') }}"
-      >
-        <i class="fas fa-fingerprint"></i>Appareils</a
-      >
+      <form action="{{ url_for('intf_appareils') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-fingerprint"></i> Appareils
+        </button>
+      </form>
     </li>
+
     <li class="{% if active_page == 'utilisateurs' %}active{% endif %}">
-      <a
-        class="text-white text-decoration-none"
-        href="{{ url_for('lister_utilisateurs') }}"
-      >
-        <i class="fas fa-user-plus "></i>Utilisateur</a
-      >
+      <form action="{{ url_for('lister_utilisateurs') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-user-plus"></i> Utilisateur
+        </button>
+      </form>
     </li>
+
     <li class="{% if active_page == 'parametres' %}active{% endif %}">
-      <a
-        class="text-white text-decoration-none"
-        href="{{ url_for('intf_Parametres') }}"
-      >
-        <i class="fas fa-cog "></i>Paramètres</a
-      >
+      <form action="{{ url_for('intf_Parametres') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-cog"></i> Paramètres
+        </button>
+      </form>
     </li>
   </ul>
+
   <div class="sidebar-footer">
-    <a href="/logout" class="btn btn-sm btn-outline-light">
-      <i class="fas fa-sign-out-alt"></i> Déconnexion
-    </a>
+    <form action="/logout" method="get" style="width:100%;">
+      <button type="submit" class="btn btn-sm btn-outline-light w-100">
+        <i class="fas fa-sign-out-alt"></i> Déconnexion
+      </button>
+    </form>
   </div>
 </div>
+
 {% endif %}
 {% if session['role']|lower == 'user' %}
 <div class="sidebar">

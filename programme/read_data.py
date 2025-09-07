@@ -55,7 +55,7 @@ FROM (
     WHERE DATE(p.date_pointage) = CURRENT_DATE()
     AND s.IDSection =%s 
     GROUP BY p.IDEmploye
-    HAVING COUNT(*) >= 2
+    HAVING COUNT(p.IDEmploye) >= 2
 ) AS liste_presences;
 """
             sql3 = """SELECT COUNT(*) AS nb_retardataires
@@ -204,7 +204,7 @@ JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
 JOIN pointages p ON pp.IDPointage = p.ID
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE DATE(p.date_pointage) = current_date()
+WHERE DATE(p.date_pointage) = CURRENT_DATE()
 AND s.IDSection = %s
 GROUP BY pr.professeur_code, pr.professeur_nom, DATE(p.date_pointage)
 ORDER BY p.date_pointage DESC, temps_presence;
@@ -216,7 +216,6 @@ ORDER BY p.date_pointage DESC, temps_presence;
     except Exception as e:
         print("Erreur générale :", e)
 
-
 def read_data_pointeuse():
     try:
         with connexion() as conn:
@@ -227,7 +226,6 @@ def read_data_pointeuse():
         print("Erreur MySQL :", e)
     except Exception as e:
         print("Erreur générale :", e)
-
 
 def verification_utilisateur(username, password):
     try:
@@ -259,7 +257,6 @@ def verification_utilisateur(username, password):
     except Exception as e:
         print("Erreur générale :", e)
         return None
-
 
 def read_idsection():
     try:

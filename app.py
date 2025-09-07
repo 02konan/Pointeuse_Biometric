@@ -551,17 +551,17 @@ if __name__ == '__main__':
     thread = threading.Thread(target=listen_attendance)
     thread.daemon = True
     thread.start()
-    recuperation = threading.Thread(target=recuperation_emprientes)
-    recuperation.daemon = True
-    recuperation.start()
+    # recuperation = threading.Thread(target=recuperation_emprientes)
+    # recuperation.daemon = True
+    # recuperation.start()
     thread_sync = threading.Thread(target=sync_programme_periodique, args=(300,))
     thread_sync.daemon = True
     thread_sync.start()
     thread_pointage = threading.Thread(target=programme_attendence)
     thread_pointage.daemon = True
     thread_pointage.start()
-    thread_insertion = threading.Thread(target=insertion_)
-    thread_insertion.daemon = True
-    thread_insertion.start()
+    # thread_insertion = threading.Thread(target=insertion_)
+    # thread_insertion.daemon = True
+    # thread_insertion.start()
 
     app.run(host='0.0.0.0',port=5000,debug=True)
