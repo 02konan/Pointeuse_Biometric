@@ -38,7 +38,13 @@
         </button>
       </form>
     </li>
-
+    <li class="{% if active_page == 'pointage_invalie' %}active{% endif %}">
+      <form action="{{ url_for('intf_pointage_invalie') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-sign-out-alt"></i>Pointage Invalide
+        </button>
+      </form>
+    </li>
     <li class="{% if active_page == 'rapports' %}active{% endif %}">
       <form action="{{ url_for('intf_rapports') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
@@ -101,6 +107,13 @@
       >
         <i class="fas fa-calendar-check"></i>Présences</a
       >
+    </li>
+    <li class="{% if active_page == 'pointage_invalie' %}active{% endif %}">
+      <form action="{{ url_for('intf_pointage_invalie') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-sign-out-alt"></i>Pointage Invalide
+        </button>
+      </form>
     </li>
     <li class="{% if active_page == 'rapports' %}active{% endif %}">
       <a

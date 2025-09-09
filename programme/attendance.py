@@ -95,21 +95,19 @@ def listen_attendance():
 
 def programme_attendence():
     sql_pointage = """
-        SELECT 
-          ID,
-          IDEmploye,
-          jour_pointage,
-          MIN(TIME(date_pointage)) AS arrivee,
-          MAX(TIME(date_pointage)) AS depart,
-          TIMESTAMPDIFF(
-              MINUTE, 
-              MIN(date_pointage), 
-              MAX(date_pointage)
-          ) AS duree_minutes
-        FROM pointages
-        GROUP BY IDEmploye, DATE(date_pointage)
-        HAVING COUNT(*) >= 2
-        ORDER BY jour_pointage DESC;
+        SELECT
+        id,
+    IDEmploye,
+    jour_pointage,
+    MIN(TIME(date_pointage)) AS arrivee,
+    MAX(TIME(date_pointage)) AS depart,
+    TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS duree_minutes
+FROM pointages
+WHERE DATE(date_pointage) = CURRENT_DATE()
+GROUP BY IDEmploye, DATE(date_pointage), jour_pointage
+HAVING COUNT(*) >= 2
+ORDER BY jour_pointage DESC;
+
     """
     with connexion() as conn:
         try:
@@ -144,33 +142,23 @@ def programme_attendence():
                                 statut = "Présent"
                             else:
                                 statut = "Absent"
-                            sql_update = """
-                                UPDATE pointage_programe
-                                SET Status = %s,
-                                    arrivee = %s,
-                                    depart = %s,
-                                    Duree_initial = %s,
-                                    Duree_finale = %s
-                                WHERE IDProgramme = %s AND IDPointage = %s
+                            insert_sql="""
+                            INSERT INTO pointage_programe 
+                            (IDProgramme, IDPointage, Status, arrivee, depart, Duree_initial, Duree_finale)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
+                            ON DUPLICATE KEY UPDATE
+                            Status = VALUES(Status),
+                            arrivee = VALUES(arrivee),
+                            depart = VALUES(depart),
+                            Duree_initial = VALUES(Duree_initial),
+                            Duree_finale = VALUES(Duree_finale)
                             """
-                            ligne = curseur.execute(sql_update, (
-                                statut, arrivee, depart, duree_cours, duree_minutes, id_programme, id_pointage
-                            ))
-
-                            # --- Si aucun UPDATE => INSERT ---
-                            if ligne == 0:
-                                insert_Programme_pointage = """
-                                    INSERT INTO pointage_programe 
-                                        (IDProgramme, IDPointage, Status, arrivee, depart, Duree_initial, Duree_finale)
-                                    VALUES (%s, %s, %s, %s, %s, %s, %s)
-                                """
-                                curseur.execute(insert_Programme_pointage, (
-                                    id_programme, id_pointage, statut, arrivee, depart, duree_cours, duree_minutes
-                                ))
-
+                            curseur.execute(insert_sql, 
+                            (id_programme, id_pointage, statut, arrivee, depart, duree_cours, duree_minutes))
+                            print(f"[INFO] Pointage programmé inséré/mis à jour pour l'employé {id_Employe} le {jour_pointage}. Statut: {statut}")
+                            break
                 conn.commit()
                 return True
-
         except pymysql.MySQLError as e:
             print(f"[ERREUR] MySQL: {e}")
             return False
@@ -178,10 +166,18 @@ def programme_attendence():
             print(f"[ERREUR] Générale: {e}")
             return False
 
-# def synchro_attendance(periode=None):
-#     while True:
-#         listen_attendance()
-#         if periode:
-#             time.sleep(periode)
-#         programme_attendence()
-#         time.sleep(periode)
+def programme_valider(IDemploye, date_pointage,idpointeuse,jour_pointage):
+    sql_valider = """insert into pointages (IDEmploye, date_pointage, jour_pointage,idPointeuse)
+                     values (%s, %s, %s,%s)"""
+    with connexion() as conn:
+        try:
+            with conn.cursor() as curseur:
+                curseur.execute(sql_valider, (IDemploye, date_pointage,idpointeuse,jour_pointage,))
+                conn.commit()
+                return True
+        except pymysql.MySQLError as e:
+            print(f"[ERREUR] MySQL: {e}")
+            return False
+        except Exception as e:
+            print(f"[ERREUR] Générale: {e}")
+            return False

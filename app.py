@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from programme.read_data import read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
+from programme.read_data import pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
-from programme.attendance import listen_attendance,programme_attendence
+from programme.attendance import listen_attendance,programme_attendence,programme_valider
 from programme.insertion import insertion_
 from werkzeug.utils import secure_filename
 from programme.gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
@@ -168,19 +168,10 @@ def intf_presence():
         Statut = donnee[7]
         heur_arrivee = donnee[8]
         temps_presence = donnee[9]
-        if Statut == "Present":
-            if arrive <= heur_arrivee:
-                Observtion = "Ponctuel"
-                couleur_st = "success"
-                couleur_ob = "success"
-            else:
-                Observtion = "En retard"
-                couleur_st = "success"
-                couleur_ob = "warning"
+        if Statut == "Présent":
+            couleur_st = "success"
         else:
-            Observtion = "En retard"
             couleur_st = "danger"
-            couleur_ob = "warning"
         resultat = {
             'Matricule': code,
             'Nom': Nom,
@@ -191,12 +182,48 @@ def intf_presence():
             'Duree_initial': Duree_initial,
             'Duree_presence': temps_presence,
             'Statut': Statut,
-            'couleur_statut': couleur_st,
-            'Observation': Observtion,
-            'couleur_observation': couleur_ob
+            'couleur_statut': couleur_st
         }
         table.append(resultat)
     return render_template('presence.html', active_page='presence', resultats=table)
+
+@app.route('/pointage_invalie', methods=['GET','POST'])
+@login_required
+def intf_pointage_invalie():
+    data = pointage_invalid(session['section'])
+    table = []
+    for donnee in data:
+        code = donnee[0]
+        Nom = donnee[1]
+        jour_pointage = donnee[3]
+        heure_pointage = donnee[5]
+        crenau = f"{donnee[6]}-{donnee[7]}"
+        Duree_cours = donnee[8]
+        
+        resultat = {
+            'Matricule': code,
+            'Nom': Nom,
+            'heure_pointage': heure_pointage,
+            'crenau': crenau,
+            'jour_pointage': jour_pointage,
+            'Duree_cours': Duree_cours
+        }
+        table.append(resultat)
+    return render_template('pointage_invalide.html', active_page='pointage_invalie', resultats=table)
+def validation_programme():
+    data=pointage_invalid(session['section'])
+    for donnee in data:
+        idpointeuse=donnee[4]
+        IDemploye=donnee[0]
+        jour_pointage=donnee[3]
+        date_pointage=f"{donnee[2]} {"17:00:00"}"
+        if request.args.get('id') == IDemploye:
+            programme_valider(IDemploye, date_pointage,idpointeuse,jour_pointage)
+            return True
+        flash("Pointages invalides traités avec succès !", "success")
+    else:
+        flash("Aucun pointage invalide trouvé pour cet employé.", "danger")
+    return redirect(url_for('intf_pointage_invalie'))
 @app.route('/api/fiche_presence', methods=['POST'])
 @login_required
 def api_fiche_presence():
@@ -551,17 +578,14 @@ if __name__ == '__main__':
     thread = threading.Thread(target=listen_attendance)
     thread.daemon = True
     thread.start()
-    # recuperation = threading.Thread(target=recuperation_emprientes)
-    # recuperation.daemon = True
-    # recuperation.start()
-    thread_sync = threading.Thread(target=sync_programme_periodique, args=(300,))
-    thread_sync.daemon = True
-    thread_sync.start()
+    recuperation = threading.Thread(target=recuperation_emprientes)
+    recuperation.daemon = True
+    recuperation.start()
     thread_pointage = threading.Thread(target=programme_attendence)
     thread_pointage.daemon = True
     thread_pointage.start()
-    # thread_insertion = threading.Thread(target=insertion_)
-    # thread_insertion.daemon = True
-    # thread_insertion.start()
+    thread_insertion = threading.Thread(target=insertion_)
+    thread_insertion.daemon = True
+    thread_insertion.start()
 
     app.run(host='0.0.0.0',port=5000,debug=True)

@@ -1,7 +1,7 @@
 {% extends 'index.html' %}
 {% block content %}
 <div id="devices-content" class="content-section">
-    <div class="toast-container">
+    <div class="toast-container p-3 position-fixed top-0 end-0" style="z-index: 1100;">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for category, message in messages %}
         <div class="toast align-items-center text-bg-{{ 'success' if category == 'success' else 'danger' }} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
