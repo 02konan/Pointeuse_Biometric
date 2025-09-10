@@ -71,18 +71,17 @@
                     <div>{{Invalide.Nom}}</div>
                   </div>
                 </td>
-              <td>{{ Invalide.heure_pointage}}</td>
+               <td>{{ Invalide.heure_pointage}}</td>
                 <td>{{Invalide.jour_pointage}}</td>
                 <td>{{Invalide.crenau}}</td>
                 <td>{{Invalide.Duree_cours}}</td>
                 <td><span class="badge bg-danger">Invalide</span></td></td>
                 <td>
-                  <a href="{{url_for('intf_pointage_invalie', id=Invalide.Matricule)}}" class="btn btn-sm btn-outline-success"
-                    ><i class="fas fa-check"></i> Valider</a
-                  >
-                    <a href="{{url_for('intf_pointage_invalie', id=Invalide.Matricule)}}" class="btn btn-sm btn-outline-danger"
-                        ><i class="fas fa-times"></i> Rejeter</a
-                    >
+                  <form action="{{ url_for('validation_programme') }}" method="get" style="width:100%;">
+                  <button type="submit" name="id" value="{{ Invalide.Matricule }}" class="btn btn-sm btn-outline-success me-2">
+                  <i class="fas fa-check"></i> Valider
+                 </button>
+                 </form>
                 </td>
               </tr>
               {% endfor %}

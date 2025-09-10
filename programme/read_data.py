@@ -47,7 +47,7 @@ WHERE s.IDSection = %s;
 FROM (
     SELECT p.IDEmploye
     FROM pointages p
-    JOIN empreintes e ON e.IDEmploye = p.IDEmploye   -- liaison sur l’ID plutôt que sur le Nom
+    JOIN empreintes e ON e.IDEmploye = p.IDEmploye   
     JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
     JOIN section s ON s.idPointeuse = pt.idPointeuse
     WHERE DATE(p.date_pointage) = CURRENT_DATE()
@@ -409,39 +409,52 @@ def generer_unique_presence(Matricule):
 
 def pointage_invalid(section_name):
     try:
-        with connexion()as conn:
-            with conn.cursor()as cursor:
-                sql="""
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql = """
                 SELECT 
-    p.professeur_code,
-    p.professeur_nom,
-    DATE(ptg.date_pointage),
-    ptg.jour_pointage,
-    po.idPointeuse,
-    TIME(ptg.date_pointage) AS heure_pointage,
-    p.heure_arrivee,
-    p.heure_depart,
-    p.duree_cours,
-    ptg.date_pointage
-FROM Programme p
-LEFT JOIN pointages ptg
-    ON p.professeur_code = ptg.IDEmploye
-    AND p.jour = ptg.jour_pointage
-LEFT JOIN pointeuse po
-    ON po.idPointeuse = ptg.idPointeuse
-LEFT JOIN section s
-    ON s.idPointeuse = po.idPointeuse
-    AND DATE(ptg.date_pointage) = CURRENT_DATE()
-    WHERE s.IDSection=%s
-GROUP BY 
-    p.professeur_code, 
-    p.professeur_nom, 
-    p.heure_arrivee, 
-    p.heure_depart, 
-    p.duree_cours
-HAVING COUNT(ptg.IDEmploye) = 1;
-                  """
-                cursor.execute(sql,(section_name,))
+                    p.professeur_code,
+                    p.professeur_nom,
+                    MIN(DATE(ptg.date_pointage)) AS date_pointage,
+                    MIN(ptg.jour_pointage) AS jour_pointage,
+                    MIN(po.idPointeuse) AS idPointeuse,
+                    MIN(TIME(ptg.date_pointage)) AS heure_pointage,
+                    p.heure_arrivee,
+                    p.heure_depart,
+                    p.duree_cours,
+                    MIN(ptg.date_pointage) AS date_pointage_complet
+                FROM Programme p
+                LEFT JOIN pointages ptg
+                    ON p.professeur_code = ptg.IDEmploye
+                    AND p.jour = ptg.jour_pointage
+                    AND DATE(ptg.date_pointage) = CURRENT_DATE()
+                LEFT JOIN pointeuse po
+                    ON po.idPointeuse = ptg.idPointeuse
+                LEFT JOIN section s
+                    ON s.idPointeuse = po.idPointeuse
+                WHERE s.IDSection = %s
+                GROUP BY 
+                    p.professeur_code, 
+                    p.professeur_nom, 
+                    p.heure_arrivee, 
+                    p.heure_depart, 
+                    p.duree_cours
+                HAVING COUNT(ptg.IDEmploye) = 1;
+                """
+                cursor.execute(sql, (section_name,))
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)
+        return []
+
+def pointeuse(section_name):
+    try:
+        with connexion() as conn:
+            sql="""SELECT idPointeuse FROM pointeuse WHERE idPointeuse
+                IN (SELECT idPointeuse FROM section WHERE IDSection = %s)"""
+            with conn.cursor() as cursor:
+                cursor.execute(sql,(section_name,))
+                return cursor.fetchone()
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+        return None

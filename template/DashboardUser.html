@@ -78,9 +78,22 @@
           </div>
       </div>
   </div>
+   <!-- Charts Row -->
+    <div class="row mb-4">
+      <div class="col-md-12 mb-3">
+        <div class="card">
+          <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Tendance de présence</h5>
+          </div>
+          <div class="card-body">
+            <canvas id="attendanceChart" height="100"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Recent Activity -->
     <div class="row">
-      <div class="col-md-12 mb-3">
+      <div class="col-md-8 mb-3">
         <div class="card">
           <div class="card-header bg-white d-flex justify-content-between align-items-center">
             <h5 class="card-title mb-0">Activité récente</h5>
@@ -93,26 +106,13 @@
           </div>
         </div>
       </div>
-    </div>
-    <!-- Charts Row -->
-    <div class="row mb-4">
-      <div class="col-md-8 mb-3">
-        <div class="card">
-          <div class="card-header bg-white">
-            <h5 class="card-title mb-0">Tendance de présence</h5>
-          </div>
-          <div class="card-body">
-            <canvas id="attendanceChart" height="200"></canvas>
-          </div>
-        </div>
-      </div>
       <div class="col-md-4 mb-3">
         <div class="card">
           <div class="card-header bg-white">
             <h5 class="card-title mb-0">Répartition des présences</h5>
           </div>
           <div class="card-body">
-            <canvas id="attendancePieChart" height="200"></canvas>
+            <canvas id="attendancePieChart" height="50"></canvas>
           </div>
         </div>
       </div>

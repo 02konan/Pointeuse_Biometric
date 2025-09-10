@@ -96,18 +96,16 @@ def listen_attendance():
 def programme_attendence():
     sql_pointage = """
         SELECT
-        id,
     IDEmploye,
     jour_pointage,
     MIN(TIME(date_pointage)) AS arrivee,
     MAX(TIME(date_pointage)) AS depart,
-    TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS duree_minutes
+    TIMEDIFF( MAX(date_pointage), MIN(date_pointage)) AS duree_minutes
 FROM pointages
-WHERE DATE(date_pointage) = CURRENT_DATE()
+WHERE DATE(date_pointage) = CURDATE()
 GROUP BY IDEmploye, DATE(date_pointage), jour_pointage
 HAVING COUNT(*) >= 2
 ORDER BY jour_pointage DESC;
-
     """
     with connexion() as conn:
         try:
@@ -166,8 +164,8 @@ ORDER BY jour_pointage DESC;
             print(f"[ERREUR] Générale: {e}")
             return False
 
-def programme_valider(IDemploye, date_pointage,idpointeuse,jour_pointage):
-    sql_valider = """insert into pointages (IDEmploye, date_pointage, jour_pointage,idPointeuse)
+def programme_valider(IDemploye, date_pointage,idpointeuse, jour_pointage):
+    sql_valider = """insert into pointages (IDEmploye, date_pointage, idPointeuse,jour_pointage)
                      values (%s, %s, %s,%s)"""
     with connexion() as conn:
         try:

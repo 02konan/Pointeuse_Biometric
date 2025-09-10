@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from programme.read_data import pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
+from programme.read_data import pointeuse,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,programme_attendence,programme_valider
@@ -10,6 +10,7 @@ from flask_cors import CORS
 from programme.base_donnee import connexion
 from datetime import datetime,timedelta
 import threading
+from urllib.parse import unquote
 from programme.eduflowApi import api_programme,sync_programme_periodique
 import os
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -187,8 +188,9 @@ def intf_presence():
         table.append(resultat)
     return render_template('presence.html', active_page='presence', resultats=table)
 
-@app.route('/pointage_invalie', methods=['GET','POST'])
+@app.route('/pointage_invalie')
 @login_required
+@role_required('admin')
 def intf_pointage_invalie():
     data = pointage_invalid(session['section'])
     table = []
@@ -210,19 +212,29 @@ def intf_pointage_invalie():
         }
         table.append(resultat)
     return render_template('pointage_invalide.html', active_page='pointage_invalie', resultats=table)
+@app.route('/validation_pointage', methods=['GET'])
 def validation_programme():
-    data=pointage_invalid(session['section'])
+    data = pointage_invalid(session['section'])
+    employe_id = request.args.get('id') or request.form.get('id')
+    if not employe_id:
+        flash("Aucun ID d'employé fourni.", "danger")
+        return redirect(url_for('intf_pointage_invalie'))
+
+    employe_id = employe_id
+
     for donnee in data:
-        idpointeuse=donnee[4]
-        IDemploye=donnee[0]
-        jour_pointage=donnee[3]
-        date_pointage=f"{donnee[2]} {"17:00:00"}"
-        if request.args.get('id') == IDemploye:
-            programme_valider(IDemploye, date_pointage,idpointeuse,jour_pointage)
-            return True
-        flash("Pointages invalides traités avec succès !", "success")
+        IDemploye = donnee[0]
+        date_pointage = f"{donnee[2]} 17:00:00"
+        idpointeuse = donnee[4]
+        jour_pointage = donnee[3]
+        if employe_id == IDemploye:
+            if programme_valider(IDemploye, date_pointage, idpointeuse, jour_pointage):
+                flash("Pointage invalide validé et ajouté avec succès !", "success")
+            else:
+                flash("erreu survenue", "danger")
+            break
     else:
-        flash("Aucun pointage invalide trouvé pour cet employé.", "danger")
+        flash("Aucun pointage correspondant trouvé.", "danger")
     return redirect(url_for('intf_pointage_invalie'))
 @app.route('/api/fiche_presence', methods=['POST'])
 @login_required
@@ -575,17 +587,17 @@ def api_eduflow():
     return api_programme()
 
 if __name__ == '__main__':
-    thread = threading.Thread(target=listen_attendance)
-    thread.daemon = True
-    thread.start()
-    recuperation = threading.Thread(target=recuperation_emprientes)
-    recuperation.daemon = True
-    recuperation.start()
-    thread_pointage = threading.Thread(target=programme_attendence)
-    thread_pointage.daemon = True
-    thread_pointage.start()
-    thread_insertion = threading.Thread(target=insertion_)
-    thread_insertion.daemon = True
-    thread_insertion.start()
+    # thread = threading.Thread(target=listen_attendance)
+    # thread.daemon = True
+    # thread.start()
+    # recuperation = threading.Thread(target=recuperation_emprientes)
+    # recuperation.daemon = True
+    # recuperation.start()
+    # thread_pointage = threading.Thread(target=programme_attendence)
+    # thread_pointage.daemon = True
+    # thread_pointage.start()
+    # thread_insertion = threading.Thread(target=insertion_)
+    # thread_insertion.daemon = True
+    # thread_insertion.start()
 
     app.run(host='0.0.0.0',port=5000,debug=True)
