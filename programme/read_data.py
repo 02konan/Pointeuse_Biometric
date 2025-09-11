@@ -195,7 +195,7 @@ def read_data_presence(section_name):
     Duree_initial,
     pp.Status,
     pr.heure_arrivee,
-    TIMESTAMPDIFF(MINUTE, arrivee, depart) AS temps_presence
+    TIMEDIFF(depart,arrivee) AS temps_presence
 FROM pointage_programe pp
 JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
 JOIN pointages p ON pp.IDPointage = p.ID

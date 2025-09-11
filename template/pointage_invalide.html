@@ -20,22 +20,13 @@
     <div class="card mb-4">
       <div class="card-body">
         <div class="row g-3">
-          <div class="col-md-4">
+          <div class="col-md-6">
             <label class="form-label">Date de début</label>
             <input type="date" class="form-control"/>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-6">
             <label class="form-label">Date de fin</label>
             <input type="date" class="form-control"/>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Statut</label>
-            <select class="form-select">
-              <option selected>Tous les statuts</option>
-              <option>Présent</option>
-              <option>Absent</option>
-              <option>En retard</option>
-            </select>
           </div>
         </div>
       </div>
@@ -46,6 +37,7 @@
           <table class="table table-hover" id="Table">
             <thead class="text-center">
               <tr>
+                <th>Cocher</th>
                 <th>ID</th>
                 <th>Employé</th>
                 <th>Heur du Pointage</th>
@@ -59,17 +51,18 @@
             <tbody class="text-center">
               {% for Invalide in resultats %}
               <tr>
+                <td>
+                  <input type="checkbox" name="select_invalide" value="{{ Invalide.Matricule }}">
+                </td>
                 <td>{{Invalide.Matricule}}</td>
                 <td>
                   <div class="d-flex align-items-center">
-                    <div class="avatar me-2">
-                      <img
-                        src="/placeholder.svg?height=40&width=40"
-                        alt="Employee"
-                      />
-                    </div>
-                    <div>{{Invalide.Nom}}</div>
-                  </div>
+  <div class="avatar me-2">
+    <i class="fas fa-user-circle fa-2x"></i>
+  </div>
+  <div>{{ Invalide.Nom }}</div>
+</div>
+
                 </td>
                <td>{{ Invalide.heure_pointage}}</td>
                 <td>{{Invalide.jour_pointage}}</td>
@@ -78,7 +71,7 @@
                 <td><span class="badge bg-danger">Invalide</span></td></td>
                 <td>
                   <form action="{{ url_for('validation_programme') }}" method="get" style="width:100%;">
-                  <button type="submit" name="id" value="{{ Invalide.Matricule }}" class="btn btn-sm btn-outline-success me-2">
+                  <button onclick="location.reload();" type="submit" name="id" value="{{ Invalide.Matricule }}" class="btn btn-sm btn-outline-success me-2">
                   <i class="fas fa-check"></i> Valider
                  </button>
                  </form>

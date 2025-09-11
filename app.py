@@ -167,7 +167,7 @@ def intf_presence():
         date = donnee[5]
         Duree_initial = donnee[6]
         Statut = donnee[7]
-        heur_arrivee = donnee[8]
+        # heur_arrivee = donnee[8]
         temps_presence = donnee[9]
         if Statut == "Présent":
             couleur_st = "success"
@@ -224,7 +224,7 @@ def validation_programme():
 
     for donnee in data:
         IDemploye = donnee[0]
-        date_pointage = f"{donnee[2]} 17:00:00"
+        date_pointage = f"{donnee[2]} 17:30:00"
         idpointeuse = donnee[4]
         jour_pointage = donnee[3]
         if employe_id == IDemploye:
@@ -587,15 +587,15 @@ def api_eduflow():
     return api_programme()
 
 if __name__ == '__main__':
-    # thread = threading.Thread(target=listen_attendance)
-    # thread.daemon = True
-    # thread.start()
+    thread = threading.Thread(target=listen_attendance)
+    thread.daemon = True
+    thread.start()
     # recuperation = threading.Thread(target=recuperation_emprientes)
     # recuperation.daemon = True
     # recuperation.start()
-    # thread_pointage = threading.Thread(target=programme_attendence)
-    # thread_pointage.daemon = True
-    # thread_pointage.start()
+    thread_pointage = threading.Thread(target=programme_attendence)
+    thread_pointage.daemon = True
+    thread_pointage.start()
     # thread_insertion = threading.Thread(target=insertion_)
     # thread_insertion.daemon = True
     # thread_insertion.start()
