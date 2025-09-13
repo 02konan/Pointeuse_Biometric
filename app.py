@@ -197,10 +197,10 @@ def intf_pointage_invalie():
     for donnee in data:
         code = donnee[0]
         Nom = donnee[1]
-        jour_pointage = donnee[3]
-        heure_pointage = donnee[5]
-        crenau = f"{donnee[6]}-{donnee[7]}"
-        Duree_cours = donnee[8]
+        jour_pointage = donnee[2]
+        heure_pointage = donnee[4]
+        crenau = f"{donnee[5]}-{donnee[6]}"
+        Duree_cours = donnee[7]
         
         resultat = {
             'Matricule': code,
@@ -587,17 +587,14 @@ def api_eduflow():
     return api_programme()
 
 if __name__ == '__main__':
-    thread = threading.Thread(target=listen_attendance)
-    thread.daemon = True
-    thread.start()
-    # recuperation = threading.Thread(target=recuperation_emprientes)
-    # recuperation.daemon = True
-    # recuperation.start()
-    thread_pointage = threading.Thread(target=programme_attendence)
-    thread_pointage.daemon = True
-    thread_pointage.start()
+    recuperation = threading.Thread(target=recuperation_emprientes)
+    recuperation.daemon = True
+    recuperation.start()
     # thread_insertion = threading.Thread(target=insertion_)
     # thread_insertion.daemon = True
     # thread_insertion.start()
+    thread = threading.Thread(target=listen_attendance)
+    thread.daemon = True
+    thread.start()
 
     app.run(host='0.0.0.0',port=5000,debug=True)

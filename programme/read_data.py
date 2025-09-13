@@ -411,35 +411,31 @@ def pointage_invalid(section_name):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql = """
-                SELECT 
-                    p.professeur_code,
-                    p.professeur_nom,
-                    MIN(DATE(ptg.date_pointage)) AS date_pointage,
-                    MIN(ptg.jour_pointage) AS jour_pointage,
-                    MIN(po.idPointeuse) AS idPointeuse,
-                    MIN(TIME(ptg.date_pointage)) AS heure_pointage,
-                    p.heure_arrivee,
-                    p.heure_depart,
-                    p.duree_cours,
-                    MIN(ptg.date_pointage) AS date_pointage_complet
-                FROM Programme p
-                LEFT JOIN pointages ptg
-                    ON p.professeur_code = ptg.IDEmploye
-                    AND p.jour = ptg.jour_pointage
-                    AND DATE(ptg.date_pointage) = CURRENT_DATE()
-                LEFT JOIN pointeuse po
-                    ON po.idPointeuse = ptg.idPointeuse
-                LEFT JOIN section s
-                    ON s.idPointeuse = po.idPointeuse
-                WHERE s.IDSection = %s
-                GROUP BY 
-                    p.professeur_code, 
-                    p.professeur_nom, 
-                    p.heure_arrivee, 
-                    p.heure_depart, 
-                    p.duree_cours
-                HAVING COUNT(ptg.IDEmploye) = 1;
+                sql = """SELECT 
+    p.professeur_code,
+    p.professeur_nom,
+    ptg.date_pointage,
+    po.idPointeuse,
+    TIME(ptg.date_pointage) AS heure_pointage,
+    p.heure_arrivee,
+    p.heure_depart,
+    p.duree_cours
+FROM Programme p
+INNER JOIN pointages ptg ON p.professeur_code = ptg.IDEmploye
+    AND DATE(ptg.date_pointage) =CURDATE() AND ptg.jour_pointage=p.jour
+INNER JOIN pointeuse po ON po.idPointeuse = ptg.idPointeuse
+INNER JOIN section s ON s.idPointeuse = po.idPointeuse
+WHERE s.IDSection =%s
+GROUP BY 
+    p.professeur_code,
+    p.professeur_nom,
+    ptg.jour_pointage,
+    po.idPointeuse,
+    p.heure_arrivee,
+    p.heure_depart,
+    p.duree_cours
+    HAVING COUNT(DISTINCT ptg.IDEmploye)=1
+ORDER BY p.professeur_nom;
                 """
                 cursor.execute(sql, (section_name,))
                 return cursor.fetchall()

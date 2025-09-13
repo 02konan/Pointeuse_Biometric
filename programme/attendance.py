@@ -32,7 +32,7 @@ def listen_attendance():
     global last_processed_timestamp
     last_processed_timestamp = dernier_pointage()
     print(f"[INFO] Dernier pointage déjà traité : {last_processed_timestamp}")
-
+    
     while True:
         pointeuses = get_pointeuses()
         for ip in pointeuses:
@@ -47,51 +47,88 @@ def listen_attendance():
                 conn = zk.connect()
                 conn.disable_device()
                 print(f"[INFO] Écoute des nouveaux pointages sur {ip_str}...")
-
+                
                 attendances = conn.get_attendance()
+                new_timestamps = []
+
                 for record in attendances:
                     if last_processed_timestamp is None or record.timestamp > last_processed_timestamp:
                         db = connexion()
                         cursor = db.cursor()
 
-                        time_min = record.timestamp - timedelta(seconds=5)
-                        time_max = record.timestamp + timedelta(seconds=5)
-                        delete_sql = """
-                            DELETE FROM pointages 
-                            WHERE IDEmploye = %s AND date_pointage BETWEEN %s AND %s
+                        # Vérifier combien de pointages déjà dans la journée
+                        verification = """
+                            SELECT COUNT(*)
+                            FROM pointages
+                            WHERE IDEmploye = %s
+                              AND DATE(date_pointage) = DATE(%s)
+                              AND idPointeuse = %s
                         """
-                        cursor.execute(delete_sql, (record.user_id, time_min, time_max))
+                        cursor.execute(verification, (record.user_id, record.timestamp, ip[1]))
+                        nb_pointages = cursor.fetchone()[0]
 
-                        insert_sql = """
-                            INSERT INTO pointages (IDEmploye, date_pointage, jour_pointage,idPointeuse) 
-                            VALUES (%s, %s, %s, %s)
-                        """
-                        date_str=record.timestamp
-                        
-                        jour_semaine=["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi","Dimanche"]
-                        jour=jour_semaine[date_str.weekday()]
-                        cursor.execute(insert_sql, (record.user_id, date_str,jour, ip[1]))
+                        jour_semaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
+                        jour = jour_semaine[record.timestamp.weekday()]
+
+                        if nb_pointages == 0:
+                            # Premier pointage -> INSERT
+                            insertion = """
+                                INSERT IGNORE INTO pointages (IDEmploye, date_pointage, jour_pointage, idPointeuse)
+                                VALUES (%s, %s, %s, %s)
+                            """
+                            cursor.execute(insertion, (record.user_id, record.timestamp, jour, ip[1]))
+                            print(f"[NOUVEAU 1er] ID: {record.user_id} | Heure: {record.timestamp}")
+
+                        elif nb_pointages == 1:
+                            # Deuxième pointage -> INSERT
+                            insertion = """
+                                INSERT IGNORE INTO pointages (IDEmploye, date_pointage, jour_pointage, idPointeuse)
+                                VALUES (%s, %s, %s, %s)
+                            """
+                            cursor.execute(insertion, (record.user_id, record.timestamp, jour, ip[1]))
+                            print(f"[NOUVEAU 2e] ID: {record.user_id} | Heure: {record.timestamp}")
+
+                        else:
+                            # 3e et suivants -> UPDATE uniquement le 2e pointage
+                            cursor.execute("""
+                                SELECT id
+                                FROM pointages
+                                WHERE IDEmploye = %s
+                                  AND DATE(date_pointage) = DATE(%s)
+                                  AND idPointeuse = %s
+                                ORDER BY date_pointage ASC
+                                LIMIT 1 OFFSET 1
+                            """, (record.user_id, record.timestamp, ip[1]))
+                            second_pointage = cursor.fetchone()
+
+                            if second_pointage:
+                                mise_ajour = """
+                                    UPDATE pointages
+                                    SET date_pointage = %s
+                                    WHERE id = %s
+                                """
+                                cursor.execute(mise_ajour, (record.timestamp, second_pointage[0]))
+                                print(f"[MAJ 2e] ID: {record.user_id} | Nouveau: {record.timestamp}")
+
                         db.commit()
                         db.close()
+                        new_timestamps.append(record.timestamp)
 
-                        last_processed_timestamp = record.timestamp
-                        print(f"[NOUVEAU] ID: {record.user_id} | Heure: {record.timestamp} | jour: {jour}")
+                # Met à jour le dernier timestamp global après avoir tout traité
+                if new_timestamps:
+                    last_processed_timestamp = max(new_timestamps)
 
                 time.sleep(5)
 
             except Exception as e:
-                print(f"[ERREUR] {e}")
-                print(f"[INFO] Reconnexion à {ip_str} dans {RECONNECT_DELAY} secondes...")
-                time.sleep(RECONNECT_DELAY)
+                print(f"[ERREUR] Problème avec la pointeuse {ip_str}: {e}")
 
             finally:
                 try:
                     conn.enable_device()
                     conn.disconnect()
-                    print(f"[INFO] Déconnecté proprement de la pointeuse {ip_str}.")
                 except:
                     pass
-
 def programme_attendence():
     while True:
         try:

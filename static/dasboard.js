@@ -63,10 +63,10 @@ function afficherActivites(activites) {
     const minutes = new Date(date).getMinutes();
     let status = "";
     let color="";
-    if (heures < 16 || (heures === 16 && minutes >= 45)) {
+    if (heures < 16 || (heures === 16 && minutes >= 30)) {
       status = "Arrivée enregistrée";
       color = "text-success";
-    } else if(heures > 17 || (heures === 17 && minutes >= 30)){
+    } else if((heures === 16 && minutes >= 31) || (heures === 17 && minutes >= 30)){
       status = "Départ enregistré";
       color = "text-danger";
     }
