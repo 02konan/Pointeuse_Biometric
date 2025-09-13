@@ -138,41 +138,40 @@ def programme_attendence():
                 with conn.cursor() as curseur:
                     sql_insert = """
                     INSERT INTO pointage_programe 
-                    (IDProgramme, IDPointage, Status, arrivee, depart, Duree_initial, Duree_finale)
-                    SELECT 
-                        pr.IDProgramme,
-                        ptg.IDPointage,
-                        CASE 
-                            WHEN TIMESTAMPDIFF(MINUTE, ptg.arrivee, ptg.depart) >= pr.duree_cours 
-                                THEN 'Présent'
-                            ELSE 'Absent'
-                        END AS Status,
-                        ptg.arrivee,
-                        ptg.depart,
-                        pr.duree_cours,
-                        TIMESTAMPDIFF(MINUTE, ptg.arrivee, ptg.depart) AS duree_finale
-                    FROM Programme pr
-                    JOIN (
-                        SELECT
-                            MIN(id) AS IDPointage,
-                            IDEmploye,
-                            jour_pointage,
-                            MIN(TIME(date_pointage)) AS arrivee,
-                            MAX(TIME(date_pointage)) AS depart
-                        FROM pointages
-                        WHERE DATE(date_pointage) = CURDATE()
-                        GROUP BY IDEmploye, jour_pointage
-                        HAVING COUNT(*) >= 2
-                    ) ptg
-                    ON pr.professeur_code = ptg.IDEmploye
-                    AND pr.jour = ptg.jour_pointage
-                    WHERE pr.jour = DAYNAME(CURDATE())
-                    ON DUPLICATE KEY UPDATE
-                        Status = VALUES(Status),
-                        arrivee = VALUES(arrivee),
-                        depart = VALUES(depart),
-                        Duree_initial = VALUES(Duree_initial),
-                        Duree_finale = VALUES(Duree_finale);
+(IDProgramme, IDPointage, Status, arrivee, depart, Duree_initial, Duree_finale)
+SELECT 
+    pr.IDProgramme,
+    ptg.IDPointage,
+    CASE 
+        WHEN TIMESTAMPDIFF(MINUTE, ptg.arrivee, ptg.depart) >= pr.duree_cours 
+            THEN 'Présent'
+        ELSE 'Absent'
+    END AS Status,
+    ptg.arrivee,
+    ptg.depart,
+    pr.duree_cours,
+    TIMESTAMPDIFF(MINUTE, ptg.arrivee, ptg.depart) AS duree_finale
+FROM Programme pr
+JOIN (
+    SELECT
+        MIN(id) AS IDPointage,
+        IDEmploye,
+        jour_pointage,
+        MIN(TIME(date_pointage)) AS arrivee,
+        MAX(TIME(date_pointage)) AS depart
+    FROM pointages
+    WHERE DATE(date_pointage) = CURDATE()
+    GROUP BY IDEmploye, jour_pointage
+    HAVING COUNT(*) >= 2
+) ptg
+ON pr.professeur_code = ptg.IDEmploye
+AND pr.jour = ptg.jour_pointage
+ON DUPLICATE KEY UPDATE
+    Status = VALUES(Status),
+    arrivee = VALUES(arrivee),
+    depart = VALUES(depart),
+    Duree_initial = VALUES(Duree_initial),
+    Duree_finale = VALUES(Duree_finale);
                     """
 
                     curseur.execute(sql_insert)

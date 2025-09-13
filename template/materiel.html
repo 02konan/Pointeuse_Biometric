@@ -1,205 +1,373 @@
-{% extends 'index.html' %}
-{% block content %}
+{% extends 'index.html' %} {% block content %}
 <div id="devices-content" class="content-section">
-    <div class="toast-container p-3 position-fixed top-0 end-0" style="z-index: 1100;">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="toast align-items-center text-bg-{{ 'success' if category == 'success' else 'danger' }} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
-          <div class="d-flex">
-            <div class="toast-body">
-              {{ message }}
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+  <div
+    class="toast-container p-3 position-fixed top-0 end-0"
+    style="z-index: 1100"
+  >
+    {% with messages = get_flashed_messages(with_categories=true) %} {% for
+    category, message in messages %}
+    <div
+      class="toast align-items-center text-bg-{{ 'success' if category == 'success' else 'danger' }} border-0 mb-2"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    >
+      <div class="d-flex">
+        <div class="toast-body">{{ message }}</div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          data-bs-dismiss="toast"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+    {% endfor %} {% endwith %}
+  </div>
+  <div class="container">
+    <div class="card">
+      <div class="card-body shadow-sm">
+        <!-- Barre de recherche et sélection -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <!-- Champ de recherche -->
+          <div class="input-group w-50">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Rechercher..."
+              id="searchInput"
+            />
+          </div>
+
+          <!-- Sélecteur du nombre d'éléments -->
+          <div>
+            <label for="itemsPerPage" class="form-label me-2">Afficher :</label>
+            <select class="form-select d-inline-block w-auto" id="itemsPerPage">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
           </div>
         </div>
-      {% endfor %}
-    {% endwith %}
-  </div>
+
+        <!-- Boutons -->
+        <div
+          class="d-flex justify-content align-items-center gap-3 mb-4"
+        >
+          <button
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#addDeviceModal"
+          >
+            <i class="fas fa-plus me-2"></i> Ajouter un appareil
+          </button>
+          <button
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#addUserModal"
+          >
+            <i class="fas fa-plus me-2"></i> Enroler un Utilisateur
+          </button>
+          <button
+            class="btn btn-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#addUserModal"
+          >
+            <i class="fas fa-plus me-2"></i> Récupérer les empreintes
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="container-fluid p-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
-                <i class="fas fa-plus me-2"></i> Ajouter un appareil
-            </button>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                <i class="fas fa-plus me-2"></i> Enroler un Utilisateur
-            </button>
-        </div>
-        <div class="row">
-             {% for pointeuse in resultats %}
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="card-title mb-0">{{ pointeuse.Nom }}</h5>
-                            <span class="badge 
-                                {% if pointeuse.etat == 'En ligne' %}bg-success
-                                {% elif pointeuse.etat == 'Hors ligne' %}bg-danger
-                                {% else %}bg-warning{% endif %}
-                            ">
-                                {{ pointeuse.etat }}
-                            </span>
-                        </div>
-                        <div class="device-details mb-3">
-                            <div class="row mb-2">
-                                <div class="col-5 text-muted">ID:</div>
-                                <div class="col-7">{{ pointeuse.ID }}</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-5 text-muted">Modèle:</div>
-                                <div class="col-7">{{ pointeuse.Modele }}</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-5 text-muted">Emplacement:</div>
-                                <div class="col-7">{{ pointeuse.Localisation }}</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-5 text-muted">IP:</div>
-                                <div class="col-7">{{ pointeuse.AdresseIp }}</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-5 text-muted">Serie:</div>
-                                <div class="col-7">{{ pointeuse.Serie }}</div>
-                            </div>
-                        </div>
-                        <div class="device-stats mb-3">
-                            <div class="progress mb-2" style="height: 5px;">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <small class="text-muted">Utilisation mémoire: 25%</small>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <button class="btn btn-sm btn-outline-primary"><i class="fas fa-sync me-1"></i> Synchroniser</button>
-                            <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-cog me-1"></i> Paramètres</button>
-                        </div>
-                    </div>
+      <div class="row">
+        {% for pointeuse in resultats %}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <div
+                class="d-flex justify-content-between align-items-center mb-3"
+              >
+                <h5 class="card-title mb-0">{{ pointeuse.Nom }}</h5>
+                <span
+                  class="badge {% if pointeuse.etat == 'En ligne' %}bg-success {% elif pointeuse.etat == 'Hors ligne' %}bg-danger {% else %}bg-warning{% endif %}"
+                >
+                  {{ pointeuse.etat }}
+                </span>
+              </div>
+              <div class="device-details mb-3">
+                <div class="row mb-2">
+                  <div class="col-5 text-muted">ID:</div>
+                  <div class="col-7">{{ pointeuse.ID }}</div>
                 </div>
+                <div class="row mb-2">
+                  <div class="col-5 text-muted">Modèle:</div>
+                  <div class="col-7">{{ pointeuse.Modele }}</div>
+                </div>
+                <div class="row mb-2">
+                  <div class="col-5 text-muted">Emplacement:</div>
+                  <div class="col-7">{{ pointeuse.Localisation }}</div>
+                </div>
+                <div class="row mb-2">
+                  <div class="col-5 text-muted">IP:</div>
+                  <div class="col-7">{{ pointeuse.AdresseIp }}</div>
+                </div>
+                <div class="row mb-2">
+                  <div class="col-5 text-muted">Serie:</div>
+                  <div class="col-7">{{ pointeuse.Serie }}</div>
+                </div>
+              </div>
+              <div class="device-stats mb-3">
+                <div class="progress mb-2" style="height: 5px">
+                  <div
+                    class="progress-bar bg-success"
+                    role="progressbar"
+                    style="width: 25%"
+                    aria-valuenow="25"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                  ></div>
+                </div>
+                <small class="text-muted">Utilisation mémoire: 25%</small>
+              </div>
+              <div class="d-flex justify-content-between">
+                <button class="btn btn-sm btn-outline-primary">
+                  <i class="fas fa-sync me-1"></i> Synchroniser
+                </button>
+                <button class="btn btn-sm btn-outline-secondary">
+                  <i class="fas fa-cog me-1"></i> Paramètres
+                </button>
+              </div>
             </div>
-            {% endfor %}
+          </div>
         </div>
-         
-        </div>
+        {% endfor %}
+      </div>
     </div>
+  </div>
 </div>
 <!-- Add Device Modal -->
-<div class="modal fade" id="addDeviceModal" tabindex="-1" aria-labelledby="addDeviceModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addDeviceModalLabel">Ajouter un nouvel appareil</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div
+  class="modal fade"
+  id="addDeviceModal"
+  tabindex="-1"
+  aria-labelledby="addDeviceModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addDeviceModalLabel">
+          Ajouter un nouvel appareil
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form action="/add-device" method="POST">
+          <div class="mb-3">
+            <label for="deviceName" class="form-label">Nom de l'appareil</label>
+            <input
+              type="text"
+              class="form-control"
+              name="pointeuseN"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="deviceModel" class="form-label">Modèle</label>
+            <select class="form-select" name="pointeuseM" required>
+              <option selected disabled value="">Choisir...</option>
+              <option>FingerTech FT-800</option>
+              <option>FingerTech FT-600</option>
+              <option>SecureScan SS-200</option>
+              <option>BioID B-100</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="deviceLocation" class="form-label">Emplacement</label>
+            <input
+              type="text"
+              class="form-control"
+              name="pointeuseP"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="deviceIP" class="form-label">Adresse IP</label>
+            <input type="text" class="form-control" name="Adresseip" required />
+          </div>
+          <div class="mb-3">
+            <label for="devicePort" class="form-label">Port</label>
+            <input
+              type="number"
+              class="form-control"
+              name="pointeusePort"
+              value="4370"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="deviceSerial" class="form-label">Numéro de série</label>
+            <input type="text" class="form-control" name="pointeuseSerie" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label d-block">Type d'appareil</label>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="pointeuseType"
+                id="typeFingerprint"
+                value="fingerprint"
+                checked
+              />
+              <label class="form-check-label" for="typeFingerprint"
+                >Empreinte digitale</label
+              >
             </div>
-            <div class="modal-body">
-                <form action="/add-device" method="POST">
-                    <div class="mb-3">
-                        <label for="deviceName" class="form-label">Nom de l'appareil</label>
-                        <input type="text" class="form-control" name="pointeuseN" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="deviceModel" class="form-label">Modèle</label>
-                        <select class="form-select" name="pointeuseM" required>
-                            <option selected disabled value="">Choisir...</option>
-                            <option>FingerTech FT-800</option>
-                            <option>FingerTech FT-600</option>
-                            <option>SecureScan SS-200</option>
-                            <option>BioID B-100</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="deviceLocation" class="form-label">Emplacement</label>
-                        <input type="text" class="form-control" name="pointeuseP" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="deviceIP" class="form-label">Adresse IP</label>
-                        <input type="text" class="form-control" name="Adresseip" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="devicePort" class="form-label">Port</label>
-                        <input type="number" class="form-control" name="pointeusePort" value="4370">
-                    </div>
-                    <div class="mb-3">
-                        <label for="deviceSerial" class="form-label">Numéro de série</label>
-                        <input type="text" class="form-control" name="pointeuseSerie">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label d-block">Type d'appareil</label>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="pointeuseType" id="typeFingerprint" value="fingerprint" checked>
-                            <label class="form-check-label" for="typeFingerprint">Empreinte digitale</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="pointeuseType" id="typeFacial" value="facial">
-                            <label class="form-check-label" for="typeFacial">Reconnaissance faciale</label>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <input type="submit" class="btn btn-primary" value="Enregistrer">
-                    </div>
-                </form>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="pointeuseType"
+                id="typeFacial"
+                value="facial"
+              />
+              <label class="form-check-label" for="typeFacial"
+                >Reconnaissance faciale</label
+              >
             </div>
-            
-        </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Annuler
+            </button>
+            <input type="submit" class="btn btn-primary" value="Enregistrer" />
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 <!-- Add Device Modal -->
-<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addDeviceModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="addDeviceModalLabel">Ajouter un nouvel appareil</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div
+  class="modal fade"
+  id="addUserModal"
+  tabindex="-1"
+  aria-labelledby="addDeviceModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addDeviceModalLabel">
+          Ajouter un nouvel appareil
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form action="/add-device" method="POST">
+          <div class="mb-3">
+            <label for="deviceName" class="form-label">Nom de l'appareil</label>
+            <input
+              type="text"
+              class="form-control"
+              name="pointeuseN"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="deviceModel" class="form-label">Modèle</label>
+            <select class="form-select" name="pointeuseM" required>
+              <option selected disabled value="">Choisir...</option>
+              <option>FingerTech FT-800</option>
+              <option>FingerTech FT-600</option>
+              <option>SecureScan SS-200</option>
+              <option>BioID B-100</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="deviceLocation" class="form-label">Emplacement</label>
+            <input
+              type="text"
+              class="form-control"
+              name="pointeuseP"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="deviceIP" class="form-label">Adresse IP</label>
+            <input type="text" class="form-control" name="Adresseip" required />
+          </div>
+          <div class="mb-3">
+            <label for="devicePort" class="form-label">Port</label>
+            <input
+              type="number"
+              class="form-control"
+              name="pointeusePort"
+              value="4370"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="deviceSerial" class="form-label">Numéro de série</label>
+            <input type="text" class="form-control" name="pointeuseSerie" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label d-block">Type d'appareil</label>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="pointeuseType"
+                id="typeFingerprint"
+                value="fingerprint"
+                checked
+              />
+              <label class="form-check-label" for="typeFingerprint"
+                >Empreinte digitale</label
+              >
             </div>
-            <div class="modal-body">
-                <form action="/add-device" method="POST">
-                    <div class="mb-3">
-                        <label for="deviceName" class="form-label">Nom de l'appareil</label>
-                        <input type="text" class="form-control" name="pointeuseN" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="deviceModel" class="form-label">Modèle</label>
-                        <select class="form-select" name="pointeuseM" required>
-                            <option selected disabled value="">Choisir...</option>
-                            <option>FingerTech FT-800</option>
-                            <option>FingerTech FT-600</option>
-                            <option>SecureScan SS-200</option>
-                            <option>BioID B-100</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="deviceLocation" class="form-label">Emplacement</label>
-                        <input type="text" class="form-control" name="pointeuseP" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="deviceIP" class="form-label">Adresse IP</label>
-                        <input type="text" class="form-control" name="Adresseip" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="devicePort" class="form-label">Port</label>
-                        <input type="number" class="form-control" name="pointeusePort" value="4370">
-                    </div>
-                    <div class="mb-3">
-                        <label for="deviceSerial" class="form-label">Numéro de série</label>
-                        <input type="text" class="form-control" name="pointeuseSerie">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label d-block">Type d'appareil</label>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="pointeuseType" id="typeFingerprint" value="fingerprint" checked>
-                            <label class="form-check-label" for="typeFingerprint">Empreinte digitale</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="pointeuseType" id="typeFacial" value="facial">
-                            <label class="form-check-label" for="typeFacial">Reconnaissance faciale</label>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <input type="submit" class="btn btn-primary" value="Enregistrer">
-                    </div>
-                </form>
+            <div class="form-check form-check-inline">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="pointeuseType"
+                id="typeFacial"
+                value="facial"
+              />
+              <label class="form-check-label" for="typeFacial"
+                >Reconnaissance faciale</label
+              >
             </div>
-            
-        </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Annuler
+            </button>
+            <input type="submit" class="btn btn-primary" value="Enregistrer" />
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
 {% endblock %}

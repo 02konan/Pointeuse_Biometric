@@ -35,7 +35,7 @@ def generer_fiche_presence_pdf(utilisateur,id_utilisateur,filename=None, data=No
     # Fonction pour dessiner les en-têtes du tableau
     def dessiner_entete(y):
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(6 * cm, y, "Nom&Prenom")
+        c.drawString(2.5 * cm, y, "Nom&Prenom")
         c.drawString(6 * cm, y, "Date de Pointage")
         c.drawString(10 * cm, y, "Heure d'Arrivée")
         c.drawString(14 * cm, y, "Heure de Départ")
