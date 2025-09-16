@@ -130,7 +130,6 @@ def listen_attendance():
                 except:
                     pass
 
-
 def programme_attendence():
     while True:
         try:
@@ -150,7 +149,7 @@ SELECT
     ptg.arrivee,
     ptg.depart,
     pr.duree_cours,
-    TIMESTAMPDIFF(MINUTE, ptg.arrivee, ptg.depart) AS duree_finale
+    TIMEDIFF(ptg.depart, ptg.arrivee) AS duree_finale
 FROM Programme pr
 JOIN (
     SELECT
@@ -183,8 +182,11 @@ ON DUPLICATE KEY UPDATE
             print(f"[ERREUR] MySQL: {e}")
         except Exception as e:
             print(f"[ERREUR] Générale: {e}")
-        
-        time.sleep(10)
+
+def synchronisation():
+    while True:
+      programme_attendence()
+      time.sleep(60)
 
 def programme_valider(IDemploye, date_pointage,idpointeuse, jour_pointage):
     sql_valider = """insert into pointages (IDEmploye, date_pointage, idPointeuse,jour_pointage)
