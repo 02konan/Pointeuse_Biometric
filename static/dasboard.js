@@ -76,9 +76,9 @@ function afficherActivites(activites) {
       "list-group-item d-flex justify-content-between align-items-center p-3";
     item.innerHTML = `
       <div class="d-flex align-items-center">
-        <div class="avatar me-3">
-          <img src="/placeholder.svg?height=40&width=40" alt="User">
-        </div>
+         <div class="avatar me-2">
+            <img src="static/images/icons8-life-cycle-96.png" alt="">
+          </div>
         <div>
           <h6 class="mb-0">${id}</h6>
           <small class="${color}">${status}</small>

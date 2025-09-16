@@ -201,8 +201,7 @@ JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
 JOIN pointages p ON pp.IDPointage = p.id
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE DATE(p.date_pointage) 
-      BETWEEN DATE_SUB(CURRENT_DATE(), INTERVAL 4 DAY) AND CURRENT_DATE()
+WHERE DATE(p.date_pointage)=CURDATE()
   AND s.IDSection = %s
 GROUP BY pr.professeur_code, pr.professeur_nom, DATE(p.date_pointage)
 ORDER BY p.date_pointage DESC, temps_presence;
@@ -414,28 +413,24 @@ def pointage_invalid(section_name):
                 sql = """SELECT 
     p.professeur_code,
     p.professeur_nom,
-    ptg.date_pointage,
+    DATE(ptg.date_pointage),
     po.idPointeuse,
     TIME(ptg.date_pointage) AS heure_pointage,
     p.heure_arrivee,
     p.heure_depart,
-    p.duree_cours
+    p.duree_cours,
+    ptg.jour_pointage
 FROM Programme p
 INNER JOIN pointages ptg ON p.professeur_code = ptg.IDEmploye
-    AND DATE(ptg.date_pointage) =CURRENT_DATE() AND ptg.jour_pointage=p.jour
+    AND DATE(ptg.date_pointage) ="2025-09-15" AND ptg.jour_pointage=p.jour
 INNER JOIN pointeuse po ON po.idPointeuse = ptg.idPointeuse
 INNER JOIN section s ON s.idPointeuse = po.idPointeuse
 WHERE s.IDSection =%s
 GROUP BY 
     p.professeur_code,
-    p.professeur_nom,
-    ptg.jour_pointage,
-    po.idPointeuse,
-    p.heure_arrivee,
-    p.heure_depart,
-    p.duree_cours
-    HAVING COUNT(DISTINCT ptg.IDEmploye)=1
-ORDER BY p.professeur_nom;
+    p.professeur_nom
+    HAVING COUNT(DISTINCT ptg.id)=1
+    ORDER BY p.professeur_code
                 """
                 cursor.execute(sql, (section_name,))
                 return cursor.fetchall()

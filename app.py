@@ -197,7 +197,7 @@ def intf_pointage_invalie():
     for donnee in data:
         code = donnee[0]
         Nom = donnee[1]
-        jour_pointage = donnee[2]
+        jour_pointage = donnee[8]
         heure_pointage = donnee[4]
         crenau = f"{donnee[5]}-{donnee[6]}"
         Duree_cours = donnee[7]
@@ -225,13 +225,13 @@ def validation_programme():
     for donnee in data:
         IDemploye = donnee[0]
         date_pointage = f"{donnee[2]} 17:30:00"
-        idpointeuse = donnee[4]
-        jour_pointage = donnee[3]
+        idpointeuse = donnee[3]
+        jour_pointage = donnee[8]
         if employe_id == IDemploye:
             if programme_valider(IDemploye, date_pointage, idpointeuse, jour_pointage):
                 flash("Pointage invalide validé et ajouté avec succès !", "success")
             else:
-                flash("erreu survenue", "danger")
+                flash(date_pointage, "danger")
             break
     else:
         flash("Aucun pointage correspondant trouvé.", "danger")
