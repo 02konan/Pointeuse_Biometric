@@ -422,7 +422,7 @@ def pointage_invalid(section_name):
     ptg.jour_pointage
 FROM Programme p
 INNER JOIN pointages ptg ON p.professeur_code = ptg.IDEmploye
-    AND DATE(ptg.date_pointage) ="2025-09-15" AND ptg.jour_pointage=p.jour
+    AND DATE(ptg.date_pointage) =CURDATE() AND ptg.jour_pointage=p.jour
 INNER JOIN pointeuse po ON po.idPointeuse = ptg.idPointeuse
 INNER JOIN section s ON s.idPointeuse = po.idPointeuse
 WHERE s.IDSection =%s
