@@ -73,19 +73,19 @@ def listen_attendance():
                         if nb_pointages == 0:
                             # Premier pointage -> INSERT
                             insertion = """
-                                INSERT IGNORE INTO pointages (IDEmploye, date_pointage, jour_pointage, idPointeuse)
-                                VALUES (%s, %s, %s, %s)
+                                INSERT IGNORE INTO pointages (IDEmploye, date_pointage, jour_pointage, idPointeuse,Status)
+                                VALUES (%s, %s, %s, %s,%s)
                             """
-                            cursor.execute(insertion, (record.user_id, record.timestamp, jour, ip[1]))
+                            cursor.execute(insertion, (record.user_id, record.timestamp, jour, ip[1],"Arrivée enregistrée"))
                             print(f"[NOUVEAU 1er] ID: {record.user_id} | Heure: {record.timestamp}")
 
                         elif nb_pointages == 1:
                             # Deuxième pointage -> INSERT
                             insertion = """
-                                INSERT IGNORE INTO pointages (IDEmploye, date_pointage, jour_pointage, idPointeuse)
-                                VALUES (%s, %s, %s, %s)
+                                INSERT IGNORE INTO pointages (IDEmploye, date_pointage, jour_pointage, idPointeuse,Status)
+                                VALUES (%s, %s, %s, %s,%s)
                             """
-                            cursor.execute(insertion, (record.user_id, record.timestamp, jour, ip[1]))
+                            cursor.execute(insertion, (record.user_id, record.timestamp, jour, ip[1],"Départ enregistré"))
                             print(f"[NOUVEAU 2e] ID: {record.user_id} | Heure: {record.timestamp}")
 
                         else:
@@ -104,10 +104,10 @@ def listen_attendance():
                             if second_pointage:
                                 mise_ajour = """
                                     UPDATE pointages
-                                    SET date_pointage = %s
+                                    SET date_pointage = %s , Status=%s
                                     WHERE id = %s
                                 """
-                                cursor.execute(mise_ajour, (record.timestamp, second_pointage[0]))
+                                cursor.execute(mise_ajour, (record.timestamp,"Départ enregistré",second_pointage[0],))
                                 print(f"[MAJ 2e] ID: {record.user_id} | Nouveau: {record.timestamp}")
 
                         db.commit()

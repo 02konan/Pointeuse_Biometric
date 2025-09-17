@@ -82,7 +82,7 @@ WHERE s.IDSection = %s
   AND p.IDEmploye IS NULL;
 ;
 """
-            sql5 = """SELECT DISTINCT e.Nom, p.date_pointage
+            sql5 = """SELECT DISTINCT e.Nom, p.date_pointage,p.Status
 FROM pointages p
 JOIN empreintes e ON p.IDEmploye = e.IDEmploye
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse

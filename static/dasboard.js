@@ -58,17 +58,12 @@ function afficherActivites(activites) {
   const container = document.getElementById("recent-activity-list");
   container.innerHTML = "";
 
-  activites.forEach(([id, date]) => {
-    const heures = new Date(date).getHours();
-    const minutes = new Date(date).getMinutes();
-    let status = "";
-    let color="";
-    if (heures < 16 || (heures === 16 && minutes >= 30)) {
-      status = "Arrivée enregistrée";
-      color = "text-success";
-    } else if((heures === 16 && minutes >= 31) || (heures === 17 && minutes >= 30)){
-      status = "Départ enregistré";
-      color = "text-danger";
+  activites.forEach(([id, date,Status]) => {
+    let couleur=""
+    if (Status==="Arrivée enregistrée") {
+      couleur="badge bg-success"
+    }else{
+      couleur="badge bg-danger"
     }
 
     const item = document.createElement("li");
@@ -81,7 +76,7 @@ function afficherActivites(activites) {
           </div>
         <div>
           <h6 class="mb-0">${id}</h6>
-          <small class="${color}">${status}</small>
+          <small class="${couleur}">${Status}</small>
         </div>
       </div>
       <span class="text-muted">${new Date(date).toLocaleString()}</span>
@@ -90,7 +85,6 @@ function afficherActivites(activites) {
   });
 }
 
-// Fonction pour afficher les graphiques
 function afficherCharts(data) {
  
   const ctxLine = document.getElementById("attendanceChart").getContext("2d");
@@ -161,7 +155,6 @@ function afficherCharts(data) {
 }
 
 
-// Lancer une fois au chargement
 document.addEventListener("DOMContentLoaded", () => {
   chargerDonneesDashboard();
   setInterval(chargerDonneesDashboard, 5000); // recharge toutes les 5s

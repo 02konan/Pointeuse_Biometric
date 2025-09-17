@@ -131,6 +131,11 @@ def dashboard_data():
         })
     return jsonify({})
 
+@app.route('/proffesseur')
+def interface_professeur():
+   return render_template('ProfDashboard.html')
+
+
 @app.route('/employee')
 @login_required
 @role_required('admin')
