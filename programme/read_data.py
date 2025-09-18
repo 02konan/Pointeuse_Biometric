@@ -169,6 +169,87 @@ WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
         print("Erreur lors de la lecture des données du tableau de bord :", e)
         return None
 
+def read_data_from_pr(prof_code):
+    data_base = connexion()
+    try:
+        with data_base.cursor() as cursor:
+            sql1="""
+                SELECT COUNT(p.IDEmploye) AS nb_pointages
+                FROM pointages p
+                JOIN empreintes e 
+                ON e.IDEmploye = p.IDEmploye
+                JOIN employe emp 
+                ON emp.matricule = e.IDEmploye
+                JOIN pointeuse pt 
+                ON pt.idPointeuse = p.idPointeuse
+                AND emp.matricule = %s;
+                 """
+          
+            sql2 = """SELECT COUNT(*) AS nb_presences
+FROM (
+    SELECT p.IDEmploye
+    FROM pointages p
+    JOIN empreintes e 
+        ON e.IDEmploye = p.IDEmploye
+    JOIN employe emp 
+        ON emp.matricule = e.IDEmploye
+    JOIN pointeuse pt 
+        ON pt.idPointeuse = p.idPointeuse
+    WHERE DATE(p.date_pointage) = CURRENT_DATE()
+      AND emp.matricule =%s
+    GROUP BY p.IDEmploye
+    HAVING COUNT(p.IDEmploye) >= 2
+) AS presence_employe;
+"""
+            sql3 = """SELECT COUNT(*) AS nb_retards
+FROM (
+    SELECT DATE(p.date_pointage) AS jour, MIN(TIME(p.date_pointage)) AS heure_arrivee
+    FROM pointages p
+    WHERE p.IDEmploye = %s AND DATE(p.date_pointage)=CURRENT_DATE()
+    GROUP BY DATE(p.date_pointage)
+    HAVING heure_arrivee > '08:00:00'
+) AS retard_jours;
+"""
+            sql4 = """SELECT COUNT(*) AS nb_absences
+FROM (
+    SELECT DATE(p.date_pointage) AS jour
+    FROM pointeuse pt
+    LEFT JOIN pointages p 
+           ON p.idPointeuse = pt.idPointeuse
+    WHERE p.IDEmploye=%s AND DATE(p.date_pointage) = CURRENT_DATE() AND p.IDEmploye IS NULL
+    GROUP BY DATE(p.date_pointage), pt.idPointeuse
+) AS absences;
+"""
+            sql5 = """SELECT DISTINCT e.Nom, p.date_pointage, p.Status
+FROM pointages p
+JOIN empreintes e ON p.IDEmploye = e.IDEmploye
+JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+JOIN section s ON s.idPointeuse = pt.idPointeuse
+WHERE p.IDEmploye =%s
+ORDER BY p.date_pointage DESC
+LIMIT 5;
+""" 
+            cursor.execute(sql1, (prof_code,))
+            total_Pointage = cursor.fetchone()[0]
+
+            cursor.execute(sql2, (prof_code,))
+            total_Presents = cursor.fetchone()[0]
+
+            cursor.execute(sql3, (prof_code,))
+            total_retard = cursor.fetchone()[0]
+
+            cursor.execute(sql4, (prof_code,))
+            total_absents = cursor.fetchone()[0]
+
+            cursor.execute(sql5, (prof_code,))
+            activite_recentes = cursor.fetchall()
+            return (
+                    total_Pointage,total_Presents, total_retard, activite_recentes, total_absents
+            )
+    except Exception as e:
+        print("Erreur lors de la lecture des données du tableau de bord :", e)
+        return None
+
 def read_data_employe():
     try:
         with connexion() as conn:
