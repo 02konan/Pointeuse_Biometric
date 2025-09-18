@@ -23,7 +23,7 @@ def read_matricule():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql = "SELECT DISTINCT(Nom) FROM empreintes"
+                sql = "SELECT DISTINCT(IDEmploye) FROM empreintes"
                 cursor.execute(sql)
                 result = cursor.fetchall()
                 return [row[0] for row in result]
@@ -254,6 +254,36 @@ def verification_utilisateur(username, password):
     except Exception as e:
         print("Erreur générale :", e)
         return None
+
+def verification_prof(code, username1):
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql = """
+                    SELECT 
+                        matricule, 
+                        employe.Nom,
+                        roles.nom AS nom_roles
+                    FROM employe
+                    JOIN roles ON employe.id_role = roles.id
+                    WHERE matricule = %s AND employe.Nom = %s;
+                """
+                cursor.execute(sql, (code, username1))
+                resultat = cursor.fetchone()
+                if resultat:
+                    return {
+                        "Matricule": resultat[0],
+                        "Nom": resultat[1],
+                        "nom_roles": resultat[2]
+                    }
+                return None
+    except pymysql.MySQLError as e:
+        print("Erreur SQL:", e)
+        return None
+    except Exception as e:
+        print("Erreur Generale:", e)
+        return None
+
 
 def read_idsection():
     try:

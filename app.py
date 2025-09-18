@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from programme.read_data import pointeuse,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
+from programme.read_data import pointeuse,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation,programme_valider
@@ -70,7 +70,26 @@ def login():
         else:
             flash("Identifiants incorrects. Veuillez réessayer.", "danger")
     return render_template('login.html')
-
+@app.route('/login_prof',methods=['GET','POST'])
+def login_prof():
+    if 'connecter' in session and session['connecter']:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        username1 = request.form['username1']
+        code = request.form['code']
+        utilisateur = verification_prof(code,username1)
+        if utilisateur:
+            session.permanent = True
+            session['connecter'] = True
+            session['username'] = username1
+            session['role'] = utilisateur['nom_roles']
+            session['code'] = code
+            return redirect(url_for('index'))
+        elif utilisateur['nom_roles']=='professeur':
+            return redirect(url_for('index'))
+        else:
+            flash("Identifiants incorrects. Veuillez réessayer.", "danger")
+    return render_template('login.html')        
 @app.route('/')
 @login_required
 def index():
@@ -84,8 +103,7 @@ def index():
 @login_required
 @role_required('admin')
 def enregistrement():
-    nom = request.form['nom']
-    prenom = request.form['prenom']
+    Nom=f"{request.form['nom']} {request.form['prenom']}"
     telephone = request.form['telephone']
     email = request.form['email']
     date = request.form['joinDate']
@@ -101,7 +119,7 @@ def enregistrement():
         os.makedirs(os.path.dirname(chemin), exist_ok=True)
         photo.save(chemin)
 
-    creat_data_employee(idEmploye, nom, prenom, telephone, address, email, poste, chemin, date, section)
+    creat_data_employee(idEmploye, Nom, telephone, address, email, poste, chemin, date, section)
     flash("Employé enregistré avec succès !", "success")
     return redirect(url_for('intf_employee'))
 
@@ -131,10 +149,6 @@ def dashboard_data():
         })
     return jsonify({})
 
-@app.route('/proffesseur')
-def interface_professeur():
-   return render_template('ProfDashboard.html')
-
 
 @app.route('/employee')
 @login_required
@@ -147,13 +161,11 @@ def intf_employee():
         information = {
             'Matricule': donnee[1],
             'Nom': donnee[2],
-            'Prenom': donnee[3],
-            'Telephone': donnee[4],
-            'image': donnee[8],
-            'Adresse': donnee[5],
-            'Poste': donnee[7],
-            'email': donnee[6],
-            'section': donnee[10],
+            'Telephone': donnee[3],
+            'Adresse': donnee[4],
+            'email': donnee[5],
+            'Poste': donnee[6],
+            'section': donnee[9],
         }
         table.append(information)
     return render_template('employee.html', active_page='employee', resultats=table,user_id=id_employee)
@@ -592,20 +604,20 @@ def api_eduflow():
     return api_programme()
 
 if __name__ == '__main__':
-    recuperation = threading.Thread(target=recuperation_emprientes)
-    recuperation.daemon = True
-    recuperation.start()
+    # recuperation = threading.Thread(target=recuperation_emprientes)
+    # recuperation.daemon = True
+    # recuperation.start()
     # thread_insertion = threading.Thread(target=insertion_)
     # thread_insertion.daemon = True
     # thread_insertion.start()
-    thread_synchronisation = threading.Thread(target=synchronisation)
-    thread_synchronisation.daemon = True
-    thread_synchronisation.start()
-    thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique)
-    thread_sync_programme_periodique.daemon = True
-    thread_sync_programme_periodique.start()
-    thread = threading.Thread(target=listen_attendance)
-    thread.daemon = True
-    thread.start()
+    # thread_synchronisation = threading.Thread(target=synchronisation)
+    # thread_synchronisation.daemon = True
+    # thread_synchronisation.start()
+    # thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique)
+    # thread_sync_programme_periodique.daemon = True
+    # thread_sync_programme_periodique.start()
+    # thread = threading.Thread(target=listen_attendance)
+    # thread.daemon = True
+    # thread.start()
 
     app.run(host='0.0.0.0',port=5000,debug=True)
