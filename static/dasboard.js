@@ -1,79 +1,100 @@
+let attendanceChart = null;
+let attendancePieChart = null;
+
 function chargerDonneesDashboard() {
   fetch("/api/dashboard")
-    .then(res => res.json())
-    .then(data => {
-      afficherActivites(data["activité_recentes"]);
+    .then(res => res.text()) // récupère d'abord le texte
+    .then(text => {
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error("Erreur JSON :", e, text);
+        return;
+      }
+
+      // --- ACTIVITES RECENTES ---
+      if (data["activité_recentes"]) {
+        afficherActivites(data["activité_recentes"]);
+      }
+
+      // --- CHARTS ---
       afficherCharts(data);
 
-       // MISE À JOUR DES COMPTEURS QUOTIDIENS (existants)
-      document.getElementById("presents-count").textContent = data.presents;
-      document.getElementById("absents-count").textContent = data.absents;
-      document.getElementById("retard-count").textContent = data.retard;
-      document.getElementById("total-eleves").textContent = data.total_eleves;
+      // --- COMPTEURS QUOTIDIENS ---
+      const counters = [
+        ["presents-count", data.presents],
+        ["absents-count", data.absents],
+        ["retard-count", data.retard],
+        ["total-eleves", data.total_eleves],
+        ["presents-prof", data.presents],
+        ["absents-prof", data.absents],
+        ["retard-prof", data.retard],
+        ["new-pointage", data.pointage]
+      ];
 
-      // MISE À JOUR DES BARRES DE PROGRESSION QUOTIDIENNES (existantes)
-      document.getElementById("bar-present").style.width = data.pourcentage_presents + "%";
-      document.getElementById("bar-absent").style.width = data.pourcentage_absents + "%";
-      document.getElementById("bar-retard").style.width = data.pourcentage_retards + "%";
+      counters.forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value ?? 0;
+      });
 
-      // NOUVEAUX COMPTEURS MENSUELS (selon vos IDs HTML)
-      if (document.getElementById("presence-mois-count")) {
-        document.getElementById("presence-mois-count").textContent = data.employes_actifs_mois;
-      }
-      if (document.getElementById("absence-mois-count")) {
-        // Calculer les absents du mois = Total - Actifs ce mois
-        const absents_mois = data.total_eleves - data.employes_actifs_mois;
-        document.getElementById("absence-mois-count").textContent = absents_mois;
-      }
-      if (document.getElementById("retard-mois-count")) {
-        document.getElementById("retard-mois-count").textContent = data.employes_retard_mois;
-      }
-      if (document.getElementById("new-employee-count")) {
-        // Pour l'instant, mettre 0 ou une valeur par défaut
-        // Il faudra ajouter cette donnée dans votre API si nécessaire
-        document.getElementById("new-employee-count").textContent = "0";
-      }
+      // --- BARRES DE PROGRESSION QUOTIDIENNES ---
+      const bars = [
+        ["bar-present", data.pourcentage_presents],
+        ["bar-absent", data.pourcentage_absents],
+        ["bar-retard", data.pourcentage_retards]
+      ];
 
-      // NOUVELLES BARRES DE PROGRESSION MENSUELLES (selon vos IDs HTML)
-      if (document.getElementById("bar-presence-mois")) {
-        document.getElementById("bar-presence-mois").style.width = data.pourcentage_actifs_mois + "%";
-      }
-      if (document.getElementById("bar-absence-mois")) {
-        document.getElementById("bar-absence-mois").style.width = data.pourcentage_inactifs_mois + "%";
-      }
-      if (document.getElementById("bar-retard-mois")) {
-        document.getElementById("bar-retard-mois").style.width = data.pourcentage_retards_mois + "%";
-      }
-      if (document.getElementById("bar-new-employee")) {
-        // Barre pour nouveaux employés (à 0% pour l'instant)
-        document.getElementById("bar-new-employee").style.width = "0%";
-      }
+      bars.forEach(([id, pct]) => {
+        const el = document.getElementById(id);
+        if (el) el.style.width = (pct ?? 0) + "%";
+      });
+
+      // --- COMPTEURS MENSUELS ---
+      const moisCounters = [
+        ["presence-mois-count", data.employes_actifs_mois],
+        ["absence-mois-count", data.total_eleves - (data.employes_actifs_mois ?? 0)],
+        ["retard-mois-count", data.employes_retard_mois],
+        ["new-employee-count", 0] // à 0 par défaut
+      ];
+
+      moisCounters.forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value ?? 0;
+      });
+
+      // --- BARRES DE PROGRESSION MENSUELLES ---
+      const barsMois = [
+        ["bar-presence-mois", data.pourcentage_actifs_mois],
+        ["bar-absence-mois", data.pourcentage_inactifs_mois],
+        ["bar-retard-mois", data.pourcentage_retards_mois],
+        ["bar-new-employee", 0]
+      ];
+
+      barsMois.forEach(([id, pct]) => {
+        const el = document.getElementById(id);
+        if (el) el.style.width = (pct ?? 0) + "%";
+      });
+
     })
-    .catch(error =>
-      console.error("Erreur lors du chargement du dashboard :", error)
-    );
+    .catch(error => console.error("Erreur lors du chargement du dashboard :", error));
 }
 
 function afficherActivites(activites) {
   const container = document.getElementById("recent-activity-list");
+  if (!container) return;
   container.innerHTML = "";
 
-  activites.forEach(([id, date,Status]) => {
-    let couleur=""
-    if (Status==="Arrivée enregistrée") {
-      couleur="badge bg-success"
-    }else{
-      couleur="badge bg-danger"
-    }
+  activites.forEach(([id, date, Status]) => {
+    const couleur = Status === "Arrivée enregistrée" ? "badge bg-success" : "badge bg-danger";
 
     const item = document.createElement("li");
-    item.className =
-      "list-group-item d-flex justify-content-between align-items-center p-3";
+    item.className = "list-group-item d-flex justify-content-between align-items-center p-3";
     item.innerHTML = `
       <div class="d-flex align-items-center">
          <div class="avatar me-2">
             <img src="static/images/icons8-life-cycle-96.png" alt="">
-          </div>
+         </div>
         <div>
           <h6 class="mb-0">${id}</h6>
           <small class="${couleur}">${Status}</small>
@@ -86,74 +107,63 @@ function afficherActivites(activites) {
 }
 
 function afficherCharts(data) {
- 
-  const ctxLine = document.getElementById("attendanceChart").getContext("2d");
-  new Chart(ctxLine, {
+  const lineCanvas = document.getElementById("attendanceChart");
+  const pieCanvas = document.getElementById("attendancePieChart");
+
+  if (!lineCanvas || !pieCanvas) return;
+
+  // Détruire les anciens charts
+  if (attendanceChart) attendanceChart.destroy();
+  if (attendancePieChart) attendancePieChart.destroy();
+
+  // --- CHART LINE ---
+  const ctxLine = lineCanvas.getContext("2d");
+  attendanceChart = new Chart(ctxLine, {
     type: "line",
     data: {
       labels: ["Présents", "Absents", "Retards"],
-      datasets: [
-        {
-          label: "Statistiques du jour",
-          data: [data.presents, data.absents, data.retard],
-          backgroundColor: "rgba(54, 162, 235, 0.2)",
-          borderColor: "rgba(54, 162, 235, 1)",
-          borderWidth: 2,
-          fill: true,
-          tension: 0.4
-        }
-      ]
+      datasets: [{
+        label: "Statistiques du jour",
+        data: [data.presents ?? 0, data.absents ?? 0, data.retard ?? 0],
+        backgroundColor: "rgba(54, 162, 235, 0.2)",
+        borderColor: "rgba(54, 162, 235, 1)",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
     },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          display: true
-        }
-      }
-    }
+    options: { responsive: true }
   });
 
- 
-  const ctxPie = document.getElementById("attendancePieChart").getContext("2d");
-  new Chart(ctxPie, {
+  // --- CHART PIE ---
+  const ctxPie = pieCanvas.getContext("2d");
+  attendancePieChart = new Chart(ctxPie, {
     type: "pie",
     data: {
       labels: ["Présents", "Absents", "Retards"],
-      datasets: [
-        {
-          label: "Répartition",
-          data: [
-            data.pourcentage_presents,
-            data.pourcentage_absents,
-            data.pourcentage_retards
-          ],
-          backgroundColor: [
-            "rgba(54, 162, 235, 0.7)",
-            "rgba(255, 99, 132, 0.7)",
-            "rgba(255, 206, 86, 0.7)"
-          ],
-          borderColor: [
-            "rgba(54, 162, 235, 1)",
-            "rgba(255, 99, 132, 1)",
-            "rgba(255, 206, 86, 1)"
-          ],
-          borderWidth: 1
-        }
-      ]
+      datasets: [{
+        label: "Répartition",
+        data: [
+          data.pourcentage_presents ?? 0,
+          data.pourcentage_absents ?? 0,
+          data.pourcentage_retards ?? 0
+        ],
+        backgroundColor: [
+          "rgba(54, 162, 235, 0.7)",
+          "rgba(255, 99, 132, 0.7)",
+          "rgba(255, 206, 86, 0.7)"
+        ],
+        borderColor: [
+          "rgba(54, 162, 235, 1)",
+          "rgba(255, 99, 132, 1)",
+          "rgba(255, 206, 86, 1)"
+        ],
+        borderWidth: 1
+      }]
     },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: {
-          position: "bottom"
-        }
-      }
-    }
+    options: { responsive: true, plugins: { legend: { position: "bottom" } } }
   });
- 
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
   chargerDonneesDashboard();

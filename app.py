@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from programme.read_data import pointeuse,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
+from programme.read_data import pointeuse,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation,programme_valider
@@ -10,6 +10,7 @@ from flask_cors import CORS
 from programme.base_donnee import connexion
 from datetime import datetime,timedelta
 import threading
+from functools import wraps
 from urllib.parse import unquote
 from programme.eduflowApi import api_programme,sync_programme_periodique
 import os
@@ -18,12 +19,21 @@ app.secret_key = '&é1234azerty'
 app.permanent_session_lifetime = timedelta(minutes=10)
 
 CORS(app)
-@app.before_request
-def before_request():
+def init_session():
+    """Initialise les variables de session si elles n'existent pas"""
+    if 'user_type' not in session:
+        session['user_type'] = None  # 'section' ou 'professeur'
+    if 'section_id' not in session:
+        session['section_id'] = None
+    if 'professeur_code' not in session:
+        session['professeur_code'] = None
     if 'connecter' not in session:
         session['connecter'] = False
+@app.before_request
+def before_request():
+    init_session()
+
 def login_required(f):
-    from functools import wraps
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'connecter' not in session or not session['connecter']:
@@ -53,7 +63,7 @@ def login():
         # Vérification des identifiants
         utilisateur = verification_utilisateur(username, password)
         if utilisateur:
-            # Enregistrer l'utilisateur dans la session
+            session.clear()
             session.permanent = True
             session['connecter'] = True
             session['username'] = username
@@ -79,11 +89,12 @@ def login_prof():
         code = request.form['code']
         utilisateur = verification_prof(code,username1)
         if utilisateur:
+            session.clear()
             session.permanent = True
             session['connecter'] = True
             session['username'] = username1
             session['role'] = utilisateur['nom_roles']
-            session['code'] = code
+            session['section'] = utilisateur['Matricule']
             return redirect(url_for('index'))
         elif utilisateur['nom_roles']=='professeur':
             return redirect(url_for('index'))
@@ -91,7 +102,6 @@ def login_prof():
             flash("Identifiants incorrects. Veuillez réessayer.", "danger")
     return render_template('login.html')        
 @app.route('/')
-@login_required
 def index():
     if 'connecter' not in session or not session['connecter']:
         return redirect(url_for('login'))
@@ -100,7 +110,6 @@ def index():
     return render_template('index.html', active_page='index', pointeuses=pointeuses)
 
 @app.route('/employee', methods=['POST'])
-@login_required
 @role_required('admin')
 def enregistrement():
     Nom=f"{request.form['nom']} {request.form['prenom']}"
@@ -126,32 +135,45 @@ def enregistrement():
 @app.route('/api/dashboard', methods=['GET'])
 @login_required
 def dashboard_data():
-    data = read_data_from_db(session['section'])
-    if data:
-        total_eleves, presents, retard, activites, total_absents, \
-        employes_actifs_mois, jours_travailles_mois, employes_retard_mois = data
-        
-        return jsonify({
-            'total_eleves': total_eleves,
-            'presents': presents,
-            'retard': retard,
-            'absents': total_absents,
-            'pourcentage_presents': round((presents / total_eleves) * 100, 2),
-            'pourcentage_absents': round((total_absents / total_eleves) * 100, 2),
-            'pourcentage_retards': round((retard / total_eleves) * 100, 2),
-            'activité_recentes': activites,
+    if session.get("role") == "professeur":
+        # Dashboard professeur
+        data = read_data_from_pr(session['section'])
+        if data:
+            total_Pointage, presents, retard, activites, total_absents = data
+            return jsonify({
+                'pointage': total_Pointage,
+                'presents': presents,
+                'retard': retard,
+                'absents': total_absents,
+                'activité_recentes': activites,
+                'pourcentage_presents': round((presents / total_Pointage) * 100, 2) if total_Pointage else 0,
+                'pourcentage_absents': round((total_absents / total_Pointage) * 100, 2) if total_Pointage else 0,
+                'pourcentage_retards': round((retard / total_Pointage) * 100, 2) if total_Pointage else 0,
+            })
+    else:
+        # Dashboard admin
+        data = read_data_from_db(session['section'])
+        if data:
+            total_eleves, presents, retard, activites, total_absents, \
+            employes_actifs_mois, jours_travailles_mois, employes_retard_mois = data
             
-            # DONNÉES MENSUELLES (tout le mois)
-            'employes_actifs_mois': employes_actifs_mois,
-            'jours_travailles_mois': jours_travailles_mois,
-            'employes_retard_mois': employes_retard_mois,
-            
-        })
+            return jsonify({
+                'total_eleves': total_eleves,
+                'presents': presents,
+                'retard': retard,
+                'absents': total_absents,
+                'pourcentage_presents': round((presents / total_eleves) * 100, 2) if total_eleves else 0,
+                'pourcentage_absents': round((total_absents / total_eleves) * 100, 2) if total_eleves else 0,
+                'pourcentage_retards': round((retard / total_eleves) * 100, 2) if total_eleves else 0,
+                'activité_recentes': activites,
+                'employes_actifs_mois': employes_actifs_mois,
+                'jours_travailles_mois': jours_travailles_mois,
+                'employes_retard_mois': employes_retard_mois,
+            })
     return jsonify({})
 
 
 @app.route('/employee')
-@login_required
 @role_required('admin')
 def intf_employee():
     data = read_data_employe()
@@ -171,7 +193,6 @@ def intf_employee():
     return render_template('employee.html', active_page='employee', resultats=table,user_id=id_employee)
 
 @app.route('/presence')
-@login_required
 def intf_presence():
     data = read_data_presence(session['section'])
     table = []
@@ -206,7 +227,7 @@ def intf_presence():
     return render_template('presence.html', active_page='presence', resultats=table)
 
 @app.route('/pointage_invalie')
-@login_required
+
 @role_required('admin')
 def intf_pointage_invalie():
     data = pointage_invalid(session['section'])
@@ -254,7 +275,7 @@ def validation_programme():
         flash("Aucun pointage correspondant trouvé.", "danger")
     return redirect(url_for('intf_pointage_invalie'))
 @app.route('/api/fiche_presence', methods=['POST'])
-@login_required
+
 def api_fiche_presence():
     data_json = request.get_json()
     date_debut = data_json.get('date_debut')
@@ -289,7 +310,7 @@ def api_fiche_presence():
     return jsonify({"success": False, "message": "Fichier PDF introuvable"}), 404
 
 @app.route('/api/fiche_retards', methods=['POST'])
-@login_required
+
 def fiche_retards():
     data_json = request.get_json()
     date_debut_retard = data_json.get('date_debut_retard')
@@ -326,7 +347,7 @@ def fiche_retards():
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
 
 @app.route('/api/fiche_absence', methods=['POST'])
-@login_required
+
 def fiche_absence():
     data_json = request.get_json()
     date_debut_absence = data_json.get('date_debut_absence')
@@ -363,7 +384,7 @@ def fiche_absence():
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
 
 @app.route('/api/fiche_presence_unique', methods=['POST'])
-@login_required
+
 def fiche_presence_unique():
     data_json = request.get_json()
     matricule = data_json.get('matricule')
@@ -400,7 +421,7 @@ def fiche_presence_unique():
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
 
 @app.route('/telechargement/<nom>')
-@login_required
+
 def telecharger_rapport(nom):
     chemin = os.path.join('uploads', nom)
     if os.path.exists(chemin):
@@ -408,7 +429,7 @@ def telecharger_rapport(nom):
     return "Fichier non trouvé", 404
 
 @app.route('/impression/<nom>')
-@login_required
+
 def imprimer_rapport(nom):
     chemin = os.path.join('uploads', nom)
     if os.path.exists(chemin):
@@ -416,7 +437,7 @@ def imprimer_rapport(nom):
     return "Fichier non trouvé", 404
 
 @app.route('/suppression/<nom>', methods=['DELETE'])
-@login_required
+
 def supprimer_rapport(nom):
     chemin = os.path.join('uploads', nom)
     if os.path.exists(chemin):
@@ -425,7 +446,7 @@ def supprimer_rapport(nom):
     return jsonify({"error": "Fichier introuvable"}), 404
 
 @app.route('/api/liste_rapports')
-@login_required
+
 @role_required('admin')
 def liste_rapports():
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -525,12 +546,12 @@ def api_programme_route(matricule):
         cursor.close()
         conn.close()
 @app.route('/rapports')
-@login_required
+
 def intf_rapports():
     return render_template('rapport.html', active_page='rapports')
 
 @app.route('/appareils')
-@login_required
+
 @role_required('admin')
 def intf_appareils():
     idsection= read_idsection()
@@ -538,7 +559,7 @@ def intf_appareils():
     return render_template('materiel.html', active_page='appareils',resultats=data,sections=idsection)
 
 @app.route('/add-device', methods=['POST'])
-@login_required
+
 def enregistrement_appareils():
     pointeuseN = request.form['pointeuseN']
     pointeuseM = request.form['pointeuseM']
@@ -551,17 +572,17 @@ def enregistrement_appareils():
     return redirect(url_for('intf_appareils'))
 
 @app.route('/parametres')
-@login_required
+
 def intf_Parametres():
     return render_template('parametre.html', active_page='parametres')
 
 @app.route('/programme')
-@login_required
+
 def intf_Programme():
     return render_template('programme.html', active_page='programme')
 
 @app.route('/utilisateurs')
-@login_required
+
 def lister_utilisateurs():
     idrole=read_idrole()
     idsection= read_idsection()
@@ -581,7 +602,7 @@ def lister_utilisateurs():
     return render_template('utilisateurs.html',utilisateurs=table,roles=idrole, sections=idsection, active_page='utilisateurs')
 
 @app.route('/utilisateurs/ajouter', methods=['GET', 'POST'])
-@login_required
+
 @role_required('admin')
 def ajouter_utilisateur():
     if request.method == 'POST':
