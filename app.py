@@ -227,7 +227,6 @@ def intf_presence():
     return render_template('presence.html', active_page='presence', resultats=table)
 
 @app.route('/pointage_invalie')
-
 @role_required('admin')
 def intf_pointage_invalie():
     data = pointage_invalid(session['section'])
@@ -308,7 +307,6 @@ def api_fiche_presence():
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     return jsonify({"success": False, "message": "Fichier PDF introuvable"}), 404
-
 @app.route('/api/fiche_retards', methods=['POST'])
 
 def fiche_retards():
@@ -345,7 +343,6 @@ def fiche_retards():
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
-
 @app.route('/api/fiche_absence', methods=['POST'])
 
 def fiche_absence():
@@ -382,7 +379,6 @@ def fiche_absence():
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
-
 @app.route('/api/fiche_presence_unique', methods=['POST'])
 
 def fiche_presence_unique():
@@ -421,7 +417,6 @@ def fiche_presence_unique():
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
 
 @app.route('/telechargement/<nom>')
-
 def telecharger_rapport(nom):
     chemin = os.path.join('uploads', nom)
     if os.path.exists(chemin):
@@ -429,7 +424,6 @@ def telecharger_rapport(nom):
     return "Fichier non trouvé", 404
 
 @app.route('/impression/<nom>')
-
 def imprimer_rapport(nom):
     chemin = os.path.join('uploads', nom)
     if os.path.exists(chemin):
@@ -437,7 +431,6 @@ def imprimer_rapport(nom):
     return "Fichier non trouvé", 404
 
 @app.route('/suppression/<nom>', methods=['DELETE'])
-
 def supprimer_rapport(nom):
     chemin = os.path.join('uploads', nom)
     if os.path.exists(chemin):
@@ -446,8 +439,6 @@ def supprimer_rapport(nom):
     return jsonify({"error": "Fichier introuvable"}), 404
 
 @app.route('/api/liste_rapports')
-
-@role_required('admin')
 def liste_rapports():
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
     uploads_list = sorted(os.listdir(uploads_dir), reverse=True)
@@ -549,9 +540,8 @@ def api_programme_route(matricule):
 
 def intf_rapports():
     return render_template('rapport.html', active_page='rapports')
-
+@role_required('admin')
 @app.route('/appareils')
-
 @role_required('admin')
 def intf_appareils():
     idsection= read_idsection()
@@ -559,7 +549,6 @@ def intf_appareils():
     return render_template('materiel.html', active_page='appareils',resultats=data,sections=idsection)
 
 @app.route('/add-device', methods=['POST'])
-
 def enregistrement_appareils():
     pointeuseN = request.form['pointeuseN']
     pointeuseM = request.form['pointeuseM']
@@ -572,17 +561,15 @@ def enregistrement_appareils():
     return redirect(url_for('intf_appareils'))
 
 @app.route('/parametres')
-
 def intf_Parametres():
     return render_template('parametre.html', active_page='parametres')
 
 @app.route('/programme')
-
 def intf_Programme():
     return render_template('programme.html', active_page='programme')
 
 @app.route('/utilisateurs')
-
+@role_required('admin')
 def lister_utilisateurs():
     idrole=read_idrole()
     idsection= read_idsection()
@@ -602,8 +589,6 @@ def lister_utilisateurs():
     return render_template('utilisateurs.html',utilisateurs=table,roles=idrole, sections=idsection, active_page='utilisateurs')
 
 @app.route('/utilisateurs/ajouter', methods=['GET', 'POST'])
-
-@role_required('admin')
 def ajouter_utilisateur():
     if request.method == 'POST':
         NomUtilisateur = request.form['nomuser']

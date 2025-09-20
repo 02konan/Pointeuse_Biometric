@@ -1,8 +1,6 @@
-{% extends 'index.html' %}
-{% block content %}
+{% extends 'index.html' %} {% block content %}
 
 <div id="employees-content" class="content-section">
-  
   <div id="toast-container"></div>
   <div class="container-fluid p-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -21,7 +19,7 @@
         <div class="row g-3">
           <div class="col-md-4">
             <input
-            id="champrecherche"
+              id="champrecherche"
               type="text"
               class="form-control"
               placeholder="Rechercher un employé..."
@@ -77,42 +75,40 @@
                 <td>{{resultat.Poste}}</td>
                 <td><span class="badge bg-success">Actif</span></td>
                 <td>
-                  <div class="dropdown">
+                  <li>
                     <button
-                      class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                    class="btn btn-outline-danger"
                       type="button"
-                      data-bs-toggle="dropdown"
+                      data-bs-toggle="modal"
+                      data-bs-target="#addEmployeeModal"
+                      data-id="{{ resultat.Matricule }}"
+                      data-nom="{{ resultat.Nom }}"
+                      data-prenom="{{ resultat.Prenom }}"
+                      data-section="{{ resultat.section }}"
+                      data-email="{{ resultat.email }}"
+                      data-telephone="{{ resultat.Telephone }}"
+                      data-Adresse="{{ resultat.Adresse }}"
+                      data-poste="{{ resultat.Poste }}"
                     >
-                      Actions
+                      <i class="fas fa-edit me-2"></i> Modifier
                     </button>
-                    <ul class="dropdown-menu">
-                      <li>
-                        <button
-  class="dropdown-item"
-  type="button"
-  data-bs-toggle="modal"
-  data-bs-target="#addEmployeeModal"
-  data-id="{{ resultat.Matricule }}"
-  data-nom="{{ resultat.Nom }}"
-  data-prenom="{{ resultat.Prenom }}"
-  data-section="{{ resultat.section }}"
-  data-email="{{ resultat.email }}"
-  data-telephone="{{ resultat.Telephone }}"
-  data-Adresse="{{ resultat.Adresse }}"
-  data-poste="{{ resultat.Poste }}"
->
-  <i class="fas fa-edit me-2"></i> Modifier
-</button>
-                      </li>
-                      
-                      <li><hr class="dropdown-divider" /></li>
-                      <li>
-                        <a class="dropdown-item text-danger" href="{{url_for('intf_employee',id=resultat.Matricule)}}"
-                          ><i class="fas fa-trash me-2"></i> Supprimer</a
-                        >
-                      </li>
-                    </ul>
-                  </div>
+                    <button
+                    class="btn btn-outline-success"
+                      type="button"
+                      data-bs-toggle="modal"
+                      data-bs-target="#addEmployeeModal"
+                      data-id="{{ resultat.Matricule }}"
+                      data-nom="{{ resultat.Nom }}"
+                      data-prenom="{{ resultat.Prenom }}"
+                      data-section="{{ resultat.section }}"
+                      data-email="{{ resultat.email }}"
+                      data-telephone="{{ resultat.Telephone }}"
+                      data-Adresse="{{ resultat.Adresse }}"
+                      data-poste="{{ resultat.Poste }}"
+                    >
+                      <i class="fas fa-fingerprint me-2"></i>Enroler
+                    </button>
+                  </li>
                 </td>
               </tr>
               {% endfor %}
@@ -121,19 +117,31 @@
         </div>
         <!-- Pagination -->
         <nav aria-label="Page navigation" class="mt-4">
-          <ul class="pagination justify-content-center">
-          </ul>
+          <ul class="pagination justify-content-center"></ul>
         </nav>
       </div>
     </div>
   </div>
 </div>
-<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+<div
+  class="modal fade"
+  id="addEmployeeModal"
+  tabindex="-1"
+  aria-labelledby="addEmployeeModalLabel"
+  aria-hidden="true"
+>
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="addEmployeeModalLabel">Ajouter un nouvel employé</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title" id="addEmployeeModalLabel">
+          Ajouter un nouvel employé
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
       </div>
       <div class="modal-body">
         <form action="/employee" method="POST" enctype="multipart/form-data">
@@ -151,16 +159,28 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label for="employeeId" class="form-label">ID Employé</label>
-              <input list="Matriucle" type="text" class="form-control" name="idEmploye" required />
+              <input
+                list="Matriucle"
+                type="text"
+                class="form-control"
+                name="idEmploye"
+                required
+              />
               <datalist id="Matriucle">
                 {% for resultat in user_id %}
-                <option value="{{ resultat }}"/>
+                <option value="{{ resultat }}" />
                 {% endfor %}
               </datalist>
             </div>
             <div class="col-md-6">
               <label for="department" class="form-label">Section</label>
-              <input type="text" list="section" class="form-control" name="section" required />
+              <input
+                type="text"
+                list="section"
+                class="form-control"
+                name="section"
+                required
+              />
               <datalist id="section">
                 <option value="Ressources Humaines" />
                 <option value="Informatique" />
@@ -184,7 +204,12 @@
           <div class="row mb-3">
             <div class="col-md-6">
               <label for="joinDate" class="form-label">Date d'embauche</label>
-              <input type="date" class="form-control" name="joinDate" required />
+              <input
+                type="date"
+                class="form-control"
+                name="joinDate"
+                required
+              />
             </div>
             <div class="col-md-6">
               <label for="position" class="form-label">Poste</label>
@@ -201,21 +226,35 @@
             <label for="photo" class="form-label">Photo</label>
             <input class="form-control" type="file" name="image" />
           </div>
-          
+
           <div class="mb-3">
             <label class="form-label">Enregistrement de l'empreinte</label>
             <div class="input-group">
-              <button type="button" class="btn btn-outline-success" onclick="capturerEmpreinte()">
+              <button
+                type="button"
+                class="btn btn-outline-success"
+                onclick="capturerEmpreinte()"
+              >
                 <i class="fas fa-fingerprint"></i> Capturer l'empreinte
               </button>
-              <input type="hidden" name="empreinte_status" id="empreinte_status" value="non_enregistrée" />
+              <input
+                type="hidden"
+                name="empreinte_status"
+                id="empreinte_status"
+                value="non_enregistrée"
+              />
             </div>
             <small id="empreinte_message" class="form-text text-muted"></small>
           </div>
 
           <!-- Boutons -->
           <input type="submit" value="Enregistrer" class="btn btn-primary" />
-          <input type="reset" value="Annuler" class="btn btn-secondary" data-bs-dismiss="modal" />
+          <input
+            type="reset"
+            value="Annuler"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          />
         </form>
       </div>
     </div>
