@@ -88,15 +88,15 @@ def login_prof():
         username1 = request.form['username1']
         code = request.form['code']
         utilisateur = verification_prof(code,username1)
-        if utilisateur:
+        if utilisateur is None:
+            flash("Identifiants incorrects. Veuillez réessayer.", "danger")
+        elif utilisateur is not None and utilisateur:
             session.clear()
             session.permanent = True
             session['connecter'] = True
             session['username'] = username1
             session['role'] = utilisateur['nom_roles']
             session['section'] = utilisateur['Matricule']
-            return redirect(url_for('index'))
-        elif utilisateur['nom_roles']=='professeur':
             return redirect(url_for('index'))
         else:
             flash("Identifiants incorrects. Veuillez réessayer.", "danger")
@@ -137,18 +137,18 @@ def enregistrement():
 def dashboard_data():
     if session.get("role") == "professeur":
         # Dashboard professeur
-        data = read_data_from_pr(session['section'])
-        if data:
-            total_Pointage, presents, retard, activites, total_absents = data
+        data_user = read_data_from_pr(session['section'])
+        if data_user:
+            total_Pointage, presents, retard, activites, total_absents = data_user
             return jsonify({
                 'pointage': total_Pointage,
-                'presents': presents,
-                'retard': retard,
-                'absents': total_absents,
-                'activité_recentes': activites,
-                'pourcentage_presents': round((presents / total_Pointage) * 100, 2) if total_Pointage else 0,
-                'pourcentage_absents': round((total_absents / total_Pointage) * 100, 2) if total_Pointage else 0,
-                'pourcentage_retards': round((retard / total_Pointage) * 100, 2) if total_Pointage else 0,
+                'presents_user': presents,
+                'retard_user': retard,
+                'absents_user': total_absents,
+                'activité_recentes_user': activites,
+                'pourcentage_presents_user': round((presents / total_Pointage) * 100, 2) if total_Pointage else 0,
+                'pourcentage_absents_user': round((total_absents / total_Pointage) * 100, 2) if total_Pointage else 0,
+                'pourcentage_retards_user': round((retard / total_Pointage) * 100, 2) if total_Pointage else 0,
             })
     else:
         # Dashboard admin
@@ -637,8 +637,8 @@ if __name__ == '__main__':
     # thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique)
     # thread_sync_programme_periodique.daemon = True
     # thread_sync_programme_periodique.start()
-    # thread = threading.Thread(target=listen_attendance)
-    # thread.daemon = True
-    # thread.start()
+    thread = threading.Thread(target=listen_attendance)
+    thread.daemon = True
+    thread.start()
 
     app.run(host='0.0.0.0',port=5000,debug=True)

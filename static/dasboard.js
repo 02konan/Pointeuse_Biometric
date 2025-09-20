@@ -3,33 +3,32 @@ let attendancePieChart = null;
 
 function chargerDonneesDashboard() {
   fetch("/api/dashboard")
-    .then(res => res.text()) // récupère d'abord le texte
-    .then(text => {
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        console.error("Erreur JSON :", e, text);
-        return;
-      }
-
+    .then(res => res.json())
+    .then(data => {
       // --- ACTIVITES RECENTES ---
       if (data["activité_recentes"]) {
         afficherActivites(data["activité_recentes"]);
       }
+      if (data["activité_recentes_user"]) {
+        afficherActivites(data["activité_recentes_user"]);
+      }
 
       // --- CHARTS ---
-      afficherCharts(data);
+      if (data.total_eleves !== undefined) {
+        afficherChartsAdmin(data);
+      } else if (data.pointage !== undefined) {
+        afficherChartsProf(data);
+      }
 
-      // --- COMPTEURS QUOTIDIENS ---
+      // --- COMPTEURS ---
       const counters = [
         ["presents-count", data.presents],
         ["absents-count", data.absents],
         ["retard-count", data.retard],
         ["total-eleves", data.total_eleves],
-        ["presents-prof", data.presents],
-        ["absents-prof", data.absents],
-        ["retard-prof", data.retard],
+        ["presents-prof", data.presents_user],
+        ["absents-prof", data.absents_user],
+        ["retard-prof", data.retard_user],
         ["new-pointage", data.pointage]
       ];
 
@@ -38,11 +37,11 @@ function chargerDonneesDashboard() {
         if (el) el.textContent = value ?? 0;
       });
 
-      // --- BARRES DE PROGRESSION QUOTIDIENNES ---
+      // --- BARRES DE PROGRESSION ---
       const bars = [
-        ["bar-present", data.pourcentage_presents],
-        ["bar-absent", data.pourcentage_absents],
-        ["bar-retard", data.pourcentage_retards]
+        ["bar-present", data.pourcentage_presents ?? data.pourcentage_presents_user],
+        ["bar-absent", data.pourcentage_absents ?? data.pourcentage_absents_user],
+        ["bar-retard", data.pourcentage_retards ?? data.pourcentage_retards_user]
       ];
 
       bars.forEach(([id, pct]) => {
@@ -50,32 +49,20 @@ function chargerDonneesDashboard() {
         if (el) el.style.width = (pct ?? 0) + "%";
       });
 
-      // --- COMPTEURS MENSUELS ---
-      const moisCounters = [
-        ["presence-mois-count", data.employes_actifs_mois],
-        ["absence-mois-count", data.total_eleves - (data.employes_actifs_mois ?? 0)],
-        ["retard-mois-count", data.employes_retard_mois],
-        ["new-employee-count", 0] // à 0 par défaut
-      ];
+      // --- COMPTEURS MENSUELS (admin uniquement) ---
+      if (data.total_eleves !== undefined) {
+        const moisCounters = [
+          ["presence-mois-count", data.employes_actifs_mois],
+          ["absence-mois-count", data.total_eleves - (data.employes_actifs_mois ?? 0)],
+          ["retard-mois-count", data.employes_retard_mois],
+          ["new-employee-count", 0]
+        ];
 
-      moisCounters.forEach(([id, value]) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value ?? 0;
-      });
-
-      // --- BARRES DE PROGRESSION MENSUELLES ---
-      const barsMois = [
-        ["bar-presence-mois", data.pourcentage_actifs_mois],
-        ["bar-absence-mois", data.pourcentage_inactifs_mois],
-        ["bar-retard-mois", data.pourcentage_retards_mois],
-        ["bar-new-employee", 0]
-      ];
-
-      barsMois.forEach(([id, pct]) => {
-        const el = document.getElementById(id);
-        if (el) el.style.width = (pct ?? 0) + "%";
-      });
-
+        moisCounters.forEach(([id, value]) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = value ?? 0;
+        });
+      }
     })
     .catch(error => console.error("Erreur lors du chargement du dashboard :", error));
 }
@@ -106,13 +93,11 @@ function afficherActivites(activites) {
   });
 }
 
-function afficherCharts(data) {
+function afficherChartsAdmin(data) {
   const lineCanvas = document.getElementById("attendanceChart");
   const pieCanvas = document.getElementById("attendancePieChart");
-
   if (!lineCanvas || !pieCanvas) return;
 
-  // Détruire les anciens charts
   if (attendanceChart) attendanceChart.destroy();
   if (attendancePieChart) attendancePieChart.destroy();
 
@@ -152,20 +137,39 @@ function afficherCharts(data) {
           "rgba(54, 162, 235, 0.7)",
           "rgba(255, 99, 132, 0.7)",
           "rgba(255, 206, 86, 0.7)"
-        ],
-        borderColor: [
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 99, 132, 1)",
-          "rgba(255, 206, 86, 1)"
-        ],
-        borderWidth: 1
+        ]
       }]
     },
     options: { responsive: true, plugins: { legend: { position: "bottom" } } }
   });
 }
 
+function afficherChartsProf(data) {
+  const lineCanvas = document.getElementById("attendanceChart");
+  if (!lineCanvas) return;
+
+  if (attendanceChart) attendanceChart.destroy();
+
+  const ctxLine = lineCanvas.getContext("2d");
+  attendanceChart = new Chart(ctxLine, {
+    type: "line",
+    data: {
+      labels: ["Présents", "Absents", "Retards"],
+      datasets: [{
+        label: "Statistiques du jour (Professeur)",
+        data: [data.presents_user ?? 0, data.absents_user ?? 0, data.retard_user ?? 0],
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: { responsive: true }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   chargerDonneesDashboard();
-  setInterval(chargerDonneesDashboard, 5000); // recharge toutes les 5s
+  setInterval(chargerDonneesDashboard, 10000);
 });
