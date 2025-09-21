@@ -121,6 +121,7 @@ def enregistrement():
     section = request.form['section']
     idEmploye = request.form['idEmploye']
     photo = request.files.get('image')
+    role_id=3
     
     chemin = None
     if photo and photo.filename != '':
@@ -128,7 +129,7 @@ def enregistrement():
         os.makedirs(os.path.dirname(chemin), exist_ok=True)
         photo.save(chemin)
 
-    creat_data_employee(idEmploye, Nom, telephone, address, email, poste, chemin, date, section)
+    creat_data_employee(idEmploye, Nom, telephone, address, email, poste, chemin, date, section,role_id)
     flash("Employé enregistré avec succès !", "success")
     return redirect(url_for('intf_employee'))
 
