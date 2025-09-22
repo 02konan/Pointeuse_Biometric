@@ -22,15 +22,6 @@
         </button>
       </form>
     </li>
-
-    <!-- <li class="{% if active_page == 'programme' %}active{% endif %}">
-      <form action="{{ url_for('intf_Programme') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-calendar-check"></i> Programme
-        </button>
-      </form>
-    </li> -->
-
     <li class="{% if active_page == 'presence' %}active{% endif %}">
       <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
@@ -68,7 +59,13 @@
         </button>
       </form>
     </li>
-
+    <li class="{% if active_page == 'programme' %}active{% endif %}">
+      <form action="{{ url_for('intf_Programme') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-calendar-check"></i> Enrolement
+        </button>
+      </form>
+    </li>
     <!-- <li class="{% if active_page == 'parametres' %}active{% endif %}">
       <form action="{{ url_for('intf_Parametres') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
