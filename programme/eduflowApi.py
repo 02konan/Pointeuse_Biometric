@@ -45,8 +45,8 @@ def api_programme():
                             print("Programme mis à jour avec succès.")
                         else:
                             sql = """
-                            INSERT INTO Programme (professeur_id,professeur_code, professeur_nom, jour, Matiere, type, statut, heure_arrivee, heure_depart, duree_cours)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                            INSERT INTO Programme (professeur_id,professeur_code, professeur_nom, jour,heure_arrivee, heure_depart, duree_cours)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s)
                             """
                             curseur.execute(sql, (professeur_id, professeur_code, professeur_nom, jour,heure_arrivee, heure_depart, duree_cours))
                             print("Nouveau programme inséré avec succès.")
