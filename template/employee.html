@@ -74,10 +74,10 @@
                 <td>{{resultat.Adresse}}</td>
                 <td>{{resultat.Poste}}</td>
                 <td><span class="badge bg-success">Actif</span></td>
-                <td>
-                  <li>
+                <td class="text-nowrap">
+                  <li class="list-inline-item ">
                     <button
-                    class="btn btn-outline-danger"
+                      class="btn btn-outline-danger"
                       type="button"
                       data-bs-toggle="modal"
                       data-bs-target="#addEmployeeModal"
@@ -92,22 +92,17 @@
                     >
                       <i class="fas fa-edit me-2"></i> Modifier
                     </button>
+                    <!-- <form action="{{ url_for('Programme_Enrollement') }}" method="post" style="width: 100%; display: inline;">
+                      <input type="text" name="user_id" value="{{ resultat.Matricule }}" hidden>
+                      <input type="text" name="name_user" value="{{resultat.Nom}}" hidden>
+                      <input type="number" name="finger_id" value="0" hidden>
                     <button
                     class="btn btn-outline-success"
-                      type="button"
-                      data-bs-toggle="modal"
-                      data-bs-target="#addEmployeeModal"
-                      data-id="{{ resultat.Matricule }}"
-                      data-nom="{{ resultat.Nom }}"
-                      data-prenom="{{ resultat.Prenom }}"
-                      data-section="{{ resultat.section }}"
-                      data-email="{{ resultat.email }}"
-                      data-telephone="{{ resultat.Telephone }}"
-                      data-Adresse="{{ resultat.Adresse }}"
-                      data-poste="{{ resultat.Poste }}"
+                      type="submit"
                     >
                       <i class="fas fa-fingerprint me-2"></i>Enroler
                     </button>
+                    </form> -->
                   </li>
                 </td>
               </tr>
@@ -168,7 +163,7 @@
               />
               <datalist id="Matriucle">
                 {% for resultat in user_id %}
-                <option value="{{ resultat }}" />
+                <option value="{{ resultat.Code}}"/>{{ resultat.Nom}}</option>
                 {% endfor %}
               </datalist>
             </div>
@@ -216,38 +211,10 @@
               <input type="text" class="form-control" name="position" />
             </div>
           </div>
-
           <div class="mb-3">
             <label for="address" class="form-label">Adresse</label>
             <textarea class="form-control" name="address" rows="2"></textarea>
           </div>
-
-          <div class="mb-3">
-            <label for="photo" class="form-label">Photo</label>
-            <input class="form-control" type="file" name="image" />
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Enregistrement de l'empreinte</label>
-            <div class="input-group">
-              <button
-                type="button"
-                class="btn btn-outline-success"
-                onclick="capturerEmpreinte()"
-              >
-                <i class="fas fa-fingerprint"></i> Capturer l'empreinte
-              </button>
-              <input
-                type="hidden"
-                name="empreinte_status"
-                id="empreinte_status"
-                value="non_enregistrée"
-              />
-            </div>
-            <small id="empreinte_message" class="form-text text-muted"></small>
-          </div>
-
-          <!-- Boutons -->
           <input type="submit" value="Enregistrer" class="btn btn-primary" />
           <input
             type="reset"

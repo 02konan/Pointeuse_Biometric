@@ -2,8 +2,9 @@ from flask import Flask, render_template, request,send_file, redirect, url_for, 
 from programme.read_data import pointeuse,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
-from programme.attendance import listen_attendance,synchronisation,programme_valider
+from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
 from programme.insertion import insertion_
+from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
 from programme.gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
 from flask_cors import CORS
@@ -120,16 +121,16 @@ def enregistrement():
     address = request.form['address']
     section = request.form['section']
     idEmploye = request.form['idEmploye']
-    photo = request.files.get('image')
+    # photo = request.files.get('image')
     role_id=3
     
-    chemin = None
-    if photo and photo.filename != '':
-        chemin = os.path.join('uploads', secure_filename(photo.filename))
-        os.makedirs(os.path.dirname(chemin), exist_ok=True)
-        photo.save(chemin)
+    # chemin = None
+    # if photo and photo.filename != '':
+    #     chemin = os.path.join('uploads', secure_filename(photo.filename))
+    #     os.makedirs(os.path.dirname(chemin), exist_ok=True)
+    #     photo.save(chemin)
 
-    creat_data_employee(idEmploye, Nom, telephone, address, email, poste, chemin, date, section,role_id)
+    creat_data_employee(idEmploye, Nom, telephone, address, email, poste, date, section,role_id)
     flash("Employé enregistré avec succès !", "success")
     return redirect(url_for('intf_employee'))
 
@@ -180,6 +181,13 @@ def intf_employee():
     data = read_data_employe()
     id_employee=read_matricule()
     table = []
+    table_info=[]
+    for info_user in id_employee:
+        lecture_info={
+            'Code':info_user[0],
+            'Nom':info_user[1]
+        }
+        table_info.append(lecture_info)
     for donnee in data:
         information = {
             'Matricule': donnee[1],
@@ -188,10 +196,10 @@ def intf_employee():
             'Adresse': donnee[4],
             'email': donnee[5],
             'Poste': donnee[6],
-            'section': donnee[9],
+            'section': donnee[8],
         }
         table.append(information)
-    return render_template('employee.html', active_page='employee', resultats=table,user_id=id_employee)
+    return render_template('employee.html', active_page='employee', resultats=table,user_id=table_info)
 
 @app.route('/presence')
 def intf_presence():
@@ -503,6 +511,7 @@ ORDER BY
     finally:
         cursor.close()
         conn.close()
+
 @app.route('/api/programme/<matricule>', methods=['GET'])
 def api_programme_route(matricule):
     try:
@@ -542,6 +551,7 @@ def api_programme_route(matricule):
 def intf_rapports():
     return render_template('rapport.html', active_page='rapports')
 @role_required('admin')
+
 @app.route('/appareils')
 @role_required('admin')
 def intf_appareils():
@@ -565,10 +575,17 @@ def enregistrement_appareils():
 def intf_Parametres():
     return render_template('parametre.html', active_page='parametres')
 
-@app.route('/programme')
-def intf_Programme():
-    return render_template('programme.html', active_page='programme')
-
+@app.route('/enrolement', methods=['POST'])
+def Programme_Enrollement():
+    idutilisateur = request.form['user_id']
+    utilisateur = request.form['name_user']
+    idemprientes = request.form['finger_id']
+    succes=enroler_utilisateur(idutilisateur, utilisateur, idemprientes)
+    if succes:
+     flash(f"Utilisateur {utilisateur} enrôlé avec succès !", "success")
+    else:
+     flash("Erreur lors de l'enrôlement.", "danger")
+    return redirect(url_for('intf_employee'))
 @app.route('/utilisateurs')
 @role_required('admin')
 def lister_utilisateurs():
@@ -617,14 +634,14 @@ if __name__ == '__main__':
     # thread_insertion = threading.Thread(target=insertion_)
     # thread_insertion.daemon = True
     # thread_insertion.start()
-    # thread_synchronisation = threading.Thread(target=synchronisation)
-    # thread_synchronisation.daemon = True
-    # thread_synchronisation.start()
-    thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique)
+    # thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
+    # thread_synchronisation_attendance.daemon = True
+    # thread_synchronisation_attendance.start()
+    thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
     thread_sync_programme_periodique.daemon = True
     thread_sync_programme_periodique.start()
-    thread = threading.Thread(target=listen_attendance)
-    thread.daemon = True
-    thread.start()
+    # thread = threading.Thread(target=listen_attendance)
+    # thread.daemon = True
+    # thread.start()
 
     app.run(host='0.0.0.0',port=5000,debug=True)

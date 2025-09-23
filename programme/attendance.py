@@ -183,7 +183,7 @@ ON DUPLICATE KEY UPDATE
         except Exception as e:
             print(f"[ERREUR] Générale: {e}")
 
-def synchronisation():
+def synchronisation_attendance():
     while True:
       programme_attendence()
       time.sleep(60)

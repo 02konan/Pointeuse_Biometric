@@ -23,10 +23,9 @@ def read_matricule():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql = "SELECT DISTINCT(IDEmploye) FROM empreintes"
+                sql = "SELECT DISTINCT(professeur_code),professeur_nom FROM Programme"
                 cursor.execute(sql)
-                result = cursor.fetchall()
-                return [row[0] for row in result]
+                return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)
     except Exception as e:
