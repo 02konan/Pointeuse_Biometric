@@ -2,7 +2,6 @@
 import os
 import time
 from zk import ZK
-from flask_socketio import SocketIO, emit
 from programme.base_donnee import connexion
 
 # Détection automatique de la première pointeuse en ligne
