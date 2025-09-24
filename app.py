@@ -273,8 +273,9 @@ def validation_programme():
         date_pointage = f"{donnee[2]} 17:30:00"
         idpointeuse = donnee[3]
         jour_pointage = donnee[8]
+        Status="Départ enregistré"
         if employe_id == IDemploye:
-            if programme_valider(IDemploye, date_pointage, idpointeuse, jour_pointage):
+            if programme_valider(IDemploye, date_pointage, idpointeuse, jour_pointage,Status):
                 flash("Pointage invalide validé et ajouté avec succès !", "success")
             else:
                 flash(date_pointage, "danger")

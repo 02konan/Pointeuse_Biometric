@@ -137,19 +137,20 @@ def programme_attendence():
                 with conn.cursor() as curseur:
                     sql_insert = """
                     INSERT INTO pointage_programe 
-(IDProgramme, IDPointage, Status, arrivee, depart, Duree_initial, Duree_finale)
+(IDProgramme, IDPointage, Status, arrivee, depart, Duree_initial, Duree_finale,jour_programme)
 SELECT 
     pr.IDProgramme,
     ptg.IDPointage,
     CASE 
-        WHEN TIMESTAMPDIFF(MINUTE, ptg.arrivee, ptg.depart) >= pr.duree_cours 
+        WHEN TIMEDIFF(ptg.depart, ptg.arrivee) >= pr.duree_cours 
             THEN 'Présent'
         ELSE 'Absent'
     END AS Status,
     ptg.arrivee,
     ptg.depart,
     pr.duree_cours,
-    TIMEDIFF(ptg.depart, ptg.arrivee) AS duree_finale
+    TIMEDIFF(ptg.depart, ptg.arrivee) AS duree_finale,
+    ptg.jour_pointage
 FROM Programme pr
 JOIN (
     SELECT
@@ -170,7 +171,8 @@ ON DUPLICATE KEY UPDATE
     arrivee = VALUES(arrivee),
     depart = VALUES(depart),
     Duree_initial = VALUES(Duree_initial),
-    Duree_finale = VALUES(Duree_finale);
+    Duree_finale = VALUES(Duree_finale),
+    jour_programme = VALUES(jour_programme);
                     """
 
                     curseur.execute(sql_insert)
@@ -188,13 +190,13 @@ def synchronisation_attendance():
       programme_attendence()
       time.sleep(60)
 
-def programme_valider(IDemploye, date_pointage,idpointeuse, jour_pointage):
-    sql_valider = """insert into pointages (IDEmploye, date_pointage, idPointeuse,jour_pointage)
-                     values (%s, %s, %s,%s)"""
+def programme_valider(IDemploye, date_pointage,idpointeuse, jour_pointage,Status):
+    sql_valider = """insert into pointages (IDEmploye, date_pointage, idPointeuse,jour_pointage,Status)
+                     values (%s, %s, %s, %s, %s)"""
     with connexion() as conn:
         try:
             with conn.cursor() as curseur:
-                curseur.execute(sql_valider, (IDemploye, date_pointage,idpointeuse,jour_pointage,))
+                curseur.execute(sql_valider, (IDemploye, date_pointage,idpointeuse,jour_pointage,Status))
                 conn.commit()
                 return True
         except pymysql.MySQLError as e:
