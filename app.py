@@ -575,17 +575,24 @@ def enregistrement_appareils():
 def intf_Parametres():
     return render_template('parametre.html', active_page='parametres')
 
-@app.route('/enrolement', methods=['POST'])
+@app.route('/enrolement', methods=['GET','POST'])
 def Programme_Enrollement():
-    idutilisateur = request.form['user_id']
-    utilisateur = request.form['name_user']
-    idemprientes = request.form['finger_id']
-    succes=enroler_utilisateur(idutilisateur, utilisateur, idemprientes)
+    if request.method == 'POST':
+     idutilisateur = request.form.get('user_id')
+     utilisateur = request.form.get('name_user')
+     idemprientes = request.form.get('finger_id')
+    else:
+     idutilisateur = request.args.get('user_id')
+     utilisateur = request.args.get('name_user')
+     idemprientes = request.args.get('finger_id')
+    succes=enroler_utilisateur(user_id=idutilisateur, name=utilisateur, finger_index=idemprientes)
     if succes:
      flash(f"Utilisateur {utilisateur} enrôlé avec succès !", "success")
     else:
      flash("Erreur lors de l'enrôlement.", "danger")
-    return redirect(url_for('intf_employee'))
+    return redirect(url_for('Programme_Enrollement'))
+
+
 @app.route('/utilisateurs')
 @role_required('admin')
 def lister_utilisateurs():
@@ -631,15 +638,15 @@ if __name__ == '__main__':
     # recuperation = threading.Thread(target=recuperation_emprientes)
     # recuperation.daemon = True
     # recuperation.start()
-    # thread_insertion = threading.Thread(target=insertion_)
-    # thread_insertion.daemon = True
-    # thread_insertion.start()
+    thread_insertion = threading.Thread(target=insertion_)
+    thread_insertion.daemon = True
+    thread_insertion.start()
     # thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
     # thread_synchronisation_attendance.daemon = True
     # thread_synchronisation_attendance.start()
-    thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
-    thread_sync_programme_periodique.daemon = True
-    thread_sync_programme_periodique.start()
+    # thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
+    # thread_sync_programme_periodique.daemon = True
+    # thread_sync_programme_periodique.start()
     # thread = threading.Thread(target=listen_attendance)
     # thread.daemon = True
     # thread.start()

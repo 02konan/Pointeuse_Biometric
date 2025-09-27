@@ -51,7 +51,7 @@ def recuperation_emprientes(period=300):
                                 db2 = connexion()
                                 cursor2 = db2.cursor()
 
-                                cursor2.execute("SELECT IDEmploye FROM empreintes WHERE IDEmploye=%s AND IDEmpreinte=%s", (user.user_id, fid))
+                                cursor2.execute("SELECT IDEmploye,IDPointeuse FROM empreintes WHERE IDEmploye=%s AND IDEmpreinte=%s", (user.user_id, fid))
                                 if cursor2.fetchone():
                                     print("⚠️ Déjà enregistré.")
                                 else:

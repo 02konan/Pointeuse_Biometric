@@ -72,7 +72,7 @@ function afficherActivites(activites) {
   if (!container) return;
   container.innerHTML = "";
 
-  activites.forEach(([id, date, Status]) => {
+  activites.forEach(([id, date, Status,NomSection]) => {
     const couleur = Status === "Arrivée enregistrée" ? "badge bg-success" : "badge bg-danger";
 
     const item = document.createElement("li");
@@ -87,7 +87,10 @@ function afficherActivites(activites) {
           <small class="${couleur}">${Status}</small>
         </div>
       </div>
-      <span class="text-muted">${new Date(date).toLocaleString()}</span>
+      <div>
+          <h6 class="mb-0">${new Date(date).toLocaleString()}</h6>
+          <small class="text-primary">${NomSection}</small>
+      </div>
     `;
     container.appendChild(item);
   });

@@ -9,16 +9,19 @@ def is_pingable(ip):
     response = os.system(f"ping -n 1 -w 1000 {ip}" if os.name == "nt" else f"ping -c 1 -W 1 {ip}")
     return response == 0
 
-def get_first_online_pointeuse():
-    db = connexion()
-    cursor = db.cursor()
-    cursor.execute("SELECT AdresseIp FROM pointeuse")
-    pointeuses = cursor.fetchall()
-    cursor.close()
-    db.close()
-    for (ip,) in pointeuses:
+def get_first_online_pointeuse(essiae=2, attente=5):
+    for _ in range(essiae):
+     db = connexion()
+     cursor = db.cursor()
+     cursor.execute("SELECT AdresseIp FROM pointeuse")
+     pointeuses = cursor.fetchall()
+     cursor.close()
+     db.close()
+     for (ip,) in pointeuses:
         if is_pingable(ip):
             return ip
+     print(f"⏳ Aucune pointeuse en ligne détectée. Nouvelle tentative dans {attente} secondes...")
+     time.sleep(attente)   
     return None
 
 
@@ -57,3 +60,6 @@ def enroler_utilisateur(user_id=None, name=None, finger_index=None):
         if conn:
             conn.disconnect()
             print("🔌 Déconnecté de la pointeuse")
+
+if __name__ == "__main__":
+    enroler_utilisateur(user_id=1234, name="Test User", finger_index=0)

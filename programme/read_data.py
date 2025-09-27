@@ -175,13 +175,9 @@ def read_data_from_pr(prof_code):
             sql1="""
                 SELECT COUNT(p.IDEmploye) AS nb_pointages
                 FROM pointages p
-                JOIN empreintes e 
-                ON e.IDEmploye = p.IDEmploye
-                JOIN employe emp 
-                ON emp.matricule = e.IDEmploye
                 JOIN pointeuse pt 
                 ON pt.idPointeuse = p.idPointeuse
-                AND emp.matricule = %s;
+                AND p.IDEmploye =%s;
                  """
           
             sql2 = """SELECT COUNT(*) AS nb_presences
@@ -219,7 +215,7 @@ FROM (
     GROUP BY DATE(p.date_pointage), pt.idPointeuse
 ) AS absences;
 """
-            sql5 = """SELECT DISTINCT e.Nom, p.date_pointage, p.Status
+            sql5 = """SELECT DISTINCT e.Nom, p.date_pointage, p.Status,s.NomSection
 FROM pointages p
 JOIN empreintes e ON p.IDEmploye = e.IDEmploye
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
