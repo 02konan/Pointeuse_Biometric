@@ -55,9 +55,10 @@ def insertion_():
                     print(f"[ERREUR] Échec de l'insertion pour {nom} (Code: {code}) : {e}")
 
             conn.enable_device()
+            
         except Exception as e:
             print(f"[ERREUR] Échec de connexion à la pointeuse {pointeuse_ip} : {e}")
-        finally:
             zk.disconnect()
-        time.sleep(5)   
+        finally:
+         time.sleep(5)   
         
