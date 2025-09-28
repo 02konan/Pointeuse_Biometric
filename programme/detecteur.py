@@ -56,8 +56,8 @@ def recuperation_emprientes(period=300):
                                     print("⚠️ Déjà enregistré.")
                                 else:
                                     print(f"Tentative d'insertion : user_id={user.user_id}, name={user.name}, fid={fid}, taille={template.size}")
-                                    cursor2.execute("INSERT INTO `empreintes`(`IDEmploye`, `Nom`, `IDEmpreinte`, `Empreintes`, `IDPointeuse`) VALUES (%s, %s, %s, %s, %s)",
-                                                   (user.user_id, user.name, fid, template.template, pointeuse_id))
+                                    cursor2.execute("INSERT INTO `empreintes`(`ID_DEVICE`,`IDEmploye`, `Nom`, `IDEmpreinte`, `Empreintes`, `IDPointeuse`) VALUES (%s, %s, %s, %s, %s, %s)",
+                                                   (user.uid,user.user_id, user.name, fid, template.template, pointeuse_id))
                                     print("✅ Empreinte enregistrée.")
                                 
                                 db2.commit()

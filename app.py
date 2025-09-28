@@ -4,6 +4,7 @@ from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
 from programme.insertion import insertion_
+from programme.transfert_empreintes import transfert_empreintes
 from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
 from programme.gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
@@ -189,6 +190,7 @@ def intf_employee():
         table_info.append(lecture_info)
     for donnee in data:
         information = {
+            'ID': donnee[0],
             'Matricule': donnee[1],
             'Nom': donnee[2],
             'Telephone': donnee[3],
@@ -508,9 +510,6 @@ ORDER BY
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    finally:
-        cursor.close()
-        conn.close()
 
 @app.route('/api/programme/<matricule>', methods=['GET'])
 def api_programme_route(matricule):
@@ -543,11 +542,8 @@ def api_programme_route(matricule):
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    finally:
-        cursor.close()
-        conn.close()
+    
 @app.route('/rapports')
-
 def intf_rapports():
     return render_template('rapport.html', active_page='rapports')
 @role_required('admin')
@@ -575,22 +571,24 @@ def enregistrement_appareils():
 def intf_Parametres():
     return render_template('parametre.html', active_page='parametres')
 
-@app.route('/enrolement', methods=['GET','POST'])
+@app.route('/enrolement', methods=['POST'])
 def Programme_Enrollement():
     if request.method == 'POST':
-     idutilisateur = request.form.get('user_id')
+     idutilisateur = request.form.get('uid')
+     codeutilisateur = request.form.get('user_id')
      utilisateur = request.form.get('name_user')
      idemprientes = request.form.get('finger_id')
     else:
-     idutilisateur = request.args.get('user_id')
+     idutilisateur = request.args.get('uid')
+     codeutilisateur = request.args.get('user_id')
      utilisateur = request.args.get('name_user')
      idemprientes = request.args.get('finger_id')
-    succes=enroler_utilisateur(user_id=idutilisateur, name=utilisateur, finger_index=idemprientes)
+    succes=enroler_utilisateur(uid=idutilisateur,user_id=codeutilisateur, name=utilisateur, finger_index=idemprientes)
     if succes:
-     flash(f"Utilisateur {utilisateur} enrôlé avec succès !", "success")
+        flash(f"Utilisateur {utilisateur} enrôlé avec succès !", "success")
     else:
-     flash("Erreur lors de l'enrôlement.", "danger")
-    return redirect(url_for('Programme_Enrollement'))
+        erreur=flash("Erreur lors de l'enrôlement.", "danger")
+        return render_template('employee.html', active_page='employee',erreur=erreur)
 
 
 @app.route('/utilisateurs')
@@ -635,12 +633,15 @@ def api_eduflow():
     return api_programme()
 
 if __name__ == '__main__':
-    # recuperation = threading.Thread(target=recuperation_emprientes)
-    # recuperation.daemon = True
-    # recuperation.start()
+    recuperation = threading.Thread(target=recuperation_emprientes)
+    recuperation.daemon = True
+    recuperation.start()
     thread_insertion = threading.Thread(target=insertion_)
     thread_insertion.daemon = True
     thread_insertion.start()
+    # thread_transfert_empreintes = threading.Thread(target=transfert_empreintes)
+    # thread_transfert_empreintes.daemon = True
+    # thread_transfert_empreintes.start()
     # thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
     # thread_synchronisation_attendance.daemon = True
     # thread_synchronisation_attendance.start()

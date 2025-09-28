@@ -24,7 +24,7 @@ def get_pointeuse(essiae=2, attente=5):
      time.sleep(attente)   
     return None
 
-def enroler_utilisateur(uid:int=0,user_id:str="",name:str="",finger_index:int=0):
+def enrolement(user_id:str=None,name:str=None,finger_index:int=None):
     pointeuse=get_pointeuse()
     if not pointeuse:
         print("❌ Aucune pointeuse en ligne disponible pour l'enrôlement.")
@@ -33,14 +33,11 @@ def enroler_utilisateur(uid:int=0,user_id:str="",name:str="",finger_index:int=0)
     conn=zk.connect()
     print(f"Connecté à la pointeuse {pointeuse}")
     try:
-        print(f"Placez le doigt pour enrôler {name} (ID={user_id})... (5 secondes)")
-        time.sleep(5)
-        if conn.enroll_user(uid=int(uid), temp_id=int(finger_index), user_id=str(user_id)):
-            print(f"Utilisateur {name} enrôlé avec succès (ID={user_id}, doigt={finger_index})")
-            return True
-        else:
-            print(f"Échec de l'enrôlement de l'utilisateur {name} (ID={user_id}, doigt={finger_index})")
-            return False
+        print(f"Placez le doigt pour enrôler {name} (ID={user_id})... (10 secondes)")
+        time.sleep(10)
+        conn.enroll_user(user_id=str(user_id),temp_id=finger_index)
+        print(f"Utilisateur {name} enrôlé avec succès (ID={user_id}, doigt={finger_index})")
+        return True
     except Exception as e:
         print(f"Erreur pendant l’enrôlement : {e}")
         return False

@@ -249,7 +249,18 @@ def read_data_employe():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql = "SELECT * FROM employe"
+                sql = """SELECT 
+    employe.ID,
+    employe.matricule,
+    employe.Nom,
+    employe.telephone,
+    employe.adresse,
+    employe.email,
+    employe.poste,
+    employe.date_embauche,
+    employe.section
+FROM employe
+"""
                 cursor.execute(sql)
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
