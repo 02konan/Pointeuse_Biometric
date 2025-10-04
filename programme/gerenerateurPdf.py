@@ -15,7 +15,6 @@ def generer_fiche_presence_pdf(utilisateur,id_utilisateur,filename=None, data=No
     if data is None:
         data = generer_presence()
 
-    # Définir le chemin du dossier uploads
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
     os.makedirs(uploads_dir, exist_ok=True)
     
@@ -28,11 +27,9 @@ def generer_fiche_presence_pdf(utilisateur,id_utilisateur,filename=None, data=No
     c = canvas.Canvas(file_path, pagesize=A4)
     width, height = A4
 
-    # Titre du document
     c.setFont("Helvetica-Bold", 16)
     c.drawString(2 * cm, height - 2 * cm, "Fiche de Présence")
 
-    # Fonction pour dessiner les en-têtes du tableau
     def dessiner_entete(y):
         c.setFont("Helvetica-Bold", 12)
         c.drawString(2.5 * cm, y, "Nom&Prenom")
@@ -47,18 +44,18 @@ def generer_fiche_presence_pdf(utilisateur,id_utilisateur,filename=None, data=No
 
     for row in data:
         try:
-            matricule, date_pointage, heure_arrivee, heure_depart, temps_presence = row
+            professeur, heur_cours, heure_effectuer, Ecart, Observation = row
 
             if y_position < 2 * cm:
                 c.showPage()
                 y_position = dessiner_entete(height - 2 * cm)
 
             c.setFont("Helvetica", 12)
-            c.drawString(2.5 * cm, y_position, str(matricule))
-            c.drawString(6 * cm, y_position, date_pointage.strftime("%Y-%m-%d"))
-            c.drawString(10 * cm, y_position, format_timedelta(heure_arrivee))
-            c.drawString(14 * cm, y_position, format_timedelta(heure_depart))
-            c.drawString(17.5 * cm, y_position, format_timedelta(temps_presence))
+            c.drawString(2.5 * cm, y_position, str(professeur))
+            c.drawString(6 * cm, y_position, str(heur_cours))
+            c.drawString(10 * cm, y_position, str(heure_effectuer))
+            c.drawString(14 * cm, y_position, str(Ecart))
+            c.drawString(17.5 * cm, y_position, str(Observation))
             y_position -= 0.5 * cm
 
         except Exception as e:

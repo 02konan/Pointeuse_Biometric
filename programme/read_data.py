@@ -417,21 +417,24 @@ def generer_presence(date_debut, date_fin, section_name):
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
-                SELECT
-                  e.Nom,
-                  DATE(eu.date_pointage) AS date_pointage,
-                  MIN(TIME(eu.date_pointage)) AS heure_arrivee,
-                  MAX(TIME(eu.date_pointage)) AS heure_depart,
-                  TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
-                FROM pointages eu
-                JOIN empreintes e ON e.IDEmploye = eu.IDEmploye
-                JOIN pointeuse pt ON pt.idPointeuse = eu.idPointeuse
-                JOIN section s ON s.idPointeuse = pt.idPointeuse
-                WHERE DATE(eu.date_pointage) BETWEEN %s AND %s
-                  AND s.IDSection = %s
-                GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Nom
-                HAVING COUNT(*) >= 2
-                ORDER BY date_pointage;
+                SELECT 
+    pr.professeur_nom,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pr.duree_cours))) AS total_heures_cours,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale))) AS total_heures_effectuer,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale)) - SUM(TIME_TO_SEC(pr.duree_cours))) AS ecart,
+    CASE
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) = SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Complet'
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) < SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Manque du temps'
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) > SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Excédent'
+        ELSE 'Non défini'
+    END AS observation
+FROM pointage_programe pp
+JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
+JOIN pointages p ON p.id = pp.IDPointage
+JOIN pointeuse pt on pt.idPointeuse=p.IDPointeuse
+JOIN section s ON s.idPointeuse = pt.idPointeuse
+WHERE DATE(p.date_pointage) BETWEEN %s AND %s AND s.IDSection = %s
+GROUP BY pr.professeur_nom
                 """
                 cursor.execute(sql, (date_debut, date_fin, section_name))
                 return cursor.fetchall()
@@ -503,18 +506,26 @@ def generer_unique_presence(Matricule):
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
-                SELECT
-                  e.Nom,
-                  DATE(eu.date_pointage) AS Date_pointage,
-                  MIN(TIME(eu.date_pointage)) AS date_arrivee,
-                  MAX(TIME(eu.date_pointage)) AS date_depart,
-                  TIMEDIFF(MAX(eu.date_pointage), MIN(eu.date_pointage)) AS temps_presence
-                FROM pointages eu
-                JOIN empreintes e ON e.IDEmploye = eu.IDEmploye
-                WHERE e.Matricule = %s
-                GROUP BY eu.IDEmploye, DATE(eu.date_pointage), e.Matricule
-                HAVING COUNT(*) >= 2
-                ORDER BY Date_pointage;
+                SELECT 
+    Date(p.date_pointage),
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pr.duree_cours))) AS total_heures_cours,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale))) AS total_heures_effectuer,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale)) - SUM(TIME_TO_SEC(pr.duree_cours))) AS ecart,
+    CASE
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) = SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Complet'
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) < SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Manque du temps'
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) > SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Excédent'
+        ELSE 'Non défini'
+    END AS observation
+FROM pointage_programe pp
+JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
+JOIN pointages p ON p.id = pp.IDPointage
+JOIN pointeuse pt ON pt.idPointeuse = p.IDPointeuse
+JOIN section s ON s.idPointeuse = pt.idPointeuse
+WHERE p.IDEmploye =%s
+GROUP BY pr.professeur_nom, p.date_pointage
+ORDER BY p.date_pointage;
+
                 """
                 cursor.execute(sql, (Matricule,))
                 return cursor.fetchall()

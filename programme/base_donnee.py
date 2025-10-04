@@ -19,7 +19,7 @@ def connexion():
 #     return connection
 # def connexion():
 #     connection = pymysql.connect(
-#         host='91.234.195.181',
+#         host='https://www.ifsmunda.com',
 #         db='c2671149c_biopro_base',
 #         user='c2671149c_ifsmdev',
 #         password='FSYP7AkY'
