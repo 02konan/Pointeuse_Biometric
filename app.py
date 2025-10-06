@@ -7,7 +7,7 @@ from programme.insertion import insertion_
 from programme.transfert_empreintes import transfert_empreintes
 from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
-from programme.gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
+from programme.gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique_pdf,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
 from flask_cors import CORS
 from programme.base_donnee import connexion
 from datetime import datetime,timedelta
@@ -259,6 +259,7 @@ def intf_pointage_invalie():
         }
         table.append(resultat)
     return render_template('pointage_invalide.html', active_page='pointage_invalie', resultats=table)
+
 @app.route('/validation_pointage', methods=['GET'])
 def validation_programme():
     data = pointage_invalid(session['section'])
@@ -284,8 +285,8 @@ def validation_programme():
     else:
         flash("Aucun pointage correspondant trouvé.", "danger")
     return redirect(url_for('intf_pointage_invalie'))
-@app.route('/api/fiche_presence', methods=['POST'])
 
+@app.route('/api/fiche_presence', methods=['POST'])
 def api_fiche_presence():
     data_json = request.get_json()
     date_debut = data_json.get('date_debut')
@@ -317,9 +318,8 @@ def api_fiche_presence():
             "auteur": session['username'],
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
-    return jsonify({"success": False, "message": "Fichier PDF introuvable"}), 404
-@app.route('/api/fiche_retards', methods=['POST'])
 
+@app.route('/api/fiche_retards', methods=['POST'])
 def fiche_retards():
     data_json = request.get_json()
     date_debut_retard = data_json.get('date_debut_retard')
@@ -354,8 +354,8 @@ def fiche_retards():
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
-@app.route('/api/fiche_absence', methods=['POST'])
 
+@app.route('/api/fiche_absence', methods=['POST'])
 def fiche_absence():
     data_json = request.get_json()
     date_debut_absence = data_json.get('date_debut_absence')
@@ -390,17 +390,19 @@ def fiche_absence():
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
-@app.route('/api/fiche_presence_unique', methods=['POST'])
 
+@app.route('/api/fiche_presence_unique', methods=['POST'])
 def fiche_presence_unique():
     data_json = request.get_json()
     matricule = data_json.get('matricule')
+    date_perso1=data_json.get('date_debut_perso')
+    date_perso2=data_json.get('date_fin_perso')
 
     if not matricule:
         return jsonify({'error': 'Le matricule est obligatoire.'}), 400
 
     # Génération du nom de fichier
-    data=generer_unique_presence(matricule)
+    data=generer_unique_presence(date_perso1,date_perso2,session['section'],matricule)
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
     os.makedirs(uploads_dir, exist_ok=True)
 
@@ -415,14 +417,14 @@ def fiche_presence_unique():
         compteur += 1
 
     # Appel de ta fonction de génération
-    pdfexecut = generer_presence_unique(matricule, filename)
+    pdfexecut = generer_presence_unique_pdf(session['username'],session['identifiant'],chemin_pdf, data)
 
     if pdfexecut and os.path.exists(chemin_pdf):
-        return jsonify({
-            "success": True,
-            "type": "presence_unique",
+         return jsonify({
+            "type": "Présence",
             "nom": filename,
-            "auteur": "Système",
+            "periode": f"{date_perso1} → {date_perso2}",
+            "auteur": session['username'],
             "date": datetime.now().strftime("%Y-%m-%d %H:%M")
         })
     return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
@@ -633,12 +635,12 @@ def api_eduflow():
     return api_programme()
 
 if __name__ == '__main__':
-    recuperation = threading.Thread(target=recuperation_emprientes)
-    recuperation.daemon = True
-    recuperation.start()
-    thread_insertion = threading.Thread(target=insertion_)
-    thread_insertion.daemon = True
-    thread_insertion.start()
+    # recuperation = threading.Thread(target=recuperation_emprientes)
+    # recuperation.daemon = True
+    # recuperation.start()
+    # thread_insertion = threading.Thread(target=insertion_)
+    # thread_insertion.daemon = True
+    # thread_insertion.start()
     # thread_transfert_empreintes = threading.Thread(target=transfert_empreintes)
     # thread_transfert_empreintes.daemon = True
     # thread_transfert_empreintes.start()

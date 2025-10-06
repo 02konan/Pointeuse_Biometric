@@ -33,10 +33,10 @@ def generer_fiche_presence_pdf(utilisateur,id_utilisateur,filename=None, data=No
     def dessiner_entete(y):
         c.setFont("Helvetica-Bold", 12)
         c.drawString(2.5 * cm, y, "Nom&Prenom")
-        c.drawString(6 * cm, y, "Date de Pointage")
-        c.drawString(10 * cm, y, "Heure d'Arrivée")
-        c.drawString(14 * cm, y, "Heure de Départ")
-        c.drawString(17.5 * cm, y, "Durée")
+        c.drawString(6 * cm, y, "Heure de Cours")
+        c.drawString(10 * cm, y, "Heure Effectuées")
+        c.drawString(14 * cm, y, "Ecart d'heure")
+        c.drawString(17.5 * cm, y, "Observation")
         c.line(0.5 * cm, y - 0.2 * cm, width - 0.5 * cm, y - 0.2 * cm)
         return y - 1 * cm
 
@@ -173,18 +173,20 @@ def generer_fiche_absence_pdf(utilisateur,id_utilisateur,filename=None, data=Non
             print("Exception :", e)
 
     c.save()
-def generer_presence_unique(Matricule=None, file_name=None, data=None):
+def generer_presence_unique_pdf(utilisateur,id_utilisateur,filename=None, data=None):
     if data is None:
-        data = generer_unique_presence(Matricule)
+        data = generer_unique_presence()
 
     # Définir le chemin du dossier uploads
     uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
     os.makedirs(uploads_dir, exist_ok=True)
 
     # Nom du fichier PDF
-    if file_name is None:
-        file_name = "fiche_presence_unique.pdf"
-    file_path = os.path.join(uploads_dir, file_name)
+    if filename is None:
+        filename = "fiche_presence_unique.pdf"
+    file_path = os.path.join(uploads_dir, filename)
+    if file_path:
+        creat_rapports(file_path,utilisateur,id_utilisateur,'Presence_unique')
 
     # Création du PDF
     c = canvas.Canvas(file_path, pagesize=A4)
@@ -194,58 +196,40 @@ def generer_presence_unique(Matricule=None, file_name=None, data=None):
     c.setFont("Helvetica-Bold", 16)
     c.drawString(2 * cm, height - 2 * cm, "Fiche de présence individuelle")
 
-    # Infos personnelles (exemple fictif, à adapter selon ta BDD)
-    infos_perso = {
-        "Nom": "KONE Adama",
-        "Matricule": Matricule,
-        "Poste": "Assistant RH",
-        "Service": "Ressources Humaines"
-    }
-
-    # Affichage des infos personnelles
-    y_info = height - 3 * cm
-    c.setFont("Helvetica", 12)
-    c.drawString(2 * cm, y_info, f"Nom : {infos_perso['Nom']}")
-    y_info -= 0.5 * cm
-    c.drawString(2 * cm, y_info, f"Matricule : {infos_perso['Matricule']}")
-    y_info -= 0.5 * cm
-    c.drawString(2 * cm, y_info, f"Poste : {infos_perso['Poste']}")
-    y_info -= 0.5 * cm
-    c.drawString(2 * cm, y_info, f"Service : {infos_perso['Service']}")
-
-    # Espace avant tableau
-    y_position = y_info - 1 * cm
-
+    
     # En-têtes du tableau
     def dessiner_entete(y):
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(2 * cm, y, "Date")
-        c.drawString(6 * cm, y, "Heure Arrivée")
-        c.drawString(10 * cm, y, "Heure Départ")
-        c.drawString(14 * cm, y, "Durée")
-        c.line(1.5 * cm, y - 0.2 * cm, width - 1.5 * cm, y - 0.2 * cm)
+        c.drawString(2.5 * cm, y, "Nom&Prenom")
+        c.drawString(6 * cm, y, "Heure de Cours")
+        c.drawString(10 * cm, y, "Heure Effectuées")
+        c.drawString(14 * cm, y, "Ecart d'heure")
+        c.drawString(17.5 * cm, y, "Observation")
+        c.line(0.5 * cm, y - 0.2 * cm, width - 0.5 * cm, y - 0.2 * cm)
         return y - 1 * cm
 
-    y_position = dessiner_entete(y_position)
+    y_position = dessiner_entete(height - 3 * cm)
 
     # Remplissage du tableau
-    for ligne in data:
+    for row in data:
         try:
-            date_pointage, heure_arrivee, heure_depart, duree = ligne
+            Date, jour, heure_cours, heure_effectuer, Ecart,Observation= row
 
             if y_position < 2 * cm:
                 c.showPage()
                 y_position = dessiner_entete(height - 2 * cm)
 
-            c.setFont("Helvetica", 11)
-            c.drawString(2 * cm, y_position, date_pointage.strftime("%Y-%m-%d"))
-            c.drawString(6 * cm, y_position, str(heure_arrivee))
-            c.drawString(10 * cm, y_position, str(heure_depart))
-            c.drawString(14 * cm, y_position, str(duree))
+            c.setFont("Helvetica", 12)
+            c.drawString(2.5 * cm, y_position, str(Date))
+            c.drawString(6 * cm, y_position, str(jour))
+            c.drawString(10 * cm, y_position, str(heure_cours))
+            c.drawString(14 * cm, y_position, str(heure_effectuer))
+            c.drawString(17.5 * cm, y_position, str(Ecart))
+            c.drawString(17.5 * cm, y_position, str(Observation))
             y_position -= 0.5 * cm
 
         except Exception as e:
-            print("Erreur lors de l'ajout d'une ligne :", ligne)
+            print("Erreur lors de l'ajout d'une ligne :", row)
             print("Exception :", e)
     c.save()
     return file_path
