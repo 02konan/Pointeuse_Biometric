@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from programme.read_data import pointeuse,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
+from programme.read_data import pointeuse,read_data_Admin,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
@@ -174,6 +174,81 @@ def dashboard_data():
                 'employes_retard_mois': employes_retard_mois,
             })
     return jsonify({})
+
+@app.route("/api/dashboard_admin", methods=["GET"])
+def dashboard_admin():
+   if session.get('role')=="superadmin":
+        """
+     Récupère les données du tableau de bord administrateur.
+    
+     Returns:
+        JSON: Statistiques des employés et activités récentes
+     """
+        try:
+            data_Admin = read_data_Admin()
+            
+            if data_Admin is None:
+                return jsonify({
+                    "success": False,
+                    "error": "Erreur lors de la récupération des données"
+                }), 500
+
+            # Déstructuration des données selon read_data_Admin()
+            (
+                total_employes,
+                total_Presents,
+                total_retard,
+                activite_recentes,
+                total_absents,
+                employes_actifs_mois,
+                jours_travailles_mois,
+                employes_retard_mois
+            ) = data_Admin
+
+            # Formater les activités récentes
+            activites_formatees = []
+            for activite in activite_recentes:
+                activites_formatees.append({
+                    "nom": activite[0],  # Nom
+                    "date_pointage": activite[1].strftime("%Y-%m-%d %H:%M:%S") if activite[1] else None,
+                    "status": activite[2],  # Status
+                    "section": activite[3]  # NomSection
+                })
+
+            # Réponse structurée
+            return jsonify({
+                "success": True,
+                "total_employes": total_employes,
+                "total_presents": total_Presents,
+                "total_retard": total_retard,
+                "total_absents": total_absents,
+                "employes_actifs_mois": employes_actifs_mois,
+                "jours_travailles_mois": jours_travailles_mois,
+                "employes_retard_mois": employes_retard_mois,
+                "activite_recentes": activites_formatees
+            }), 200
+
+        except ValueError as e:
+            # Erreur de déstructuration des données
+            return jsonify({
+                "success": False,
+                "error": "Format de données invalide",
+                "details": str(e)
+            }), 500
+        
+        except Exception as e:
+            # Erreur inattendue
+            return jsonify({
+                "success": False,
+                "error": "Erreur serveur interne",
+                "details": str(e)
+            }), 500
+        # Erreur inattendue
+        return jsonify({
+            "success": False,
+            "error": "Erreur serveur interne",
+            "details": str(e)
+        }), 500
 
 @app.route('/employee')
 @role_required('admin')
@@ -635,12 +710,12 @@ def api_eduflow():
     return api_programme()
 
 if __name__ == '__main__':
-    # recuperation = threading.Thread(target=recuperation_emprientes)
-    # recuperation.daemon = True
-    # recuperation.start()
-    # thread_insertion = threading.Thread(target=insertion_)
-    # thread_insertion.daemon = True
-    # thread_insertion.start()
+    recuperation = threading.Thread(target=recuperation_emprientes)
+    recuperation.daemon = True
+    recuperation.start()
+    thread_insertion = threading.Thread(target=insertion_)
+    thread_insertion.daemon = True
+    thread_insertion.start()
     # thread_transfert_empreintes = threading.Thread(target=transfert_empreintes)
     # thread_transfert_empreintes.daemon = True
     # thread_transfert_empreintes.start()
@@ -650,8 +725,8 @@ if __name__ == '__main__':
     # thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
     # thread_sync_programme_periodique.daemon = True
     # thread_sync_programme_periodique.start()
-    # thread = threading.Thread(target=listen_attendance)
-    # thread.daemon = True
-    # thread.start()
+    thread = threading.Thread(target=listen_attendance)
+    thread.daemon = True
+    thread.start()
 
     app.run(host='0.0.0.0',port=5000,debug=True)
