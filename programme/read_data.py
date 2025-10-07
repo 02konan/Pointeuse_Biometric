@@ -371,7 +371,6 @@ def verification_prof(code, username1):
         print("Erreur Generale:", e)
         return None
 
-
 def read_idsection():
     try:
         with connexion() as conn:
@@ -535,38 +534,6 @@ ORDER BY p.date_pointage;
     except Exception as e:
         print("Erreur générale :", e)
 
-# def generer_unique_presence(Matricule):
-#     try:
-#         with connexion() as conn:
-#             with conn.cursor() as cursor:
-#                 sql = """
-#                 SELECT 
-#     Date(p.date_pointage),
-#     SEC_TO_TIME(SUM(TIME_TO_SEC(pr.duree_cours))) AS total_heures_cours,
-#     SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale))) AS total_heures_effectuer,
-#     SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale)) - SUM(TIME_TO_SEC(pr.duree_cours))) AS ecart,
-#     CASE
-#         WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) = SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Complet'
-#         WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) < SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Manque du temps'
-#         WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) > SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Excédent'
-#         ELSE 'Non défini'
-#     END AS observation
-# FROM pointage_programe pp
-# JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
-# JOIN pointages p ON p.id = pp.IDPointage
-# JOIN pointeuse pt ON pt.idPointeuse = p.IDPointeuse
-# JOIN section s ON s.idPointeuse = pt.idPointeuse
-# WHERE p.IDEmploye =%s
-# GROUP BY pr.professeur_nom, p.date_pointage
-# ORDER BY p.date_pointage;
-
-#                 """
-#                 cursor.execute(sql, (Matricule,))
-#                 return cursor.fetchall()
-#     except pymysql.MySQLError as e:
-#         print("Erreur MySQL :", e)
-#     except Exception as e:
-#         print("Erreur générale :", e)
 
 def pointage_invalid(section_name):
     try:
