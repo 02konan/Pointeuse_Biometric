@@ -112,7 +112,6 @@ def index():
     return render_template('index.html', active_page='index', pointeuses=pointeuses)
 
 @app.route('/employee', methods=['POST'])
-@role_required('admin')
 def enregistrement():
     Nom=f"{request.form['nom']} {request.form['prenom']}"
     telephone = request.form['telephone']
@@ -251,7 +250,7 @@ def dashboard_admin():
         }), 500
 
 @app.route('/employee')
-@role_required('admin')
+
 def intf_employee():
     data = read_data_employe()
     id_employee=read_matricule()
@@ -312,7 +311,6 @@ def intf_presence():
     return render_template('presence.html', active_page='presence', resultats=table)
 
 @app.route('/pointage_invalie')
-@role_required('admin')
 def intf_pointage_invalie():
     data = pointage_invalid(session['section'])
     table = []
@@ -546,6 +544,7 @@ def liste_rapports():
                 ).strftime("%d-%m-%Y %H:%M")
             })
     return jsonify(fichiers)
+
 @app.route("/api/pointages/<matricule>", methods=["GET"])
 def get_pointages(matricule):
     try:
@@ -623,10 +622,9 @@ def api_programme_route(matricule):
 @app.route('/rapports')
 def intf_rapports():
     return render_template('rapport.html', active_page='rapports')
-@role_required('admin')
+
 
 @app.route('/appareils')
-@role_required('admin')
 def intf_appareils():
     idsection= read_idsection()
     data= get_etats_pointeuses()
@@ -669,7 +667,7 @@ def Programme_Enrollement():
 
 
 @app.route('/utilisateurs')
-@role_required('admin')
+
 def lister_utilisateurs():
     idrole=read_idrole()
     idsection= read_idsection()
