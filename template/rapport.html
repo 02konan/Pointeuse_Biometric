@@ -76,7 +76,9 @@
                     required
                   />
                   <datalist id="Matriucle">
-                    <option value="dcfdqc">rgzgzrgr</option>
+                    {% for resultat in user_id %}
+                    <option value="{{ resultat.Code}}"/>{{ resultat.Nom}}</option>
+                    {% endfor %}
                   </datalist>
                 </div>
 

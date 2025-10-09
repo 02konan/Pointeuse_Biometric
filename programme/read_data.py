@@ -31,6 +31,27 @@ def read_matricule():
     except Exception as e:
         print("Erreur générale :", e)
 
+def read_matricule_section(section_name):
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql = """
+SELECT
+    e.IDEmploye,
+    e.Nom
+FROM empreintes e
+JOIN pointeuse pt ON pt.idPointeuse = e.idPointeuse
+LEFT JOIN section s ON s.idPointeuse = pt.idPointeuse
+WHERE s.IDSection =%s;
+
+"""
+                cursor.execute(sql,(section_name,))
+                return cursor.fetchall()
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)
+
 def read_data_from_db(section_name):
     data_base = connexion()
     try:
@@ -546,7 +567,7 @@ def read_utilisateur():
     except Exception as e:
         print("Erreur générale :", e)
 
-def generer_presence(date_debut, date_fin, section_name):
+def generer_presence(date_debut, date_fin,idemployee,section_name):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
@@ -567,10 +588,10 @@ JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
 JOIN pointages p ON p.id = pp.IDPointage
 JOIN pointeuse pt on pt.idPointeuse=p.IDPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE DATE(p.date_pointage) BETWEEN %s AND %s AND s.IDSection = %s
+WHERE DATE(p.date_pointage) BETWEEN %s AND %s AND p.IDEmploye=%s AND s.IDSection = %s
 GROUP BY pr.professeur_nom
                 """
-                cursor.execute(sql, (date_debut, date_fin, section_name))
+                cursor.execute(sql, (date_debut, date_fin, idemployee, section_name))
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)

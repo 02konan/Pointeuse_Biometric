@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from programme.read_data import pointeuse,read_data_Admin,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur
+from programme.read_data import pointeuse,read_matricule_section,read_data_Admin,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur,generer_absence,generer_unique_presence,generer_presence,generer_retard
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
@@ -7,7 +7,7 @@ from programme.insertion import insertion_
 from programme.transfert_empreintes import transfert_empreintes
 from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
-from programme.gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique_pdf,generer_fiche_absence_pdf,generer_fiche_retards_pdf,generer_absence,generer_unique_presence,generer_presence,generer_retard
+from programme.gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique_pdf,generer_fiche_absence_pdf,generer_fiche_retards_pdf
 from flask_cors import CORS
 from programme.base_donnee import connexion
 from datetime import datetime,timedelta
@@ -365,37 +365,63 @@ def validation_programme():
 
 @app.route('/api/fiche_presence', methods=['POST'])
 def api_fiche_presence():
-    data_json = request.get_json()
-    date_debut = data_json.get('date_debut')
-    date_fin = data_json.get('date_fin')
+    try:
+        data_json = request.get_json()
+        date_debut = data_json.get('date_debut')
+        date_fin = data_json.get('date_fin')
+        idemployee = data_json.get('idEmploye')
 
-    if not date_debut or not date_fin:
-        return jsonify({'error': 'Les dates sont obligatoires.'}), 400
+        # ✅ Vérification des champs obligatoires
+        if not date_debut or not date_fin:
+            return jsonify({'success': False, 'error': 'Les dates sont obligatoires.'}), 400
 
-    data = generer_presence(date_debut, date_fin,session['section'])
-    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
-    os.makedirs(uploads_dir, exist_ok=True)
+        # ✅ Vérification de la session (évite KeyError)
+        section = session['section']
+        username = session['username']
+        identifiant = session['identifiant']
 
-    base_filename = f"fichePresence_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
-    filename = f"{base_filename}.pdf"
-    chemin_pdf = os.path.join(uploads_dir, filename)
+        if not section or not username or not identifiant:
+            return jsonify({'success': False, 'error': 'Session invalide. Veuillez vous reconnecter.'}), 401
 
-    compteur = 1
-    while os.path.exists(chemin_pdf):
-        filename = f"{base_filename}_{compteur}.pdf"
+        # ✅ Récupération des données de présence
+        data = generer_presence(date_debut, date_fin, idemployee, section)
+
+        # ✅ Création du répertoire de sauvegarde
+        uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+        os.makedirs(uploads_dir, exist_ok=True)
+
+        # ✅ Création du nom de fichier PDF
+        base_filename = f"fichePresence_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
+        filename = f"{base_filename}.pdf"
         chemin_pdf = os.path.join(uploads_dir, filename)
-        compteur += 1
 
-    pdfexecut = generer_fiche_presence_pdf(session['username'],session['identifiant'],chemin_pdf, data)
-    if pdfexecut and os.path.exists(chemin_pdf):
-        return jsonify({
-            "type": "Présence",
-            "nom": filename,
-            "periode": f"{date_debut} → {date_fin}",
-            "auteur": session['username'],
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M")
-        })
+        compteur = 1
+        while os.path.exists(chemin_pdf):
+            filename = f"{base_filename}_{compteur}.pdf"
+            chemin_pdf = os.path.join(uploads_dir, filename)
+            compteur += 1
 
+        # ✅ Génération du PDF
+        pdfexecut = generer_fiche_presence_pdf(username, identifiant, chemin_pdf, data)
+
+        # ✅ Vérification finale
+        if pdfexecut and os.path.exists(chemin_pdf):
+            return jsonify({
+                "success": True,
+                "type": "Présence",
+                "nom": filename,
+                "periode": f"{date_debut} → {date_fin}",
+                "auteur": username,
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+            }), 200
+
+        return jsonify({'success': False, 'error': 'Erreur lors de la génération du PDF'}), 500
+
+    except Exception as e:
+        # 🐞 Log de l'erreur dans la console pour le debug
+        print("❌ Erreur dans /api/fiche_presence :", str(e))
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
 @app.route('/api/fiche_retards', methods=['POST'])
 def fiche_retards():
     data_json = request.get_json()
@@ -626,7 +652,15 @@ def api_programme_route(matricule):
 @app.route('/rapports')
 @login_required
 def intf_rapports():
-    return render_template('rapport.html', active_page='rapports')
+     id_employee=read_matricule_section(session['section'])
+     table_info=[]
+     for info_user in id_employee:
+        lecture_info={
+            'Code':info_user[0],
+            'Nom':info_user[1]
+        }
+        table_info.append(lecture_info)
+     return render_template('rapport.html', active_page='rapports',user_id=table_info)
 
 
 @app.route('/appareils')

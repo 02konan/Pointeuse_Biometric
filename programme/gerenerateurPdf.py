@@ -3,7 +3,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
 from programme.Creat_data import creat_rapports
-from programme.read_data import generer_presence,generer_retard,generer_absence,generer_unique_presence
+from programme.read_data import generer_retard,generer_absence,generer_unique_presence
 
 def format_timedelta(tdelta):
     total_seconds = int(tdelta.total_seconds())
@@ -11,58 +11,80 @@ def format_timedelta(tdelta):
     minutes = (total_seconds % 3600) // 60
     seconds = total_seconds % 60
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
-def generer_fiche_presence_pdf(utilisateur,id_utilisateur,filename=None, data=None):
-    if data is None:
-        data = generer_presence()
+def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=None):
+    try:
+        # ✅ Vérification des données
+        if data is None or len(data) == 0:
+            print("⚠️ Aucune donnée de présence fournie.")
+            return False
+        
+        uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+        os.makedirs(uploads_dir, exist_ok=True)
 
-    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
-    os.makedirs(uploads_dir, exist_ok=True)
-    
-    if filename is None:
-        filename = 'fiche_presence.pdf'
-    file_path = os.path.join(uploads_dir, filename)
-    if file_path:
-        creat_rapports(file_path,utilisateur,id_utilisateur,'Presence')
+        # ✅ Fichier PDF à générer
+        if filename is None:
+            filename = 'fiche_presence.pdf'
+        file_path = os.path.join(uploads_dir, filename)
 
-    c = canvas.Canvas(file_path, pagesize=A4)
-    width, height = A4
+        # ✅ Historiser la création dans ta base ou ton journal
+        creat_rapports(file_path, utilisateur, id_utilisateur, 'Presence')
 
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(2 * cm, height - 2 * cm, "Fiche de Présence")
+        # ✅ Initialisation du PDF
+        c = canvas.Canvas(file_path, pagesize=A4)
+        width, height = A4
 
-    def dessiner_entete(y):
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(2.5 * cm, y, "Nom&Prenom")
-        c.drawString(6 * cm, y, "Heure de Cours")
-        c.drawString(10 * cm, y, "Heure Effectuées")
-        c.drawString(14 * cm, y, "Ecart d'heure")
-        c.drawString(17.5 * cm, y, "Observation")
-        c.line(0.5 * cm, y - 0.2 * cm, width - 0.5 * cm, y - 0.2 * cm)
-        return y - 1 * cm
+        # ✅ Titre
+        c.setFont("Helvetica-Bold", 16)
+        c.drawString(2 * cm, height - 2 * cm, "Fiche de Présence")
 
-    y_position = dessiner_entete(height - 3 * cm)
+        # ✅ Fonction pour entête
+        def dessiner_entete(y):
+            c.setFont("Helvetica-Bold", 12)
+            c.drawString(2.5 * cm, y, "Nom & Prénom")
+            c.drawString(8 * cm, y, "Heure de Cours")
+            c.drawString(12 * cm, y, "Heure Effectuées")
+            c.drawString(16 * cm, y, "Écart d'heure")
+            c.drawString(19.5 * cm, y, "Observation")
+            c.line(0.5 * cm, y - 0.2 * cm, width - 0.5 * cm, y - 0.2 * cm)
+            return y - 1 * cm
 
-    for row in data:
-        try:
-            professeur, heur_cours, heure_effectuer, Ecart, Observation = row
+        y_position = dessiner_entete(height - 3 * cm)
 
-            if y_position < 2 * cm:
-                c.showPage()
-                y_position = dessiner_entete(height - 2 * cm)
+        # ✅ Boucle sur les lignes de données
+        for row in data:
+            try:
+                professeur, heure_cours, heure_effectuee, ecart, observation = row
 
-            c.setFont("Helvetica", 12)
-            c.drawString(2.5 * cm, y_position, str(professeur))
-            c.drawString(6 * cm, y_position, str(heur_cours))
-            c.drawString(10 * cm, y_position, str(heure_effectuer))
-            c.drawString(14 * cm, y_position, str(Ecart))
-            c.drawString(17.5 * cm, y_position, str(Observation))
-            y_position -= 0.5 * cm
+                # Si on arrive en bas de page → nouvelle page + entête
+                if y_position < 2 * cm:
+                    c.showPage()
+                    y_position = dessiner_entete(height - 2 * cm)
 
-        except Exception as e:
-            print("Erreur lors de l'ajout d'une ligne :", row)
-            print("Exception :", e)
+                c.setFont("Helvetica", 12)
+                c.drawString(2.5 * cm, y_position, str(professeur))
+                c.drawString(8 * cm, y_position, str(heure_cours))
+                c.drawString(12 * cm, y_position, str(heure_effectuee))
+                c.drawString(16 * cm, y_position, str(ecart))
+                c.drawString(19.5 * cm, y_position, str(observation))
+                y_position -= 0.5 * cm
 
-    c.save()
+            except Exception as e:
+                print(f"❌ Erreur lors de l'ajout d'une ligne {row} :", e)
+
+        c.save()
+
+        # ✅ Vérification que le PDF a bien été créé
+        if os.path.exists(file_path):
+            print(f"✅ PDF généré : {file_path}")
+            return True
+        else:
+            print("❌ Échec : fichier PDF non créé.")
+            return False
+
+    except Exception as e:
+        print("❌ Erreur lors de la génération du PDF :", e)
+        return False
+
 def generer_fiche_retards_pdf(utilisateur,id_utilisateur,filename=None, data=None):
     if data is None:
         data = generer_retard()
@@ -118,6 +140,7 @@ def generer_fiche_retards_pdf(utilisateur,id_utilisateur,filename=None, data=Non
             print("Exception :", e)
 
     c.save()
+
 def generer_fiche_absence_pdf(utilisateur,id_utilisateur,filename=None, data=None):
     if data is None:
         data = generer_absence()
@@ -173,6 +196,7 @@ def generer_fiche_absence_pdf(utilisateur,id_utilisateur,filename=None, data=Non
             print("Exception :", e)
 
     c.save()
+
 def generer_presence_unique_pdf(utilisateur,id_utilisateur,filename=None, data=None):
     if data is None:
         data = generer_unique_presence()
