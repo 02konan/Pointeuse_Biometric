@@ -4,7 +4,7 @@ from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
 from programme.insertion import insertion_
-from programme.read_superadmin import read_data_Admin,read_admin_presence
+from programme.read_superadmin import read_data_Admin,read_admin_presence,pointage_admin_invalid
 from programme.transfert_empreintes import transfert_empreintes
 from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
@@ -341,26 +341,45 @@ def intf_presence():
 @app.route('/pointage_invalie')
 @login_required
 def intf_pointage_invalie():
-    data = pointage_invalid(session['section'])
     table = []
-    for donnee in data:
-        code = donnee[0]
-        Nom = donnee[1]
-        jour_pointage = donnee[8]
-        heure_pointage = donnee[4]
-        crenau = f"{donnee[5]}-{donnee[6]}"
-        Duree_cours = donnee[7]
-        
-        resultat = {
-            'Matricule': code,
-            'Nom': Nom,
-            'heure_pointage': heure_pointage,
-            'crenau': crenau,
-            'jour_pointage': jour_pointage,
-            'Duree_cours': Duree_cours
-        }
-        table.append(resultat)
-    return render_template('pointage_invalide.html', active_page='pointage_invalie', resultats=table)
+    table_admin = []
+    if session.get('role') == "admin":
+        data = pointage_invalid(session['section'])
+        for donnee in data:
+            code = donnee[0]
+            Nom = donnee[1]
+            jour_pointage = donnee[8]
+            heure_pointage = donnee[4]
+            crenau = f"{donnee[5]}-{donnee[6]}"
+            Duree_cours = donnee[7]
+            resultat = {
+                'Matricule': code,
+                'Nom': Nom,
+                'heure_pointage': heure_pointage,
+                'crenau': crenau,
+                'jour_pointage': jour_pointage,
+                'Duree_cours': Duree_cours
+            }
+            table.append(resultat)
+    elif session.get('role') == "superadmin":
+        data_admin = pointage_admin_invalid()
+        for donnee in data_admin:
+            code_admin = donnee[0]
+            Nom_admin = donnee[1]
+            jour_pointage_admin = donnee[8]
+            heure_pointage_admin = donnee[4]
+            crenau_admin = f"{donnee[5]}-{donnee[6]}"
+            Duree_cours_admin = donnee[7]
+            resultat = {
+                'Matricule': code_admin,
+                'Nom': Nom_admin,
+                'heure_pointage': heure_pointage_admin,
+                'crenau': crenau_admin,
+                'jour_pointage': jour_pointage_admin,
+                'Duree_cours': Duree_cours_admin
+            }
+            table_admin.append(resultat)
+    return render_template('pointage_invalide.html', active_page='pointage_invalie', resultats=table, resultats_admin=table_admin)
 
 @app.route('/validation_pointage', methods=['GET'])
 def validation_programme():

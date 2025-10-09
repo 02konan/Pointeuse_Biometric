@@ -43,7 +43,6 @@
         </button>
       </form>
     </li>
-
     <!-- <li class="{% if active_page == 'appareils' %}active{% endif %}">
       <form action="{{ url_for('intf_appareils') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
@@ -51,14 +50,13 @@
         </button>
       </form>
     </li> -->
-
-    <!-- <li class="{% if active_page == 'utilisateurs' %}active{% endif %}">
+    <li class="{% if active_page == 'utilisateurs' %}active{% endif %}">
       <form action="{{ url_for('lister_utilisateurs') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
           <i class="fas fa-user-plus"></i> Utilisateur
         </button>
       </form>
-    </li> -->
+    </li>
     <!-- <li class="{% if active_page == 'parametres' %}active{% endif %}">
       <form action="{{ url_for('intf_Parametres') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
@@ -121,13 +119,13 @@
         </button>
       </form>
     </li>
-    <li class="{% if active_page == 'appareils' %}active{% endif %}">
+    <!-- <li class="{% if active_page == 'appareils' %}active{% endif %}">
       <form action="{{ url_for('intf_appareils') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
           <i class="fas fa-fingerprint"></i> Appareils
         </button>
       </form>
-    </li>
+    </li> -->
     <li class="{% if active_page == 'utilisateurs' %}active{% endif %}">
       <form action="{{ url_for('lister_utilisateurs') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
@@ -135,13 +133,13 @@
         </button>
       </form>
     </li>
-    <li class="{% if active_page == 'parametres' %}active{% endif %}">
+    <!-- <li class="{% if active_page == 'parametres' %}active{% endif %}">
       <form action="{{ url_for('intf_Parametres') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
           <i class="fas fa-cog"></i> Paramètres
         </button>
       </form>
-    </li>
+    </li> -->
   </ul>
   <div class="sidebar-footer">
     <form action="/logout" method="get" style="width:100%;">

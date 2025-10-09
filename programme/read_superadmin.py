@@ -55,7 +55,7 @@ JOIN empreintes e ON p.IDEmploye = e.IDEmploye
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
 ORDER BY p.date_pointage DESC
-LIMIT 5;
+LIMIT 8;
 """
 
             # --- Employés actifs du mois ---
@@ -167,7 +167,7 @@ ORDER BY p.date_pointage DESC, temps_presence;
     except Exception as e:
         print("Erreur générale :", e)
 
-def pointage_invalid(section_name):
+def pointage_admin_invalid():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
@@ -186,15 +186,47 @@ INNER JOIN pointages ptg ON p.professeur_code = ptg.IDEmploye
     AND DATE(ptg.date_pointage) =CURDATE() AND ptg.jour_pointage=p.jour
 INNER JOIN pointeuse po ON po.idPointeuse = ptg.idPointeuse
 INNER JOIN section s ON s.idPointeuse = po.idPointeuse
-WHERE s.IDSection =%s
 GROUP BY 
     p.professeur_code,
     p.professeur_nom
     HAVING COUNT(DISTINCT ptg.id)=1
     ORDER BY p.professeur_code
                 """
-                cursor.execute(sql, (section_name,))
+                cursor.execute(sql)
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)
         return []
+
+def generer_presence(date_debut, date_fin,idemployee,section_name):
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql = """
+                SELECT 
+    pr.professeur_nom,jour_pointage,
+    DATE(p.date_pointage) AS date_pointage,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pr.duree_cours))) AS total_heures_cours,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale))) AS total_heures_effectuer,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale)) - SUM(TIME_TO_SEC(pr.duree_cours))) AS ecart,
+    CASE
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) = SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Complet'
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) < SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Manque du temps'
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) > SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Excédent'
+        ELSE 'Non défini'
+    END AS observation
+FROM pointage_programe pp
+JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
+JOIN pointages p ON p.id = pp.IDPointage
+JOIN pointeuse pt on pt.idPointeuse=p.IDPointeuse
+JOIN section s ON s.idPointeuse = pt.idPointeuse
+WHERE DATE(p.date_pointage) BETWEEN %s AND %s AND p.IDEmploye=%s AND s.IDSection = %s
+GROUP BY pr.professeur_nom, jour_pointage, p.date_pointage
+ORDER BY p.date_pointage;
+                """
+                cursor.execute(sql, (date_debut, date_fin, idemployee, section_name))
+                return cursor.fetchall()
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)
