@@ -573,7 +573,8 @@ def generer_presence(date_debut, date_fin,idemployee,section_name):
             with conn.cursor() as cursor:
                 sql = """
                 SELECT 
-    pr.professeur_nom,
+    pr.professeur_nom,jour_pointage,
+    DATE(p.date_pointage) AS date_pointage,
     SEC_TO_TIME(SUM(TIME_TO_SEC(pr.duree_cours))) AS total_heures_cours,
     SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale))) AS total_heures_effectuer,
     SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale)) - SUM(TIME_TO_SEC(pr.duree_cours))) AS ecart,
@@ -589,7 +590,8 @@ JOIN pointages p ON p.id = pp.IDPointage
 JOIN pointeuse pt on pt.idPointeuse=p.IDPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
 WHERE DATE(p.date_pointage) BETWEEN %s AND %s AND p.IDEmploye=%s AND s.IDSection = %s
-GROUP BY pr.professeur_nom
+GROUP BY pr.professeur_nom, jour_pointage, p.date_pointage
+ORDER BY p.date_pointage;
                 """
                 cursor.execute(sql, (date_debut, date_fin, idemployee, section_name))
                 return cursor.fetchall()

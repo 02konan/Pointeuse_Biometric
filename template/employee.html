@@ -3,16 +3,7 @@
 <div id="employees-content" class="content-section">
   <div id="toast-container"></div>
   <div class="container-fluid p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2>Gestion des Employés</h2>
-      <button
-        class="btn btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#addEmployeeModal"
-      >
-        <i class="fas fa-plus me-2"></i> Ajouter un employé
-      </button>
-    </div>
+            <h2 class="mb-4 text-center p-3 bg-primary text-white rounded shadow-sm w-100">Gestion des Employés</h2>
     <!-- Search and Filter -->
     <div class="card mb-4">
       <div class="card-body">
@@ -25,13 +16,27 @@
               placeholder="Rechercher un employé..."
             />
           </div>
-          <div class="col-md-3">
+          <div class="col-md-4">
             <select class="form-select">
               <option selected>Tous les statuts</option>
               <option>Actif</option>
               <option>Inactif</option>
             </select>
           </div>
+          <div class="col-md-4">
+      <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#addEmployeeModal"
+      >
+        <i class="fas fa-plus me-2"></i> Ajouter un employé
+      </button>
+      <!-- <button
+        class="btn btn btn-outline-success"
+      >
+        <i class="fas fa-file-excel me-2"></i>Exporter excel
+      </button> -->
+    </div>
         </div>
       </div>
     </div>

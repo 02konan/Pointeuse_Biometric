@@ -1,7 +1,8 @@
 import os
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4,A3
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
+from    datetime import datetime
 from programme.Creat_data import creat_rapports
 from programme.read_data import generer_retard,generer_absence,generer_unique_presence
 
@@ -11,6 +12,8 @@ def format_timedelta(tdelta):
     minutes = (total_seconds % 3600) // 60
     seconds = total_seconds % 60
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+
 def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=None):
     try:
         # ✅ Vérification des données
@@ -30,8 +33,8 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
         creat_rapports(file_path, utilisateur, id_utilisateur, 'Presence')
 
         # ✅ Initialisation du PDF
-        c = canvas.Canvas(file_path, pagesize=A4)
-        width, height = A4
+        c = canvas.Canvas(file_path, pagesize=A3)
+        width, height = A3
 
         # ✅ Titre
         c.setFont("Helvetica-Bold", 16)
@@ -40,20 +43,26 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
         # ✅ Fonction pour entête
         def dessiner_entete(y):
             c.setFont("Helvetica-Bold", 12)
-            c.drawString(2.5 * cm, y, "Nom & Prénom")
-            c.drawString(8 * cm, y, "Heure de Cours")
-            c.drawString(12 * cm, y, "Heure Effectuées")
-            c.drawString(16 * cm, y, "Écart d'heure")
-            c.drawString(19.5 * cm, y, "Observation")
-            c.line(0.5 * cm, y - 0.2 * cm, width - 0.5 * cm, y - 0.2 * cm)
+            # Positions centrées pour chaque colonne
+            columns = [
+                (4 * cm, "Nom & Prénom"),
+                (7 * cm, "Jour"),
+                (10 * cm, "Date"),
+                (13 * cm, "Heure de Cours"),
+                (17 * cm, "Heure Effectuées"),
+                (21 * cm, "Écart d'heure"),
+                (25 * cm, "Observation")
+            ]
+            for x, label in columns:
+                c.drawCentredString(x, y, label)
+            c.line(1 * cm, y - 0.2 * cm, width - 1 * cm, y - 0.2 * cm)
             return y - 1 * cm
-
         y_position = dessiner_entete(height - 3 * cm)
 
         # ✅ Boucle sur les lignes de données
         for row in data:
             try:
-                professeur, heure_cours, heure_effectuee, ecart, observation = row
+                professeur,jours, date, heure_cours, heure_effectuee, ecart, observation = row
 
                 # Si on arrive en bas de page → nouvelle page + entête
                 if y_position < 2 * cm:
@@ -61,11 +70,18 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
                     y_position = dessiner_entete(height - 2 * cm)
 
                 c.setFont("Helvetica", 12)
-                c.drawString(2.5 * cm, y_position, str(professeur))
-                c.drawString(8 * cm, y_position, str(heure_cours))
-                c.drawString(12 * cm, y_position, str(heure_effectuee))
-                c.drawString(16 * cm, y_position, str(ecart))
-                c.drawString(19.5 * cm, y_position, str(observation))
+                # Centrage des données sur chaque colonne
+                values = [
+                    (4 * cm, str(professeur)),
+                    (7 * cm, str(jours)),
+                    (10 * cm, str(date)),
+                    (13 * cm, str(heure_cours)),
+                    (17 * cm, str(heure_effectuee)),
+                    (21 * cm, str(ecart)),
+                    (25 * cm, str(observation))
+                ]
+                for x, val in values:
+                    c.drawCentredString(x, y_position, val)
                 y_position -= 0.5 * cm
 
             except Exception as e:
