@@ -22,60 +22,82 @@
 </div>
 <div id="reports-content" class="content-section">
   <div class="container-fluid p-4">
-    <h2 class="mb-4">Gestion des Rapports</h2>
+<h2 class="mb-4 text-center p-3 bg-primary text-white rounded shadow-sm w-100">
+  Gestion des Rapports <span class="fw-normal">(Émargement & Présence)</span>
+</h2>
     <div class="row mb-4">
-      <div class="col-md-3 mb-3">
+      <div class="col-md-6 mb-3">
         <div class="card h-100">
           <div class="card-body text-center">
             <div class="report-icon mb-3">
               <i class="fas fa-calendar-check"></i>
             </div>
             <h5 class="card-title">Rapport de présence</h5>
-            <p class="card-text">
-              Générer un rapport détaillé des présences par période
+            <p class="card-text text-muted">
+              Générez un rapport détaillé des présences par période
             </p>
-            <form
-              method="get"
-              class="row g-2 align-items-end mb-4"
-              id="form-fiche-presence"
-              onsubmit="event.preventDefault(); telechargerFichePresence('presence', document.getElementById('btn-fiche-presence'));"
-            >
-              <div class="col-auto">
-                <label for="date_debut" class="form-label mb-0"
-                  >Date début</label
-                >
-                <input
-                  type="date"
-                  class="form-control"
-                  id="date_debut"
-                  name="date_debut"
-                  required
-                />
+
+            <form method="get" id="form-fiche-presence" class="mt-4">
+              <div class="row g-3 justify-content-center">
+                <div class="col-md-5">
+                  <label for="date_debut" class="form-label"
+                    >Date de début</label
+                  >
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="date_debut"
+                    name="date_debut"
+                    required
+                    aria-label="Date de début"
+                  />
+                </div>
+
+                <div class="col-md-5">
+                  <label for="date_fin" class="form-label">Date de fin</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="date_fin"
+                    name="date_fin"
+                    required
+                    aria-label="Date de fin"
+                  />
+                </div>
+
+                <div class="col-md-5">
+                  <label for="employeeId" class="form-label">Code Professeur</label>
+                  <input
+                    list="Matriucle"
+                    type="text"
+                    class="form-control"
+                    id="idEmploye"
+                    name="idEmploye"
+                    required
+                  />
+                  <datalist id="Matriucle">
+                    <option value="dcfdqc">rgzgzrgr</option>
+                  </datalist>
+                </div>
+
+                <div class="col-12 mt-3">
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-generer px-4 py-2"
+                    id="btn-fiche-presence"
+                    onclick="location.reload();"
+                  >
+                    <i class="fas fa-file-pdf me-2"></i>Générer le rapport
+                  </button>
+                </div>
               </div>
-              <div class="col-auto">
-                <label for="date_fin" class="form-label mb-0">Date fin</label>
-                <input
-                  type="date"
-                  class="form-control"
-                  id="date_fin"
-                  name="date_fin"
-                  required
-                />
-              </div>
-              <div class="col-auto">
-                <button
-                  id="btn-fiche-presence"
-                  type="submit"
-                  class="btn btn-primary btn-generer-fiche"
-                  onclick="location.reload();"
-                >Generer
-                </button>
-              </div>
+
+              <div id="message-zone" class="mt-3"></div>
             </form>
           </div>
         </div>
       </div>
-      <div class="col-md-3 mb-3">
+      <!-- <div class="col-md-3 mb-3">
         <div class="card h-100">
           <div class="card-body text-center">
             <div class="report-icon mb-3">
@@ -174,8 +196,8 @@
             </form>
           </div>
         </div>
-      </div>
-      <div class="col-md-3 mb-3">
+      </div> -->
+      <div class="col-md-6 mb-3">
         <div class="card h-100">
           <div class="card-body text-center">
             <div class="report-icon mb-3">
@@ -186,11 +208,55 @@
               Créer un rapport avec des critères spécifiques
             </p>
             <form method="get" id="form-fiche-persornalise" action="">
-              <div class="row align-items-end">
-                <input type="text" id="matricule" class="form-control mb-2" placeholder="Entrez un code" required/>
-                <div class="col-auto  align-items-end">
-                  <button 
-                  onclick="location.reload();" class="btn btn-primary" type="submit">Generer</button>
+              <div class="row g-3 justify-content-center">
+                 <div class="col-md-5">
+                  <label for="date_debut" class="form-label"
+                    >Date de début</label
+                  >
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="date_debut"
+                    name="date_debut"
+                    required
+                    aria-label="Date de début"
+                  />
+                </div>
+
+                <div class="col-md-5">
+                  <label for="date_fin" class="form-label">Date de fin</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="date_fin"
+                    name="date_fin"
+                    required
+                    aria-label="Date de fin"
+                  />
+                </div>
+                <div class="col-md-5">
+                  <label for="employeeId" class="form-label">Code Professeur</label>
+                  <input
+                    list="Matriucle"
+                    type="text"
+                    class="form-control"
+                    id="matricule"
+                    name="matricule"
+                    required
+                  />
+                  <datalist id="Matriucle">
+                    <option value="dcfdqc">rgzgzrgr</option>
+                  </datalist>
+                </div>
+                <div class="col-12 mt-3">
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-generer px-4 py-2"
+                    id="btn-fiche-personel"
+                    onclick="location.reload();"
+                  >
+                    <i class="fas fa-file-pdf me-2"></i>Générer le rapport
+                  </button>
                 </div>
               </div>
             </form>

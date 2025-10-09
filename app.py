@@ -73,15 +73,16 @@ def login():
             session['role'] = utilisateur['nom_roles']
             session['section'] = utilisateur['id_section']
             # Redirection selon le rôle
-            if utilisateur['nom_roles'].lower() == 'admin':
+            if utilisateur['nom_roles'].lower() == 'superadmin':
                 return redirect(url_for('index'))
-            elif utilisateur['nom_roles'].lower() == 'user':
+            elif utilisateur['nom_roles'].lower() == 'admin':
                 return redirect(url_for('index'))
             else:
                 return redirect(url_for('index'))
         else:
             flash("Identifiants incorrects. Veuillez réessayer.", "danger")
     return render_template('login.html')
+
 @app.route('/login_prof',methods=['GET','POST'])
 def login_prof():
     if 'connecter' in session and session['connecter']:
@@ -103,6 +104,7 @@ def login_prof():
         else:
             flash("Identifiants incorrects. Veuillez réessayer.", "danger")
     return render_template('login.html')        
+
 @app.route('/')
 def index():
     if 'connecter' not in session or not session['connecter']:
@@ -250,7 +252,7 @@ def dashboard_admin():
         }), 500
 
 @app.route('/employee')
-
+@login_required
 def intf_employee():
     data = read_data_employe()
     id_employee=read_matricule()
@@ -277,6 +279,7 @@ def intf_employee():
     return render_template('employee.html', active_page='employee', resultats=table,user_id=table_info)
 
 @app.route('/presence')
+@login_required
 def intf_presence():
     data = read_data_presence(session['section'])
     table = []
@@ -311,6 +314,7 @@ def intf_presence():
     return render_template('presence.html', active_page='presence', resultats=table)
 
 @app.route('/pointage_invalie')
+@login_required
 def intf_pointage_invalie():
     data = pointage_invalid(session['section'])
     table = []
@@ -620,11 +624,13 @@ def api_programme_route(matricule):
         return jsonify({"error": str(e)}), 500
     
 @app.route('/rapports')
+@login_required
 def intf_rapports():
     return render_template('rapport.html', active_page='rapports')
 
 
 @app.route('/appareils')
+@login_required
 def intf_appareils():
     idsection= read_idsection()
     data= get_etats_pointeuses()
@@ -643,6 +649,7 @@ def enregistrement_appareils():
     return redirect(url_for('intf_appareils'))
 
 @app.route('/parametres')
+@login_required
 def intf_Parametres():
     return render_template('parametre.html', active_page='parametres')
 
@@ -667,7 +674,7 @@ def Programme_Enrollement():
 
 
 @app.route('/utilisateurs')
-
+@login_required
 def lister_utilisateurs():
     idrole=read_idrole()
     idsection= read_idsection()
