@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from programme.read_data import pointeuse,read_matricule_section,read_data_Admin,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur,generer_absence,generer_unique_presence,generer_presence,generer_retard
+from programme.read_data import pointeuse,read_matricule_section,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur,generer_absence,generer_unique_presence,generer_presence,generer_retard
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
 from programme.insertion import insertion_
+from programme.read_superadmin import read_data_Admin,read_admin_presence
 from programme.transfert_empreintes import transfert_empreintes
 from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
@@ -281,37 +282,61 @@ def intf_employee():
 @app.route('/presence')
 @login_required
 def intf_presence():
-    data = read_data_presence(session['section'])
     table = []
-    for donnee in data:
-        code = donnee[0]
-        Nom = donnee[1]
-        arrive = donnee[2]
-        depart = donnee[3]
-        jour = donnee[4]
-        date = donnee[5]
-        Duree_initial = donnee[6]
-        Statut = donnee[7]
-        # heur_arrivee = donnee[8]
-        temps_presence = donnee[9]
-        if Statut == "Présent":
-            couleur_st = "success"
-        else:
-            couleur_st = "danger"
-        resultat = {
-            'Matricule': code,
-            'Nom': Nom,
-            'arrivee': arrive,
-            'depart': depart,
-            'jour': jour,
-            'Date': date,
-            'Duree_initial': Duree_initial,
-            'Duree_presence': temps_presence,
-            'Statut': Statut,
-            'couleur_statut': couleur_st
-        }
-        table.append(resultat)
-    return render_template('presence.html', active_page='presence', resultats=table)
+    table_admin = []
+    if session.get('role') == "admin":
+        data = read_data_presence(session['section'])
+        for donnee in data:
+            code = donnee[0]
+            Nom = donnee[1]
+            arrive = donnee[2]
+            depart = donnee[3]
+            jour = donnee[4]
+            date = donnee[5]
+            Duree_initial = donnee[6]
+            Statut = donnee[7]
+            temps_presence = donnee[9]
+            couleur_st = "success" if Statut == "Présent" else "danger"
+            resultat = {
+                'Matricule': code,
+                'Nom': Nom,
+                'arrivee': arrive,
+                'depart': depart,
+                'jour': jour,
+                'Date': date,
+                'Duree_initial': Duree_initial,
+                'Duree_presence': temps_presence,
+                'Statut': Statut,
+                'couleur_statut': couleur_st
+            }
+            table.append(resultat)
+    elif session.get('role') == "superadmin":
+        data_admin = read_admin_presence()
+        for donnee in data_admin:
+            code_admin = donnee[0]
+            Nom_admin = donnee[1]
+            arrive_admin = donnee[2]
+            depart_admin = donnee[3]
+            jour_admin = donnee[4]
+            date_admin = donnee[5]
+            Duree_initial_admin = donnee[6]
+            Statut_admin = donnee[7]
+            temps_presence_admin = donnee[9]
+            couleur_st_admin = "success" if Statut_admin == "Présent" else "danger"
+            resultat = {
+                'Matricule': code_admin,
+                'Nom': Nom_admin,
+                'arrivee': arrive_admin,
+                'depart': depart_admin,
+                'jour': jour_admin,
+                'Date': date_admin,
+                'Duree_initial': Duree_initial_admin,
+                'Duree_presence': temps_presence_admin,
+                'Statut': Statut_admin,
+                'couleur_statut': couleur_st_admin
+            }
+            table_admin.append(resultat)
+    return render_template('presence.html', active_page='presence', resultats=table, resultats_admin=table_admin)
 
 @app.route('/pointage_invalie')
 @login_required
@@ -761,9 +786,9 @@ if __name__ == '__main__':
     # thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
     # thread_synchronisation_attendance.daemon = True
     # thread_synchronisation_attendance.start()
-    thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
-    thread_sync_programme_periodique.daemon = True
-    thread_sync_programme_periodique.start()
+    # thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
+    # thread_sync_programme_periodique.daemon = True
+    # thread_sync_programme_periodique.start()
     # thread = threading.Thread(target=listen_attendance)
     # thread.daemon = True
     # thread.start()
