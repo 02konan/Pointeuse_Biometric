@@ -558,7 +558,6 @@ ORDER BY p.date_pointage;
     except Exception as e:
         print("Erreur générale :", e)
 
-
 def pointage_invalid(section_name):
     try:
         with connexion() as conn:

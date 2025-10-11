@@ -174,7 +174,6 @@ ON DUPLICATE KEY UPDATE
     Duree_finale = VALUES(Duree_finale),
     jour_programme = VALUES(jour_programme);
                     """
-
                     curseur.execute(sql_insert)
                     conn.commit()
 
@@ -187,7 +186,7 @@ ON DUPLICATE KEY UPDATE
 
 def synchronisation_attendance():
     while True:
-      programme_attendence()
+      return programme_attendence()
       time.sleep(60)
 
 def programme_valider(IDemploye, date_pointage,idpointeuse, jour_pointage,Status):

@@ -33,15 +33,22 @@ def api_programme():
                         heure_arrivee = programme.get('heure_arrivee')
                         heure_depart = programme.get('heure_depart')
                         duree_cours = programme.get('duree_cours')
-                        curseur.execute("SELECT COUNT(*) FROM Programme WHERE professeur_id = %s AND jour = %s", (professeur_id, jour))
-                        existe = curseur.fetchone()[0]
+                        curseur.execute("SELECT IDProgramme FROM Programme WHERE professeur_id = %s AND jour = %s", (professeur_id, jour))
+                        existe = curseur.fetchone()
+                        
                         if existe:
+                            identifiant_programme = existe[0]
                             sql = """
-                            UPDATE Programme
-                            SET professeur_code=%s, professeur_nom=%s, jour=%s,heure_arrivee=%s, heure_depart=%s, duree_cours=%s
-                            WHERE professeur_id=%s AND jour=%s
+                             UPDATE Programme
+                             SET professeur_code=%s,
+                             professeur_nom=%s,
+                             jour=%s,
+                             heure_arrivee=%s,
+                             heure_depart=%s,
+                             duree_cours=%s
+                             WHERE IDProgramme=%s AND professeur_id=%s AND jour=%s
                             """
-                            curseur.execute(sql, (professeur_code, professeur_nom, jour,heure_arrivee, heure_depart, duree_cours, professeur_id, jour))
+                            curseur.execute(sql, (professeur_code, professeur_nom, jour,heure_arrivee, heure_depart, duree_cours, identifiant_programme, professeur_id, jour))
                             print("Programme mis à jour avec succès.")
                         else:
                             sql = """
