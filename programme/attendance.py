@@ -160,7 +160,6 @@ JOIN (
         MIN(TIME(date_pointage)) AS arrivee,
         MAX(TIME(date_pointage)) AS depart
     FROM pointages
-    WHERE DATE(date_pointage) = CURDATE()
     GROUP BY IDEmploye, jour_pointage
     HAVING COUNT(*) >= 2
 ) ptg

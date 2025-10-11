@@ -33,29 +33,36 @@ def api_programme():
                         heure_arrivee = programme.get('heure_arrivee')
                         heure_depart = programme.get('heure_depart')
                         duree_cours = programme.get('duree_cours')
+                        section = programme.get('section')
+                        type_edt = programme.get('type_edt')
+                        statut = programme.get('statut')
                         curseur.execute("SELECT IDProgramme FROM Programme WHERE professeur_id = %s AND jour = %s", (professeur_id, jour))
                         existe = curseur.fetchone()
                         
                         if existe:
                             identifiant_programme = existe[0]
                             sql = """
-                             UPDATE Programme
+                             UPDATE IGNORE Programme
+                             
                              SET professeur_code=%s,
                              professeur_nom=%s,
                              jour=%s,
                              heure_arrivee=%s,
                              heure_depart=%s,
-                             duree_cours=%s
+                             duree_cours=%s,
+                             section=%s,
+                             type_edt=%s,
+                             status=%s
                              WHERE IDProgramme=%s AND professeur_id=%s AND jour=%s
                             """
-                            curseur.execute(sql, (professeur_code, professeur_nom, jour,heure_arrivee, heure_depart, duree_cours, identifiant_programme, professeur_id, jour))
+                            curseur.execute(sql, (professeur_code, professeur_nom, jour,heure_arrivee, heure_depart, duree_cours,section,type_edt,statut, identifiant_programme, professeur_id, jour))
                             print("Programme mis à jour avec succès.")
                         else:
                             sql = """
-                            INSERT INTO Programme (professeur_id,professeur_code, professeur_nom, jour,heure_arrivee, heure_depart, duree_cours)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s)
+                            INSERT IGNORE INTO Programme (professeur_id,professeur_code, professeur_nom, jour,heure_arrivee, heure_depart, duree_cours, section, type_edt, status)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                             """
-                            curseur.execute(sql, (professeur_id, professeur_code, professeur_nom, jour,heure_arrivee, heure_depart, duree_cours))
+                            curseur.execute(sql, (professeur_id, professeur_code, professeur_nom, jour,heure_arrivee, heure_depart, duree_cours,section,type_edt,statut))
                             print("Nouveau programme inséré avec succès.")
                 conn.commit()
             return {"success": True}

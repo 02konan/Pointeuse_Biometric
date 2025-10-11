@@ -6,15 +6,8 @@ def connexion():
         host='mysql-divix.alwaysdata.net',
         db='divix_bd',
         user='divix',
-        password='Biometricifsm@2025'
+        password='Biometricifsm@2025',
+        connect_timeout=10
     )
     return connection
 
-# def connexion():
-#     connection = pymysql.connect(
-#         host='mysql-biopro.alwaysdata.net',
-#         db='biopro_base',
-#         user='biopro',
-#         password='BioPro205ifsm'
-#     )
-#     return connection 
