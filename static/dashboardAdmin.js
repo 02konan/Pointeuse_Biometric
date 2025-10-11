@@ -40,10 +40,7 @@ function updateStatistics(data) {
     const employesActifsMois = data.employes_actifs_mois || 0;
     const joursTravillesMois = data.jours_travailles_mois || 0;
     const employesRetardMois = data.employes_retard_mois || 0;
-    
-    // Calcul des absences du mois (employés qui n'ont pas été présents tous les jours)
-    const presencesAttendusMois = totalEmployes * joursTravillesMois;
-    const absencesMois = presencesAttendusMois - employesActifsMois;
+    const absencesMois = data.employes_retard_mois;
     
     // Mise à jour des compteurs du jour
     animateCounter('dash_presents-count', totalPresents);
@@ -202,23 +199,17 @@ function updateCharts(data) {
 function updateAttendanceLineChart(data) {
     const ctx = document.getElementById('dash_attendanceChart');
     if (!ctx) return;
-    
+
     if (attendanceChart) {
         attendanceChart.destroy();
     }
-    
-    const labels = [];
-    const today = new Date();
-    for (let i = 6; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        labels.push(date.toLocaleDateString('fr-FR', { weekday: 'short' }));
-    }
-    
-    const totalPresents = data.total_presents || 0;
-    const totalAbsents = data.total_absents || 0;
-    const totalRetard = data.total_retard || 0;
-    
+
+    // Utiliser les labels et les données envoyées par Flask
+    const labels =['Dim','Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const chartjs_Presents = data.chartjs_Presents || [];
+    const chartjs_absents = data.chartjs_absents || [];
+    const chartjs_retard = data.chartjs_retard || [];
+
     attendanceChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -226,7 +217,7 @@ function updateAttendanceLineChart(data) {
             datasets: [
                 {
                     label: 'Présents',
-                    data: generateTrendData(totalPresents, 7),
+                    data: chartjs_Presents,
                     borderColor: '#0d6efd',
                     backgroundColor: 'rgba(13, 110, 253, 0.1)',
                     tension: 0.4,
@@ -234,7 +225,7 @@ function updateAttendanceLineChart(data) {
                 },
                 {
                     label: 'Absents',
-                    data: generateTrendData(totalAbsents, 7),
+                    data: chartjs_absents,
                     borderColor: '#dc3545',
                     backgroundColor: 'rgba(220, 53, 69, 0.1)',
                     tension: 0.4,
@@ -242,7 +233,7 @@ function updateAttendanceLineChart(data) {
                 },
                 {
                     label: 'Retards',
-                    data: generateTrendData(totalRetard, 7),
+                    data: chartjs_retard,
                     borderColor: '#ffc107',
                     backgroundColor: 'rgba(255, 193, 7, 0.1)',
                     tension: 0.4,
@@ -259,9 +250,7 @@ function updateAttendanceLineChart(data) {
                     mode: 'index',
                     intersect: false,
                     callbacks: {
-                        label: function(context) {
-                            return context.dataset.label + ': ' + context.parsed.y + ' employés';
-                        }
+                        label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} employés`
                     }
                 }
             },

@@ -4,7 +4,7 @@ from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
 from programme.insertion import insertion_
-from programme.read_superadmin import read_data_Admin,read_admin_presence,pointage_admin_invalid
+from programme.read_superadmin import read_data_Admin,read_admin_presence,pointage_admin_invalid,data_chatjs
 from programme.transfert_empreintes import transfert_empreintes
 from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
@@ -180,16 +180,12 @@ def dashboard_data():
 @app.route("/api/dashboard_admin", methods=["GET"])
 def dashboard_admin():
    if session.get('role')=="superadmin":
-        """
-     Récupère les données du tableau de bord administrateur.
-    
-     Returns:
-        JSON: Statistiques des employés et activités récentes
-     """
+        
         try:
             data_Admin = read_data_Admin()
+            read_chatjs=data_chatjs()
             
-            if data_Admin is None:
+            if data_Admin is None or read_chatjs is None:
                 return jsonify({
                     "success": False,
                     "error": "Erreur lors de la récupération des données"
@@ -206,6 +202,29 @@ def dashboard_admin():
                 jours_travailles_mois,
                 employes_retard_mois
             ) = data_Admin
+            
+            (
+                chartjs_Presents, 
+                chartjs_retard, 
+                chartjs_absents,
+            )=read_chatjs
+            labels=[]
+            chartjs_Presents_formatees=[]
+            chartjs_retard_formatees=[]
+            chartjs_absents_formatees=[]
+
+            for iteme_presents_chart in chartjs_Presents:
+                labels.append(iteme_presents_chart[0])
+                chartjs_Presents_formatees.append(iteme_presents_chart[1])
+
+            for iteme_retard_chart in chartjs_retard:
+                labels.append(iteme_retard_chart[0])
+                chartjs_retard_formatees.append(iteme_retard_chart[1])
+
+            for iteme_absents_chart in chartjs_absents:
+                labels.append(iteme_absents_chart[0])
+                chartjs_absents_formatees.append(iteme_absents_chart[1])
+
 
             # Formater les activités récentes
             activites_formatees = []
@@ -227,7 +246,12 @@ def dashboard_admin():
                 "employes_actifs_mois": employes_actifs_mois,
                 "jours_travailles_mois": jours_travailles_mois,
                 "employes_retard_mois": employes_retard_mois,
-                "activite_recentes": activites_formatees
+                "activite_recentes": activites_formatees,
+                "chartjs_Presents":chartjs_Presents_formatees,
+                "chartjs_retard":chartjs_retard_formatees,
+                "chartjs_absents":chartjs_absents_formatees,
+                "labels":labels
+
             }), 200
 
         except ValueError as e:
@@ -245,12 +269,7 @@ def dashboard_admin():
                 "error": "Erreur serveur interne",
                 "details": str(e)
             }), 500
-        # Erreur inattendue
-        return jsonify({
-            "success": False,
-            "error": "Erreur serveur interne",
-            "details": str(e)
-        }), 500
+       
 
 @app.route('/employee')
 @login_required
@@ -805,9 +824,9 @@ if __name__ == '__main__':
     # thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
     # thread_synchronisation_attendance.daemon = True
     # thread_synchronisation_attendance.start()
-    thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
-    thread_sync_programme_periodique.daemon = True
-    thread_sync_programme_periodique.start()
+    # thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
+    # thread_sync_programme_periodique.daemon = True
+    # thread_sync_programme_periodique.start()
     # thread = threading.Thread(target=listen_attendance)
     # thread.daemon = True
     # thread.start()

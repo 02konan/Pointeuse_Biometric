@@ -81,6 +81,14 @@
                     {% endfor %}
                   </datalist>
                 </div>
+                {% if session['role']|lower == 'superadmin' %}
+                <div class="col-md-5">
+                  <label for="employeeId" class="form-label">Section</label>
+                  <select class="form-select" name="" id="">
+                    <option value=""></option>
+                  </select>
+                </div>
+                {% endif %}
 
                 <div class="col-12 mt-3">
                   <button

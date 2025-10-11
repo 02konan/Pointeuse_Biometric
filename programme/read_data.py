@@ -189,7 +189,6 @@ WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
         print("Erreur lors de la lecture des données du tableau de bord :", e)
         return None
 
-
 def read_data_from_pr(prof_code):
     data_base = connexion()
     try:

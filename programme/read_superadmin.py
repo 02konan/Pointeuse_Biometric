@@ -95,7 +95,9 @@ WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
         AND TIME(p2.date_pointage) <= '08:30:00'
   );
 """
+            sql_chatjs="""
 
+"""
             # --- Exécution ---
             cursor.execute(sql1)
             total_employes = cursor.fetchone()[0]
@@ -225,6 +227,139 @@ GROUP BY pr.professeur_nom, jour_pointage, p.date_pointage
 ORDER BY p.date_pointage;
                 """
                 cursor.execute(sql, (date_debut, date_fin, idemployee, section_name))
+                return cursor.fetchall()
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)
+
+def data_chatjs():
+    try:
+        data_base = connexion()
+        with data_base.cursor() as cursor:
+            # --- Présents aujourd’hui ---
+            sql2 = """
+ WITH jours AS (
+    SELECT CURDATE() - INTERVAL n DAY AS jour
+    FROM (
+        SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 
+        UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+    ) AS nums
+)
+SELECT 
+    CASE DAYOFWEEK(j.jour)
+        WHEN 1 THEN 'Dimanche'
+        WHEN 2 THEN 'Lundi'
+        WHEN 3 THEN 'Mardi'
+        WHEN 4 THEN 'Mercredi'
+        WHEN 5 THEN 'Jeudi'
+        WHEN 6 THEN 'Vendredi'
+        WHEN 7 THEN 'Samedi'
+    END AS jour_francais,
+    COUNT(lp.IDEmploye) AS nb_presences
+FROM jours j
+LEFT JOIN (
+    SELECT p.IDEmploye, DATE(p.date_pointage) AS jour_pointage
+    FROM pointages p
+    JOIN empreintes e ON e.IDEmploye = p.IDEmploye
+    GROUP BY p.IDEmploye, DATE(p.date_pointage)
+    HAVING COUNT(p.IDEmploye) >= 2
+) AS lp
+ON lp.jour_pointage = j.jour
+GROUP BY j.jour
+ORDER BY j.jour;
+
+"""
+
+            # --- Retardataires aujourd’hui ---
+            sql3 = """
+WITH jours AS (
+    SELECT CURDATE() - INTERVAL n DAY AS jour
+    FROM (
+        SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3
+        UNION SELECT 4 UNION SELECT 5 UNION SELECT 6
+    ) AS nums
+),
+retardataires AS (
+    SELECT p.IDEmploye, DATE(p.date_pointage) AS jour_pointage
+    FROM pointages p
+    WHERE p.date_pointage >= CURDATE() - INTERVAL 6 DAY
+    GROUP BY p.IDEmploye, DATE(p.date_pointage)
+    HAVING MIN(TIME(p.date_pointage)) > '08:00:00'
+)
+SELECT 
+    CASE DAYOFWEEK(j.jour)
+        WHEN 1 THEN 'Dimanche'
+        WHEN 2 THEN 'Lundi'
+        WHEN 3 THEN 'Mardi'
+        WHEN 4 THEN 'Mercredi'
+        WHEN 5 THEN 'Jeudi'
+        WHEN 6 THEN 'Vendredi'
+        WHEN 7 THEN 'Samedi'
+    END AS jour_francais,
+    COUNT(r.IDEmploye) AS nb_retard
+FROM jours j
+LEFT JOIN retardataires r
+    ON r.jour_pointage = j.jour
+GROUP BY j.jour
+ORDER BY j.jour;
+
+"""
+
+            # --- Absents aujourd’hui ---
+            sql4 = """
+WITH jours AS (
+    SELECT CURDATE() - INTERVAL n DAY AS jour
+    FROM (
+        SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION
+        SELECT 4 UNION SELECT 5 UNION SELECT 6
+    ) AS nums
+)
+SELECT 
+    CASE DAYOFWEEK(j.jour)
+        WHEN 1 THEN 'Dimanche'
+        WHEN 2 THEN 'Lundi'
+        WHEN 3 THEN 'Mardi'
+        WHEN 4 THEN 'Mercredi'
+        WHEN 5 THEN 'Jeudi'
+        WHEN 6 THEN 'Vendredi'
+        WHEN 7 THEN 'Samedi'
+    END AS jour_francais,
+    COUNT(e.IDEmploye) AS nb_absents
+FROM jours j
+CROSS JOIN empreintes e
+LEFT JOIN pointages p 
+       ON p.IDEmploye = e.IDEmploye
+      AND DATE(p.date_pointage) = j.jour
+WHERE p.IDEmploye IS NULL
+GROUP BY j.jour
+ORDER BY j.jour;
+"""
+            
+            cursor.execute(sql2)
+            chartjs_Presents = cursor.fetchall()
+
+            cursor.execute(sql3)
+            chartjs_retard = cursor.fetchall()
+
+            cursor.execute(sql4)
+            chartjs_absents = cursor.fetchall()
+
+            return chartjs_Presents, chartjs_retard, chartjs_absents
+    except Exception as e:
+        print("Erreur lors de la lecture des données pour le graphique :", e)
+        return None, None, None
+
+def read_raports():
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql = """
+                SELECT r.fichier, u.nom
+                FROM rapports r
+                JOIN utilisateurs u ON r.id_utilisateur = u.id
+                """
+                cursor.execute(sql)
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)
