@@ -25,14 +25,14 @@
     <li class="{% if active_page == 'presence' %}active{% endif %}">
       <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
-          <i class="fas fa-calendar-check"></i> Présences
+          <i class="fas fa-check-circle"></i>Pointage Valide
         </button>
       </form>
     </li>
     <li class="{% if active_page == 'pointage_invalie' %}active{% endif %}">
       <form action="{{ url_for('intf_pointage_invalie') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
-          <i class="fas fa-sign-out-alt"></i>Pointage Invalide
+          <i class="fas fa-times-circle"></i>Pointage Invalide
         </button>
       </form>
     </li>
@@ -101,14 +101,14 @@
     <li class="{% if active_page == 'presence' %}active{% endif %}">
       <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
-          <i class="fas fa-calendar-check"></i> Présences
+          <i class="fas fa-check-circle"></i>Pointage Valide
         </button>
       </form>
     </li>
     <li class="{% if active_page == 'pointage_invalie' %}active{% endif %}">
       <form action="{{ url_for('intf_pointage_invalie') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
-          <i class="fas fa-sign-out-alt"></i>Pointage Invalide
+          <i class="fas fa-times-circle"></i>Pointage Invalide
         </button>
       </form>
     </li>
@@ -126,13 +126,13 @@
         </button>
       </form>
     </li> -->
-    <!-- <li class="{% if active_page == 'utilisateurs' %}active{% endif %}">
+    <li class="{% if active_page == 'utilisateurs' %}active{% endif %}">
       <form action="{{ url_for('lister_utilisateurs') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
           <i class="fas fa-user-plus"></i> Utilisateur
         </button>
       </form>
-    </li> -->
+    </li>
     <!-- <li class="{% if active_page == 'parametres' %}active{% endif %}">
       <form action="{{ url_for('intf_Parametres') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
@@ -163,17 +163,16 @@
       >
     </li>
     <li class="{% if active_page == 'presence' %}active{% endif %}">
-      <a
-        class="text-white text-decoration-none"
-        href="{{ url_for('intf_presence') }}"
-      >
-        <i class="fas fa-calendar-check"></i>Présences</a
-      >
+      <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-check-circle"></i>Pointage Valide
+        </button>
+      </form>
     </li>
     <li class="{% if active_page == 'pointage_invalie' %}active{% endif %}">
       <form action="{{ url_for('intf_pointage_invalie') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
-          <i class="fas fa-sign-out-alt"></i>Pointage Invalide
+          <i class="fas fa-times-circle"></i>Pointage Invalide
         </button>
       </form>
     </li>

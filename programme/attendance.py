@@ -175,7 +175,6 @@ ON DUPLICATE KEY UPDATE
                     """
                     curseur.execute(sql_insert)
                     conn.commit()
-
                     print("[INFO] Mise à jour de pointage_programme effectuée.")
 
         except pymysql.MySQLError as e:
