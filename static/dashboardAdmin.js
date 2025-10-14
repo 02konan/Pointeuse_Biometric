@@ -205,7 +205,7 @@ function updateAttendanceLineChart(data) {
     }
 
     // Utiliser les labels et les données envoyées par Flask
-    const labels =['Dim','Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    const labels =['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam','Dim'];
     const chartjs_Presents = data.chartjs_Presents || [];
     const chartjs_absents = data.chartjs_absents || [];
     const chartjs_retard = data.chartjs_retard || [];

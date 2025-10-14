@@ -267,8 +267,16 @@ LEFT JOIN (
 ) AS lp
 ON lp.jour_pointage = j.jour
 GROUP BY j.jour
-ORDER BY j.jour;
-
+ORDER BY 
+    CASE DAYOFWEEK(j.jour)
+        WHEN 2 THEN 1  -- Lundi
+        WHEN 3 THEN 2  -- Mardi
+        WHEN 4 THEN 3  -- Mercredi
+        WHEN 5 THEN 4  -- Jeudi
+        WHEN 6 THEN 5  -- Vendredi
+        WHEN 7 THEN 6  -- Samedi
+        WHEN 1 THEN 7  -- Dimanche
+    END;
 """
 
             # --- Retardataires aujourd’hui ---
@@ -302,8 +310,16 @@ FROM jours j
 LEFT JOIN retardataires r
     ON r.jour_pointage = j.jour
 GROUP BY j.jour
-ORDER BY j.jour;
-
+ORDER BY 
+    CASE DAYOFWEEK(j.jour)
+        WHEN 2 THEN 1  -- Lundi
+        WHEN 3 THEN 2  -- Mardi
+        WHEN 4 THEN 3  -- Mercredi
+        WHEN 5 THEN 4  -- Jeudi
+        WHEN 6 THEN 5  -- Vendredi
+        WHEN 7 THEN 6  -- Samedi
+        WHEN 1 THEN 7  -- Dimanche
+    END;
 """
 
             # --- Absents aujourd’hui ---
@@ -333,7 +349,16 @@ LEFT JOIN pointages p
       AND DATE(p.date_pointage) = j.jour
 WHERE p.IDEmploye IS NULL
 GROUP BY j.jour
-ORDER BY j.jour;
+ORDER BY 
+    CASE DAYOFWEEK(j.jour)
+        WHEN 2 THEN 1  -- Lundi
+        WHEN 3 THEN 2  -- Mardi
+        WHEN 4 THEN 3  -- Mercredi
+        WHEN 5 THEN 4  -- Jeudi
+        WHEN 6 THEN 5  -- Vendredi
+        WHEN 7 THEN 6  -- Samedi
+        WHEN 1 THEN 7  -- Dimanche
+    END;
 """
             
             cursor.execute(sql2)
@@ -349,6 +374,25 @@ ORDER BY j.jour;
     except Exception as e:
         print("Erreur lors de la lecture des données pour le graphique :", e)
         return None, None, None
+
+def read_pointage():
+     try:
+         with connexion() as conn:
+             with conn.cursor() as cusor:
+                 sql= """
+             SELECT DISTINCT e.Nom, p.date_pointage, p.Status,s.NomSection
+             FROM pointages p
+             JOIN empreintes e ON p.IDEmploye = e.IDEmploye
+             JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+             JOIN section s ON s.idPointeuse = pt.idPointeuse
+             ORDER BY p.date_pointage DESC"""
+                 cusor.execute(sql)
+                 return cusor.fetchall()
+     except pymysql.MySQLError as e:
+         print("Erreur Mysql:",e)
+     except Exception as e:
+         print("Erreur Generele:",e)
+
 
 def read_raports():
     try:

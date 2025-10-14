@@ -4,7 +4,7 @@ from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
 from programme.insertion import insertion_
-from programme.read_superadmin import read_data_Admin,read_admin_presence,pointage_admin_invalid,data_chatjs
+from programme.read_superadmin import read_data_Admin,read_pointage,read_admin_presence,pointage_admin_invalid,data_chatjs
 from programme.transfert_empreintes import transfert_empreintes
 from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
@@ -269,12 +269,15 @@ def dashboard_admin():
                 "error": "Erreur serveur interne",
                 "details": str(e)
             }), 500
-       
+
+# @app.route("/historique")
+# def intf_historique():
+#     return render_template()
 
 @app.route('/employee')
 @login_required
 def intf_employee():
-    data = read_data_employe()
+    data = read_data_employe(session['section'])
     id_employee=read_matricule()
     table = []
     table_info=[]
@@ -481,7 +484,6 @@ def api_fiche_presence():
         return jsonify({'success': False, 'error': 'Erreur lors de la génération du PDF'}), 500
 
     except Exception as e:
-        # 🐞 Log de l'erreur dans la console pour le debug
         print("❌ Erreur dans /api/fiche_presence :", str(e))
         return jsonify({'success': False, 'error': str(e)}), 500
     

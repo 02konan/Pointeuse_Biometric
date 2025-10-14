@@ -266,23 +266,31 @@ LIMIT 5;
         print("Erreur lors de la lecture des données du tableau de bord :", e)
         return None
 
-def read_data_employe():
+def read_data_employe(section_name):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """SELECT 
-    employe.ID,
-    employe.matricule,
-    employe.Nom,
-    employe.telephone,
-    employe.adresse,
-    employe.email,
-    employe.poste,
-    employe.date_embauche,
-    employe.section
-FROM employe
+    e.ID,
+    e.matricule,
+    e.Nom,
+    e.telephone,
+    e.adresse,
+    e.email,
+    e.poste,
+    e.date_embauche,
+    e.section
+FROM employe AS e
+INNER JOIN empreintes AS em 
+    ON e.matricule = em.IDEmploye
+INNER JOIN pointeuse AS pt 
+    ON pt.idPointeuse = em.idPointeuse
+INNER JOIN section AS s 
+    ON s.idPointeuse = pt.idPointeuse
+WHERE s.IDSection =%s;
+
 """
-                cursor.execute(sql)
+                cursor.execute(sql,section_name)
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)
@@ -588,6 +596,8 @@ GROUP BY
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)
         return []
+
+
 
 def pointeuse(section_name):
     try:
