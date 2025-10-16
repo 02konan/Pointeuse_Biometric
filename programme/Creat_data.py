@@ -12,7 +12,7 @@ def creat_rapports(fichier, utilisateur,id_utilisateur,type):
         print(f"Erreur MySQL : {e}")
         return False
 
-def creat_data_employee(idEmploye, Nom, telephone, address, email, poste,date, section,role_id):
+def creat_data_employee(idEmploye,telephone, address, email, poste,date, section,role_id):
     try:
         with connexion() as conn:
             with conn.cursor() as curseur:
@@ -22,17 +22,17 @@ def creat_data_employee(idEmploye, Nom, telephone, address, email, poste,date, s
                 if existe:
                     sql = """
                     UPDATE employe
-                    SET Nom=%s, Telephone=%s, Adresse=%s, Email=%s, Poste=%s,Date_Embauche=%s, section=%s,id_role=%s
+                    SET Telephone=%s, Adresse=%s, Email=%s, Poste=%s,Date_Embauche=%s, section=%s,id_role=%s
                     WHERE Matricule=%s
                     """
-                    curseur.execute(sql,(Nom ,telephone, address, email, poste,date, section,role_id, idEmploye))
+                    curseur.execute(sql,(telephone, address, email, poste,date, section,role_id, idEmploye))
                     print("Employé mis à jour avec succès.")
                 else:
                     sql = """
-                    INSERT INTO employe (Matricule, Nom, Telephone, Adresse, Email, Poste,Date_Embauche, section,id_role)
-                    VALUES (%s, %s,%s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO employe (Matricule, Telephone, Adresse, Email, Poste,Date_Embauche, section,id_role)
+                    VALUES (%s, %s,%s, %s, %s, %s, %s, %s)
                     """
-                    curseur.execute(sql, (idEmploye, Nom, telephone, address, email, poste,date, section,role_id))
+                    curseur.execute(sql, (idEmploye,telephone, address, email, poste,date, section,role_id))
                     print("Nouvel employé inséré avec succès.")
 
             conn.commit()

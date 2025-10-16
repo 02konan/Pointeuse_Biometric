@@ -116,7 +116,6 @@ def index():
 
 @app.route('/employee', methods=['POST'])
 def enregistrement():
-    Nom=f"{request.form['nom']} {request.form['prenom']}"
     telephone = request.form['telephone']
     email = request.form['email']
     date = request.form['joinDate']
@@ -133,7 +132,7 @@ def enregistrement():
     #     os.makedirs(os.path.dirname(chemin), exist_ok=True)
     #     photo.save(chemin)
 
-    creat_data_employee(idEmploye, Nom, telephone, address, email, poste, date, section,role_id)
+    creat_data_employee(idEmploye, telephone, address, email, poste, date, section,role_id)
     flash("Employé enregistré avec succès !", "success")
     return redirect(url_for('intf_employee'))
 
@@ -289,14 +288,13 @@ def intf_employee():
         table_info.append(lecture_info)
     for donnee in data:
         information = {
-            'ID': donnee[0],
-            'Matricule': donnee[1],
+            'Matricule': donnee[0],
+            'Telephone': donnee[1],
             'Nom': donnee[2],
-            'Telephone': donnee[3],
-            'Adresse': donnee[4],
-            'email': donnee[5],
-            'Poste': donnee[6],
-            'section': donnee[8],
+            'Adresse': donnee[3],
+            'email': donnee[4],
+            'Poste': donnee[5],
+            'section': donnee[6],
         }
         table.append(information)
     return render_template('employee.html', active_page='employee', resultats=table,user_id=table_info)

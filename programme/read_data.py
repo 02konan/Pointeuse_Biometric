@@ -270,24 +270,28 @@ def read_data_employe(section_name):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                sql = """SELECT 
-    e.ID,
+                sql = """SELECT DISTINCT
     e.matricule,
-    e.Nom,
     e.telephone,
+    p.professeur_nom AS Nom,
     e.adresse,
     e.email,
     e.poste,
     e.date_embauche,
     e.section
-FROM employe AS e
-INNER JOIN empreintes AS em 
-    ON e.matricule = em.IDEmploye
-INNER JOIN pointeuse AS pt 
-    ON pt.idPointeuse = em.idPointeuse
-INNER JOIN section AS s 
-    ON s.idPointeuse = pt.idPointeuse
-WHERE s.IDSection =%s;
+FROM employe e
+LEFT JOIN Programme p 
+    ON e.matricule = p.professeur_code
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM empreintes em
+    JOIN pointeuse pt 
+        ON pt.idPointeuse = em.idPointeuse
+    JOIN section s 
+        ON s.idPointeuse = pt.idPointeuse
+    WHERE s.IDSection =%s
+      AND em.IDEmploye = e.matricule
+);
 
 """
                 cursor.execute(sql,section_name)
