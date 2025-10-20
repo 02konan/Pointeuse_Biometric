@@ -269,9 +269,20 @@ def dashboard_admin():
                 "details": str(e)
             }), 500
 
-# @app.route("/historique")
-# def intf_historique():
-#     return render_template()
+@app.route("/historique-activites")
+def intf_historique():
+    data=read_data_Admin()
+    activite_recentes=data[3]
+    activites_formatees = []
+    for activite in activite_recentes:
+                activites_formatees.append({
+                    "nom": activite[0],  # Nom
+                    "date_pointage": activite[1].strftime("%Y-%m-%d %H:%M:%S") if activite[1] else None,
+                    "status": activite[2],  # Status
+                    "section": activite[3]  # NomSection
+                })
+            
+    return render_template('Pointage_valid.html', active_page='pointage',historique=activites_formatees)
 
 @app.route('/employee')
 @login_required
@@ -638,80 +649,6 @@ def liste_rapports():
             })
     return jsonify(fichiers)
 
-@app.route("/api/pointages/<matricule>", methods=["GET"])
-def get_pointages(matricule):
-    try:
-        conn = connexion()
-        cursor = conn.cursor()  
-        query = """
-            SELECT 
-    DATE(p.date_pointage) AS date_pointage,
-    MIN(TIME(p.date_pointage)) AS heure_entree,
-    MAX(TIME(p.date_pointage)) AS heure_sortie,
-    e.Nom AS Nom_Prenom
-FROM 
-    pointages p
-JOIN 
-    empreintes e ON e.IDEmploye = p.IDEmploye
-WHERE 
-    e.IDEmploye =%s
-    AND DATE(p.date_pointage) = CURRENT_DATE()
-GROUP BY 
-    DATE(p.date_pointage), e.Nom
-ORDER BY 
-    date_pointage DESC;
-
-        """
-        cursor.execute(query, (matricule,))
-        rows = cursor.fetchall()
-
-        # Convertir manuellement en liste de dictionnaires
-        result = []
-        for row in rows:
-            result.append({
-                "date_pointage": str(row[0]),
-                "heure_entree": str(row[1]),
-                "heure_sortie": str(row[2]),
-                "Nom_Prenom": str(row[3])
-            })
-
-        return jsonify(result)
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/programme/<matricule>', methods=['GET'])
-def api_programme_route(matricule):
-    try:
-        conn = connexion()
-        cursor = conn.cursor()
-        query = """
-            SELECT professeur_code,jour, type, heure_arrivee, heure_depart, duree_cours,professeur_nom, Matiere 
-            FROM Programme
-            WHERE professeur_code = %s
-            ORDER BY jour DESC
-        """
-        cursor.execute(query, (matricule,))
-        rows = cursor.fetchall()
-
-        programmes = []
-        for row in rows:
-            programmes.append({
-                "professeur_code": row[0],
-                "journee": str(row[1]),
-                "EmploiDuTmp": row[2],
-                "heure_arrivee": str(row[3]),
-                "heure_depart": str(row[4]),
-                "duree_cours": str(row[5]),
-                "professeur_nom": str(row[6]),
-                "Matiere": str(row[7]),
-            })
-
-        return jsonify(programmes)
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
 @app.route('/rapports')
 @login_required
 def intf_rapports():
@@ -821,9 +758,9 @@ if __name__ == '__main__':
     # thread_transfert_empreintes = threading.Thread(target=transfert_empreintes)
     # thread_transfert_empreintes.daemon = True
     # thread_transfert_empreintes.start()
-    # thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
-    # thread_synchronisation_attendance.daemon = True
-    # thread_synchronisation_attendance.start()
+    thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
+    thread_synchronisation_attendance.daemon = True
+    thread_synchronisation_attendance.start()
     # thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
     # thread_sync_programme_periodique.daemon = True
     # thread_sync_programme_periodique.start()

@@ -137,7 +137,7 @@ def programme_attendence():
                 with conn.cursor() as curseur:
                     sql_insert = """
                     INSERT INTO pointage_programe 
-(IDProgramme, IDPointage, Status, arrivee, depart, Duree_initial, Duree_finale,jour_programme)
+(IDProgramme, IDPointage, Status, arrivee, depart, Duree_initial, Duree_finale, jour_programme, Date_Programme, section)
 SELECT 
     pr.IDProgramme,
     ptg.IDPointage,
@@ -150,7 +150,9 @@ SELECT
     ptg.depart,
     pr.duree_cours,
     TIMEDIFF(ptg.depart, ptg.arrivee) AS duree_finale,
-    ptg.jour_pointage
+    ptg.jour_pointage,
+    ptg.date_valider,
+    pr.section
 FROM Programme pr
 JOIN (
     SELECT
@@ -158,7 +160,8 @@ JOIN (
         IDEmploye,
         jour_pointage,
         MIN(TIME(date_pointage)) AS arrivee,
-        MAX(TIME(date_pointage)) AS depart
+        MAX(TIME(date_pointage)) AS depart,
+        DATE(date_pointage) AS date_valider
     FROM pointages
     GROUP BY IDEmploye, jour_pointage
     HAVING COUNT(*) >= 2
@@ -171,7 +174,10 @@ ON DUPLICATE KEY UPDATE
     depart = VALUES(depart),
     Duree_initial = VALUES(Duree_initial),
     Duree_finale = VALUES(Duree_finale),
-    jour_programme = VALUES(jour_programme);
+    jour_programme = VALUES(jour_programme),
+    Date_Programme = VALUES(Date_Programme),
+    section = VALUES(section);
+
                     """
                     curseur.execute(sql_insert)
                     conn.commit()

@@ -346,13 +346,12 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(refreshDashboard, 5 * 60 * 1000);
 });
 
-// Événement sur le bouton "Voir tout"
 document.addEventListener('DOMContentLoaded', function() {
     const voirToutBtn = document.querySelector('.card-header button');
     if (voirToutBtn) {
         voirToutBtn.addEventListener('click', function() {
             console.log('Voir toutes les activités');
-            // window.location.href = '/historique-activites';
+            window.location.href = '/historique-activites';
         });
     }
 });

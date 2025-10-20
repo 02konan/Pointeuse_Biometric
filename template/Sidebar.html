@@ -18,10 +18,17 @@
     <li class="{% if active_page == 'employee' %}active{% endif %}">
       <form action="{{ url_for('intf_employee') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
-          <i class="fas fa-users"></i> Employee
+          <i class="fas fa-users"></i>Employee
         </button>
       </form>
     </li>
+    <!-- <li class="{% if active_page == 'pointage' %}active{% endif %}">
+      <form action="{{ url_for('intf_historique') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-chart-bar"></i>Pointage
+        </button>
+      </form>
+    </li> -->
     <li class="{% if active_page == 'presence' %}active{% endif %}">
       <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
@@ -65,7 +72,6 @@
       </form>
     </li> -->
   </ul>
-
   <div class="sidebar-footer">
     <form action="/logout" method="get" style="width:100%;">
       <button type="submit" class="btn btn-sm btn-outline-light w-100">
@@ -90,7 +96,6 @@
         </button>
       </form>
     </li>
-
     <li class="{% if active_page == 'employee' %}active{% endif %}">
       <form action="{{ url_for('intf_employee') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
@@ -98,6 +103,13 @@
         </button>
       </form>
     </li>
+    <!-- <li class="{% if active_page == 'pointage' %}active{% endif %}">
+      <form action="{{ url_for('intf_historique') }}" method="get" style="width:100%;">
+        <button type="submit" class="sidebar-btn">
+          <i class="fas fa-chart-bar"></i>Pointage
+        </button>
+      </form>
+    </li> -->
     <li class="{% if active_page == 'presence' %}active{% endif %}">
       <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">

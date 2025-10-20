@@ -4,7 +4,7 @@
  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
  <!-- Custom JS -->
   <script src="{{url_for('static', filename='script.js')}}" type="module" defer></script>
-  {% if session['role']|lower == 'superadmin' %}
+{% if session['role']|lower == 'superadmin' %}
   <script src="{{ url_for('static', filename='dashboardAdmin.js') }}"></script>
 {% else %}
   <script src="{{ url_for('static', filename='dasboard.js') }}"></script>

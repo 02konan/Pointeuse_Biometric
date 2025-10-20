@@ -1,0 +1,64 @@
+{% extends 'index.html' %} {% block content %}
+<div id="attendance-content" class="content-section">
+  <div class="container-fluid p-4">
+    <h2
+      class="mb-4 text-center p-3 bg-primary text-white rounded shadow-sm w-100"
+    >
+      Historique Des Pointages
+    </h2>
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Date de début</label>
+            <input type="date" class="form-control" id="date-debut" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Date de fin</label>
+            <input type="date" class="form-control" id="date-fin" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Statut</label>
+            <select class="form-select" id="statut">
+              <option value="tous" selected>Tous les statuts</option>
+              <option value="Arrivée enregistrée">Arrivée enregistrée</option>
+              <option value="Départ enregistré">Départ enregistré</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body p-0">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Nom</th>
+                <th>Statut</th>
+                <th>Date</th>
+                <th>Heure</th>
+                <th>Section</th>
+            </tr>
+        </thead>
+        <tbody id="dashboard_recent_activity_list">
+            {% for activite in historique %}
+            <tr>
+                <td>{{ i }}</td>
+                <td>{{ activite.nom }}</td>
+                <td>{{ activite.status }}</td>
+                <td>{{ activite.date_pointage.split(' ')[0] if activite.date_pointage else '' }}</td>
+                <td>{{ activite.date_pointage.split(' ')[1] if activite.date_pointage else '' }}</td>
+                <td>{{ activite.section }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</div>
+
+  </div>
+</div>
+<script src="{{ url_for('static', filename='historique1.js') }}"></script>
+{%endblock%}
