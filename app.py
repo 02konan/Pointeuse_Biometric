@@ -758,9 +758,9 @@ if __name__ == '__main__':
     # thread_transfert_empreintes = threading.Thread(target=transfert_empreintes)
     # thread_transfert_empreintes.daemon = True
     # thread_transfert_empreintes.start()
-    thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
-    thread_synchronisation_attendance.daemon = True
-    thread_synchronisation_attendance.start()
+    # thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
+    # thread_synchronisation_attendance.daemon = True
+    # thread_synchronisation_attendance.start()
     # thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
     # thread_sync_programme_periodique.daemon = True
     # thread_sync_programme_periodique.start()
