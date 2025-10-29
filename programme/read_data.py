@@ -67,14 +67,14 @@ WHERE s.IDSection = %s;
 FROM (
     SELECT p.IDEmploye
     FROM pointages p
-    JOIN empreintes e ON e.IDEmploye = p.IDEmploye   
-    JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
-    JOIN section s ON s.idPointeuse = pt.idPointeuse
+    INNER JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+    INNER JOIN section s ON s.idPointeuse = pt.idPointeuse
     WHERE DATE(p.date_pointage) = CURRENT_DATE()
-    AND s.IDSection =%s 
+      AND s.IDSection =%s
     GROUP BY p.IDEmploye
-    HAVING COUNT(p.IDEmploye) >= 2
+    HAVING COUNT(*) >= 2
 ) AS liste_presences;
+
 """
             sql3 = """SELECT COUNT(*) AS nb_retardataires
 FROM (
@@ -323,7 +323,6 @@ JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
 JOIN pointages p ON pp.IDPointage = p.id
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE DATE(p.date_pointage)=CURDATE()
   AND s.IDSection = %s
 GROUP BY pr.professeur_code, pr.professeur_nom, DATE(p.date_pointage)
 ORDER BY p.date_pointage DESC, temps_presence;

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Fiche d’émargement des enseignants</title>
+    <style>
+        body {
+            font-family: "DejaVu Sans", sans-serif;
+            font-size: 12px;
+            margin: 30px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 5px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .entete {
+            margin-bottom: 15px;
+        }
+
+        .entete div {
+            margin-bottom: 3px;
+        }
+
+        .signatures {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .signatures div {
+            width: 45%;
+            text-align: center;
+            border-top: 1px solid black;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Fiche d’émargement des enseignants</h2>
+
+    <div class="entete">
+        <div><strong>Nom et Prénoms :</strong> {{ nom_enseignant }}</div>
+        <div><strong>Matière :</strong> {{ matiere }} &nbsp;&nbsp;&nbsp; <strong>Classe :</strong> {{ classe }}</div>
+        <div><strong>Mois :</strong> {{ mois }} &nbsp;&nbsp;&nbsp; <strong>Volume horaire :</strong> {{ volume_horaire }}</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Heure d’arrivée</th>
+                <th>Heure de début de cours</th>
+                <th>Heure de fin de cours</th>
+                <th>Nombre d’heures</th>
+                <th>Volume cumulé</th>
+                <th>Classe enseignée</th>
+                <th>Visa enseignant</th>
+                <th>Visa éducateur</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ligne in lignes %}
+            <tr>
+                <td>{{ ligne.date }}</td>
+                <td>{{ ligne.heure_arrivee }}</td>
+                <td>{{ ligne.heure_debut }}</td>
+                <td>{{ ligne.heure_fin }}</td>
+                <td>{{ ligne.nb_heures }}</td>
+                <td>{{ ligne.volume_cumule }}</td>
+                <td>{{ ligne.classe }}</td>
+                <td>{{ ligne.visa_enseignant }}</td>
+                <td>{{ ligne.visa_educateur }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="signatures">
+        <div>Emargement du Directeur des Études</div>
+        <div>Emargement du Comptable</div>
+    </div>
+</body>
+</html>

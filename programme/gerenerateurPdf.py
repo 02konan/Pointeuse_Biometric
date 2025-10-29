@@ -2,7 +2,9 @@ import os
 from reportlab.lib.pagesizes import A4,A3
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
-from    datetime import datetime
+from datetime import datetime
+from jinja2 import Template
+from weasyprint import HTML
 from programme.Creat_data import creat_rapports
 from programme.read_data import generer_retard,generer_absence,generer_unique_presence
 
@@ -13,85 +15,99 @@ def format_timedelta(tdelta):
     seconds = total_seconds % 60
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
-
 def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=None):
     try:
         # ✅ Vérification des données
-        if data is None or len(data) == 0:
-            print("⚠️ Aucune donnée de présence fournie.")
+        if not data or len(data) == 0:
+            print("⚠ Aucune donnée de présence fournie.")
             return False
-        
+
         uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
         os.makedirs(uploads_dir, exist_ok=True)
 
-        # ✅ Fichier PDF à générer
+        # ✅ Nom du fichier PDF
         if filename is None:
-            filename = 'fiche_presence.pdf'
+            filename = 'fiche_emargement.pdf'
         file_path = os.path.join(uploads_dir, filename)
 
-        # ✅ Historiser la création dans ta base ou ton journal
+        # ✅ Historiser la création du rapport
         creat_rapports(file_path, utilisateur, id_utilisateur, 'Presence')
 
-        # ✅ Initialisation du PDF
-        c = canvas.Canvas(file_path, pagesize=A3)
-        width, height = A3
-
-        # ✅ Titre
-        c.setFont("Helvetica-Bold", 16)
-        c.drawString(2 * cm, height - 2 * cm, "Fiche de Présence")
-
-        # ✅ Fonction pour entête
-        def dessiner_entete(y):
-            c.setFont("Helvetica-Bold", 12)
-            # Positions centrées pour chaque colonne
-            columns = [
-                (4 * cm, "Nom & Prénom"),
-                (7 * cm, "Jour"),
-                (10 * cm, "Date"),
-                (13 * cm, "Heure de Cours"),
-                (17 * cm, "Heure Effectuées"),
-                (21 * cm, "Écart d'heure"),
-                (25 * cm, "Observation")
-            ]
-            for x, label in columns:
-                c.drawCentredString(x, y, label)
-            c.line(1 * cm, y - 0.2 * cm, width - 1 * cm, y - 0.2 * cm)
-            return y - 1 * cm
-        y_position = dessiner_entete(height - 3 * cm)
-
-        # ✅ Boucle sur les lignes de données
+        # Préparer les lignes pour le template HTML
+        lignes = []
         for row in data:
-            try:
-                professeur,jours, date, heure_cours, heure_effectuee, ecart, observation = row
+            if not isinstance(row, (list, tuple)):
+                print("⚠️ Ligne inattendue (non tuple) dans generer_fiche_presence_pdf :", row)
+                continue
+            if len(row) < 7:
+                print("⚠️ Ligne incomplète dans les données de présence (attendu 7 champs) :", row)
+                # compléter avec des valeurs vides
+                row = list(row) + [""] * (7 - len(row))
+            professeur, jour_pointage, date_pointage, total_heures_cours, total_heures_effectuer, ecart, observation = row
+            lignes.append({
+                'professeur': str(professeur),
+                'jour': str(jour_pointage),
+                'date': str(date_pointage),
+                'heures_cours': str(total_heures_cours),
+                'heures_effectuees': str(total_heures_effectuer),
+                'ecart': str(ecart),
+                'observation': str(observation)
+            })
 
-                # Si on arrive en bas de page → nouvelle page + entête
-                if y_position < 2 * cm:
-                    c.showPage()
-                    y_position = dessiner_entete(height - 2 * cm)
+        # === Template HTML simplifié et adapté aux données ===
+        template_html = """
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <title>Fiche de Présence</title>
+            <style>
+                body { font-family: DejaVu Sans, sans-serif; font-size:12px; margin:20px; }
+                h2 { text-align:center; }
+                table { width:100%; border-collapse:collapse; margin-top:10px }
+                th, td { border:1px solid #333; padding:6px; text-align:center }
+            </style>
+        </head>
+        <body>
+            <h2>Fiche de Présence</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Professeur</th>
+                        <th>Jour</th>
+                        <th>Date</th>
+                        <th>Heures de Cours</th>
+                        <th>Heures Effectuées</th>
+                        <th>Écart</th>
+                        <th>Observation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for l in lignes %}
+                    <tr>
+                        <td>{{ l.professeur }}</td>
+                        <td>{{ l.jour }}</td>
+                        <td>{{ l.date }}</td>
+                        <td>{{ l.heures_cours }}</td>
+                        <td>{{ l.heures_effectuees }}</td>
+                        <td>{{ l.ecart }}</td>
+                        <td>{{ l.observation }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </body>
+        </html>
+        """
 
-                c.setFont("Helvetica", 12)
-                # Centrage des données sur chaque colonne
-                values = [
-                    (4 * cm, str(professeur)),
-                    (7 * cm, str(jours)),
-                    (10 * cm, str(date)),
-                    (13 * cm, str(heure_cours)),
-                    (17 * cm, str(heure_effectuee)),
-                    (21 * cm, str(ecart)),
-                    (25 * cm, str(observation))
-                ]
-                for x, val in values:
-                    c.drawCentredString(x, y_position, val)
-                y_position -= 0.5 * cm
+        template = Template(template_html)
+        html_content = template.render(lignes=lignes)
 
-            except Exception as e:
-                print(f"❌ Erreur lors de l'ajout d'une ligne {row} :", e)
+        # Génération du PDF avec WeasyPrint
+        HTML(string=html_content).write_pdf(file_path)
 
-        c.save()
-
-        # ✅ Vérification que le PDF a bien été créé
         if os.path.exists(file_path):
-            print(f"✅ PDF généré : {file_path}")
+            print(f"✅ Fiche d’émargement générée : {file_path}")
             return True
         else:
             print("❌ Échec : fichier PDF non créé.")
