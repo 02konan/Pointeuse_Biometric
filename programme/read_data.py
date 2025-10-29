@@ -69,7 +69,8 @@ FROM (
     FROM pointages p
     INNER JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
     INNER JOIN section s ON s.idPointeuse = pt.idPointeuse
-      AND s.IDSection =%s
+    WHERE DATE(p.date_pointage) = CURRENT_DATE()
+     AND s.IDSection =%s
     GROUP BY p.IDEmploye
     HAVING COUNT(*) >= 2
 ) AS liste_presences;
@@ -585,7 +586,7 @@ def pointage_invalid(section_name):
     ptg.jour_pointage
 FROM Programme p
 INNER JOIN pointages ptg ON p.professeur_code = ptg.IDEmploye
-    AND DATE(ptg.date_pointage) =CURDATE() AND ptg.jour_pointage=p.jour
+AND ptg.jour_pointage=p.jour
 INNER JOIN pointeuse po ON po.idPointeuse = ptg.idPointeuse
 INNER JOIN section s ON s.idPointeuse = po.idPointeuse
 WHERE s.IDSection =%s
