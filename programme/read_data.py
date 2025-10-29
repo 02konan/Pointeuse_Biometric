@@ -69,7 +69,6 @@ FROM (
     FROM pointages p
     INNER JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
     INNER JOIN section s ON s.idPointeuse = pt.idPointeuse
-    WHERE DATE(p.date_pointage) = CURRENT_DATE()
       AND s.IDSection =%s
     GROUP BY p.IDEmploye
     HAVING COUNT(*) >= 2
