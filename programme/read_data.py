@@ -107,8 +107,7 @@ FROM pointages p
 JOIN empreintes e ON p.IDEmploye = e.IDEmploye
 JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE DATE(p.date_pointage) = CURRENT_DATE()
-    AND s.IDSection =%s
+WHERE s.IDSection =%s
 ORDER BY p.date_pointage DESC
 LIMIT 10;
 """
@@ -577,7 +576,7 @@ def pointage_invalid(section_name):
                 sql = """SELECT 
     p.professeur_code,
     p.professeur_nom,
-    DATE(ptg.date_pointage),
+    DATE(ptg.date_pointage) AS date_pointage,
     po.idPointeuse,
     TIME(ptg.date_pointage) AS heure_pointage,
     p.heure_arrivee,
@@ -585,24 +584,32 @@ def pointage_invalid(section_name):
     p.duree_cours,
     ptg.jour_pointage
 FROM Programme p
-INNER JOIN pointages ptg ON p.professeur_code = ptg.IDEmploye
-AND ptg.jour_pointage=p.jour
-INNER JOIN pointeuse po ON po.idPointeuse = ptg.idPointeuse
-INNER JOIN section s ON s.idPointeuse = po.idPointeuse
-WHERE s.IDSection =%s
+INNER JOIN pointages ptg 
+    ON p.professeur_code = ptg.IDEmploye
+    AND ptg.jour_pointage = p.jour
+INNER JOIN pointeuse po 
+    ON po.idPointeuse = ptg.idPointeuse
+INNER JOIN section s 
+    ON s.idPointeuse = po.idPointeuse
+WHERE s.IDSection = %s AND DATE(date_pointage)=CURRENT_DATE()
 GROUP BY 
-    p.professeur_code,
-    p.professeur_nom
-    HAVING COUNT(DISTINCT ptg.id)=1
-    ORDER BY p.professeur_code
+    p.professeur_code, 
+    DATE(ptg.date_pointage),
+    po.idPointeuse,
+    ptg.jour_pointage,
+    p.professeur_nom,
+    p.heure_arrivee,
+    p.heure_depart,
+    p.duree_cours
+HAVING COUNT(DISTINCT ptg.id) = 1
+ORDER BY p.professeur_code;
+
                 """
                 cursor.execute(sql, (section_name,))
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)
         return []
-
-
 
 def pointeuse(section_name):
     try:

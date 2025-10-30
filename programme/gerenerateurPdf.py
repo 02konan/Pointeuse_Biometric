@@ -10,10 +10,15 @@ from programme.read_data import generer_retard,generer_absence,generer_unique_pr
 
 def format_timedelta(tdelta):
     total_seconds = int(tdelta.total_seconds())
+    sign = "-" if total_seconds < 0 else ""
+    total_seconds = abs(total_seconds)
+
     hours = total_seconds // 3600
     minutes = (total_seconds % 3600) // 60
     seconds = total_seconds % 60
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+    return f"{sign}{hours:02d}:{minutes:02d}:{seconds:02d}"
+
 
 def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=None):
     try:
@@ -50,7 +55,7 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
                 'date': str(date_pointage),
                 'heures_cours': str(total_heures_cours),
                 'heures_effectuees': str(total_heures_effectuer),
-                'ecart': str(ecart),
+                'ecart': format_timedelta(ecart),
                 'observation': str(observation)
             })
 
