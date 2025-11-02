@@ -200,7 +200,7 @@ GROUP BY
         print("Erreur MySQL :", e)
         return []
 
-def generer_presence(date_debut, date_fin,idemployee,section_name):
+def generer_presence_admin(date_debut, date_fin,idemployee):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
@@ -221,12 +221,11 @@ FROM pointage_programe pp
 JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
 JOIN pointages p ON p.id = pp.IDPointage
 JOIN pointeuse pt on pt.idPointeuse=p.IDPointeuse
-JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE DATE(p.date_pointage) BETWEEN %s AND %s AND p.IDEmploye=%s AND s.IDSection = %s
+WHERE DATE(p.date_pointage) BETWEEN %s AND %s AND p.IDEmploye=%s
 GROUP BY pr.professeur_nom, jour_pointage, p.date_pointage
 ORDER BY p.date_pointage;
                 """
-                cursor.execute(sql, (date_debut, date_fin, idemployee, section_name))
+                cursor.execute(sql, (date_debut, date_fin, idemployee))
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)

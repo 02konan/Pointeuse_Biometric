@@ -4,11 +4,11 @@ from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
 from programme.insertion import insertion_
-from programme.read_superadmin import read_data_Admin,read_pointage,read_admin_presence,pointage_admin_invalid,data_chatjs
+from programme.read_superadmin import read_data_Admin,read_pointage,read_admin_presence,pointage_admin_invalid,data_chatjs,generer_presence_admin
 from programme.transfert_empreintes import transfert_empreintes
 from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
-from programme.gerenerateurPdf import generer_fiche_presence_pdf,generer_presence_unique_pdf,generer_fiche_absence_pdf,generer_fiche_retards_pdf
+from programme.gerenerateurPdf import generer_fiche_presence_pdf
 from flask_cors import CORS
 from programme.base_donnee import connexion
 from datetime import datetime,timedelta
@@ -89,16 +89,15 @@ def login_prof():
     if 'connecter' in session and session['connecter']:
         return redirect(url_for('index'))
     if request.method == 'POST':
-        username1 = request.form['username1']
         code = request.form['code']
-        utilisateur = verification_prof(code,username1)
+        utilisateur = verification_prof(code)
         if utilisateur is None:
             flash("Identifiants incorrects. Veuillez réessayer.", "danger")
         elif utilisateur is not None and utilisateur:
             session.clear()
             session.permanent = True
             session['connecter'] = True
-            session['username'] = username1
+            session['username'] = code
             session['role'] = utilisateur['nom_roles']
             session['section'] = utilisateur['Matricule']
             return redirect(url_for('index'))
@@ -446,11 +445,9 @@ def api_fiche_presence():
         date_fin = data_json.get('date_fin')
         idemployee = data_json.get('idEmploye')
 
-        # ✅ Vérification des champs obligatoires
         if not date_debut or not date_fin:
             return jsonify({'success': False, 'error': 'Les dates sont obligatoires.'}), 400
 
-        # ✅ Vérification de la session (évite KeyError)
         section = session['section']
         username = session['username']
         identifiant = session['identifiant']
@@ -458,14 +455,11 @@ def api_fiche_presence():
         if not section or not username or not identifiant:
             return jsonify({'success': False, 'error': 'Session invalide. Veuillez vous reconnecter.'}), 401
 
-        # ✅ Récupération des données de présence
         data = generer_presence(date_debut, date_fin, idemployee, section)
 
-        # ✅ Création du répertoire de sauvegarde
         uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
         os.makedirs(uploads_dir, exist_ok=True)
 
-        # ✅ Création du nom de fichier PDF
         base_filename = f"fichePresence_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
         filename = f"{base_filename}.pdf"
         chemin_pdf = os.path.join(uploads_dir, filename)
@@ -476,10 +470,8 @@ def api_fiche_presence():
             chemin_pdf = os.path.join(uploads_dir, filename)
             compteur += 1
 
-        # ✅ Génération du PDF
         pdfexecut = generer_fiche_presence_pdf(username, identifiant, chemin_pdf, data)
 
-        # ✅ Vérification finale
         if pdfexecut and os.path.exists(chemin_pdf):
             return jsonify({
                 "success": True,
@@ -495,116 +487,70 @@ def api_fiche_presence():
     except Exception as e:
         print("❌ Erreur dans /api/fiche_presence :", str(e))
         return jsonify({'success': False, 'error': str(e)}), 500
-    
-@app.route('/api/fiche_retards', methods=['POST'])
-def fiche_retards():
-    data_json = request.get_json()
-    date_debut_retard = data_json.get('date_debut_retard')
-    date_fin_retard = data_json.get('date_fin_retard')
 
-    if not date_debut_retard or not date_fin_retard:
-        return jsonify({'error': 'Les dates sont obligatoires.'}), 400
+@app.route('/api/fiche_presence_admin', methods=['POST'])
+def api_fiche_presence_admin():
+    try:
+        data_admin_json = request.get_json()
+        date_debut = data_admin_json.get('date_admin_debut')
+        date_fin = data_admin_json.get('date_admin_fin')
+        idemployee = data_admin_json.get('employeeid_admin')
+        sectionid=data_admin_json.get('section_admin')
 
-    data = generer_retard(date_debut_retard, date_fin_retard,session['section'])
-    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
-    os.makedirs(uploads_dir, exist_ok=True)
+        if not date_debut or not date_fin:
+            return jsonify({'success': False, 'error': 'Les dates sont obligatoires.'}), 400
 
-    base_filename = f"ficheretards_{date_debut_retard}_au_{date_fin_retard}".replace(":", "-").replace("/", "-")
-    filename = f"{base_filename}.pdf"
-    chemin_pdf = os.path.join(uploads_dir, filename)
+        username = session['username']
+        identifiant = session['identifiant']
 
-    compteur = 1
-    while os.path.exists(chemin_pdf):
-        filename = f"{base_filename}_{compteur}.pdf"
+        if not username or not identifiant:
+            return jsonify({'success': False, 'error': 'Session invalide. Veuillez vous reconnecter.'}), 401
+
+        try:
+            sectionid = int(sectionid) if sectionid is not None and str(sectionid).strip() != '' else None
+        except (ValueError, TypeError):
+            sectionid = None
+
+        if sectionid == 0:
+            data = generer_presence_admin(date_debut, date_fin, idemployee)
+        else:
+            section_to_use = sectionid if sectionid is not None else session.get('section')
+            data = generer_presence(date_debut, date_fin, idemployee, section_to_use)
+
+
+
+        
+        uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+        os.makedirs(uploads_dir, exist_ok=True)
+
+        base_filename = f"fichePresence_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
+        filename = f"{base_filename}.pdf"
         chemin_pdf = os.path.join(uploads_dir, filename)
-        compteur += 1
 
-    pdfexecut = generer_fiche_retards_pdf(session['username'],session['identifiant'],chemin_pdf, data)
+        compteur = 1
+        while os.path.exists(chemin_pdf):
+            filename = f"{base_filename}_{compteur}.pdf"
+            chemin_pdf = os.path.join(uploads_dir, filename)
+            compteur += 1
 
-    if pdfexecut and os.path.exists(chemin_pdf):
-        return jsonify({
-            "success": True,
-            "type": "retards",
-            "nom": filename,
-            "periode": f"{date_debut_retard} → {date_fin_retard}",
-            "auteur": "Système",
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M")
-        })
-    return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
+        pdfexecut = generer_fiche_presence_pdf(username, identifiant, chemin_pdf, data)
 
-@app.route('/api/fiche_absence', methods=['POST'])
-def fiche_absence():
-    data_json = request.get_json()
-    date_debut_absence = data_json.get('date_debut_absence')
-    date_fin_absence = data_json.get('date_fin_absence')
+        if pdfexecut and os.path.exists(chemin_pdf):
+            return jsonify({
+                "success": True,
+                "type": "Présence",
+                "nom": filename,
+                "periode": f"{date_debut} → {date_fin}",
+                "auteur": username,
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+            }), 200
 
-    if not date_debut_absence or not date_fin_absence:
-        return jsonify({'error': 'Les dates sont obligatoires.'}), 400
+        return jsonify({'success': False, 'error': 'Erreur lors de la génération du PDF'}), 500
 
-    data = generer_absence(date_debut_absence, date_fin_absence,session['section'])
-    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
-    os.makedirs(uploads_dir, exist_ok=True)
-
-    base_filename = f"ficheabsence_{date_debut_absence}_au_{date_fin_absence}".replace(":", "-").replace("/", "-")
-    filename = f"{base_filename}.pdf"
-    chemin_pdf = os.path.join(uploads_dir, filename)
-
-    compteur = 1
-    while os.path.exists(chemin_pdf):
-        filename = f"{base_filename}_{compteur}.pdf"
-        chemin_pdf = os.path.join(uploads_dir, filename)
-        compteur += 1
-
-    pdfexecut = generer_fiche_absence_pdf(session['username'],session['identifiant'],chemin_pdf, data)
-
-    if pdfexecut and os.path.exists(chemin_pdf):
-        return jsonify({
-            "success": True,
-            "type": "absences",
-            "nom": filename,
-            "periode": f"{date_debut_absence} → {date_fin_absence}",
-            "auteur": session['username'],
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M")
-        })
-    return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
-
-@app.route('/api/fiche_presence_unique', methods=['POST'])
-def fiche_presence_unique():
-    data_json = request.get_json()
-    matricule = data_json.get('matricule')
-    date_perso1=data_json.get('date_debut_perso')
-    date_perso2=data_json.get('date_fin_perso')
-
-    if not matricule:
-        return jsonify({'error': 'Le matricule est obligatoire.'}), 400
-
-    # Génération du nom de fichier
-    data=generer_unique_presence(date_perso1,date_perso2,session['section'],matricule)
-    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
-    os.makedirs(uploads_dir, exist_ok=True)
-
-    base_filename = f"fiche_presence_{matricule}_{datetime.now().strftime('%Y-%m-%d_%H-%M')}"
-    filename = f"{base_filename}.pdf"
-    chemin_pdf = os.path.join(uploads_dir, filename)
-
-    compteur = 1
-    while os.path.exists(chemin_pdf):
-        filename = f"{base_filename}_{compteur}.pdf"
-        chemin_pdf = os.path.join(uploads_dir, filename)
-        compteur += 1
-
-    # Appel de ta fonction de génération
-    pdfexecut = generer_presence_unique_pdf(session['username'],session['identifiant'],chemin_pdf, data)
-
-    if pdfexecut and os.path.exists(chemin_pdf):
-         return jsonify({
-            "type": "Présence",
-            "nom": filename,
-            "periode": f"{date_perso1} → {date_perso2}",
-            "auteur": session['username'],
-            "date": datetime.now().strftime("%Y-%m-%d %H:%M")
-        })
-    return jsonify({'error': 'Erreur lors de la génération du PDF'}), 500
+    except Exception as e:
+        print("❌ Erreur dans /api/fiche_presence_admin :", str(e))
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
 
 @app.route('/telechargement/<nom>')
 def telecharger_rapport(nom):
@@ -653,14 +599,23 @@ def liste_rapports():
 @login_required
 def intf_rapports():
      id_employee=read_matricule_section(session['section'])
-     table_info=[]
-     for info_user in id_employee:
-        lecture_info={
-            'Code':info_user[0],
-            'Nom':info_user[1]
+     all_idemployee=read_matricule()
+     table_id=[]
+     table_all=[]
+     for userall in all_idemployee:
+         lecture_allid={
+             'Code':userall[0],
+             'Nom':userall[1]
+
+         }
+         table_all.append(lecture_allid) 
+     for userid in id_employee:
+        lecture={
+            'Code':userid[0],
+            'Nom':userid[1]
         }
-        table_info.append(lecture_info)
-     return render_template('rapport.html', active_page='rapports',user_id=table_info)
+        table_id.append(lecture)
+     return render_template('rapport.html', active_page='rapports',user_id=table_id,all_user=table_all)
 
 
 @app.route('/appareils')
@@ -705,7 +660,6 @@ def Programme_Enrollement():
     else:
         erreur=flash("Erreur lors de l'enrôlement.", "danger")
         return render_template('employee.html', active_page='employee',erreur=erreur)
-
 
 @app.route('/utilisateurs')
 @login_required
@@ -758,12 +712,12 @@ if __name__ == '__main__':
     # thread_transfert_empreintes = threading.Thread(target=transfert_empreintes)
     # thread_transfert_empreintes.daemon = True
     # thread_transfert_empreintes.start()
-    thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
-    thread_synchronisation_attendance.daemon = True
-    thread_synchronisation_attendance.start()
-    thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
-    thread_sync_programme_periodique.daemon = True
-    thread_sync_programme_periodique.start()
+    # thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
+    # thread_synchronisation_attendance.daemon = True
+    # thread_synchronisation_attendance.start()
+    # thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
+    # thread_sync_programme_periodique.daemon = True
+    # thread_sync_programme_periodique.start()
     # thread = threading.Thread(target=listen_attendance)
     # thread.daemon = True
     # thread.start()

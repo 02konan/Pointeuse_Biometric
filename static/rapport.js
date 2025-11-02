@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetch("/api/fiche_presence", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date_debut: dateDebut, date_fin: dateFin, idEmploye: employeeid })
+      body: JSON.stringify({ date_debut: dateDebut, date_fin: dateFin, idEmploye: employeeid})
     })
     .then(async response => {
       const result = await response.json();
@@ -83,22 +83,29 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-    // document.getElementById("btn-fiche-retards")
-    // .addEventListener("click", () => {
-    //   const dateDebutretards = document.getElementById("date_debut_retard").value;
-    //   const dateFinretards = document.getElementById("date_fin_retard").value;
+    const btnGenereradmin = document.getElementById("btn-fiche-presence-admin");
+    btnGenereradmin.addEventListener("click", () => {
+      const dateDebut_admin = document.getElementById("date_debut_admin").value;
+      const dateFin_admin = document.getElementById("date_fin_admin").value;
+      const employeeid_admin = document.getElementById("idEmploye_admin").value;
+      const section_admin =document.getElementById("sectionid").value;
+      
+      btnGenereradmin.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Génération en cours...';
+      btnGenereradmin.disabled = true;
 
-    //   fetch("/api/fiche_retards", {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json"
-    //     },
-    //     body: JSON.stringify({
-    //       date_debut_retard: dateDebutretards,
-    //       date_fin_retard: dateFinretards
-    //     })
-    //   });
-    // });
+      fetch("/api/fiche_presence_admin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          date_admin_debut: dateDebut_admin,
+          date_admin_fin: dateFin_admin,
+          employeeid_admin: employeeid_admin,
+          section_admin: section_admin
+        })
+      });
+    });
 
     // document.getElementById("form-fiche-absences")
     // .addEventListener("click", () => {

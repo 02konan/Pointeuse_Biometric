@@ -210,8 +210,7 @@ FROM (
         ON emp.matricule = e.IDEmploye
     JOIN pointeuse pt 
         ON pt.idPointeuse = p.idPointeuse
-    WHERE DATE(p.date_pointage) = CURRENT_DATE()
-      AND emp.matricule =%s
+    WHERE emp.matricule =%s
     GROUP BY p.IDEmploye
     HAVING COUNT(p.IDEmploye) >= 2
 ) AS presence_employe;
@@ -220,7 +219,7 @@ FROM (
 FROM (
     SELECT DATE(p.date_pointage) AS jour, MIN(TIME(p.date_pointage)) AS heure_arrivee
     FROM pointages p
-    WHERE p.IDEmploye = %s AND DATE(p.date_pointage)=CURRENT_DATE()
+    WHERE p.IDEmploye = %s
     GROUP BY DATE(p.date_pointage)
     HAVING heure_arrivee > '08:00:00'
 ) AS retard_jours;
@@ -231,7 +230,7 @@ FROM (
     FROM pointeuse pt
     LEFT JOIN pointages p 
            ON p.idPointeuse = pt.idPointeuse
-    WHERE p.IDEmploye=%s AND DATE(p.date_pointage) = CURRENT_DATE() AND p.IDEmploye IS NULL
+    WHERE p.IDEmploye=%s AND p.IDEmploye IS NULL
     GROUP BY DATE(p.date_pointage), pt.idPointeuse
 ) AS absences;
 """
@@ -242,7 +241,7 @@ JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
 JOIN section s ON s.idPointeuse = pt.idPointeuse
 WHERE p.IDEmploye =%s
 ORDER BY p.date_pointage DESC
-LIMIT 5;
+LIMIT 10;
 """ 
             cursor.execute(sql1, (prof_code,))
             total_Pointage = cursor.fetchone()[0]
@@ -375,26 +374,24 @@ def verification_utilisateur(username, password):
         print("Erreur générale :", e)
         return None
 
-def verification_prof(code, username1):
+def verification_prof(code):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
                     SELECT 
-                        matricule, 
-                        employe.Nom,
+                        matricule,
                         roles.nom AS nom_roles
                     FROM employe
                     JOIN roles ON employe.id_role = roles.id
-                    WHERE matricule = %s AND employe.Nom = %s;
+                    WHERE matricule = %s;
                 """
-                cursor.execute(sql, (code, username1))
+                cursor.execute(sql, (code,))
                 resultat = cursor.fetchone()
                 if resultat:
                     return {
                         "Matricule": resultat[0],
-                        "Nom": resultat[1],
-                        "nom_roles": resultat[2]
+                        "nom_roles": resultat[1]
                     }
                 return None
     except pymysql.MySQLError as e:
