@@ -12,15 +12,15 @@ def read_data_Admin():
  """
 
             # --- Présents aujourd’hui ---
-            sql2 = """
- SELECT COUNT(*) AS nb_presences
- FROM (
+            sql2 = """SELECT COUNT(*) AS nb_presences
+FROM (
     SELECT p.IDEmploye
     FROM pointages p
-    JOIN empreintes e ON e.IDEmploye = p.IDEmploye 
+    INNER JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+    INNER JOIN section s ON s.idPointeuse = pt.idPointeuse
     WHERE DATE(p.date_pointage) = CURRENT_DATE()
     GROUP BY p.IDEmploye
-    HAVING COUNT(p.IDEmploye) >= 2
+    HAVING COUNT(*) >= 2
 ) AS liste_presences;
 """
 
