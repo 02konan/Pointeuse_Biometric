@@ -32,6 +32,7 @@ def init_session():
         session['professeur_code'] = None
     if 'connecter' not in session:
         session['connecter'] = False
+
 @app.before_request
 def before_request():
     init_session()
@@ -516,10 +517,7 @@ def api_fiche_presence_admin():
         else:
             section_to_use = sectionid if sectionid is not None else session.get('section')
             data = generer_presence(date_debut, date_fin, idemployee, section_to_use)
-
-
-
-        
+            
         uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
         os.makedirs(uploads_dir, exist_ok=True)
 
@@ -550,7 +548,6 @@ def api_fiche_presence_admin():
     except Exception as e:
         print("❌ Erreur dans /api/fiche_presence_admin :", str(e))
         return jsonify({'success': False, 'error': str(e)}), 500
-        
 
 @app.route('/telechargement/<nom>')
 def telecharger_rapport(nom):
@@ -598,25 +595,14 @@ def liste_rapports():
 @app.route('/rapports')
 @login_required
 def intf_rapports():
-     id_employee=read_matricule_section(session['section'])
-     all_idemployee=read_matricule()
-     table_id=[]
-     table_all=[]
-     for userall in all_idemployee:
-         lecture_allid={
+     table=[]
+     for userall in read_matricule():
+         lectureid={
              'Code':userall[0],
              'Nom':userall[1]
-
          }
-         table_all.append(lecture_allid) 
-     for userid in id_employee:
-        lecture={
-            'Code':userid[0],
-            'Nom':userid[1]
-        }
-        table_id.append(lecture)
-     return render_template('rapport.html', active_page='rapports',user_id=table_id,all_user=table_all)
-
+         table.append(lectureid) 
+     return render_template('rapport.html', active_page='rapports',all_user=table)
 
 @app.route('/appareils')
 @login_required

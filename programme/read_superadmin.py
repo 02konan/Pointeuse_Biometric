@@ -217,8 +217,8 @@ def generer_presence_admin(date_debut, date_fin,idemployee):
         WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) > SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Excédent'
         ELSE 'Non défini'
     END AS observation
-FROM pointage_programe pp
-JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
+    FROM pointage_programe pp
+    JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
 JOIN pointages p ON p.id = pp.IDPointage
 JOIN pointeuse pt on pt.idPointeuse=p.IDPointeuse
 WHERE DATE(p.date_pointage) BETWEEN %s AND %s AND p.IDEmploye=%s

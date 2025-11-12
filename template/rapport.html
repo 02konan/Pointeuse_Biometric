@@ -96,7 +96,7 @@
             </form>
             {% endif %}
             {% if session['role']|lower == 'superadmin' %}
-            <form method="get" id="form-fiche-presence" class="mt-4">
+            <form method="get" action="" id="form-fiche-presence" class="mt-4">
               <div class="row g-3 justify-content-center">
                 <div class="col-md-5">
                   <label for="date_debut" class="form-label"
@@ -135,16 +135,19 @@
                     required
                   />
                   <datalist id="Matriucle">
-                    {% for resultat in user_id %}
-                    <option value="{{ resultat.Code}}"/>{{ resultat.Nom}}</option>
+                    {% for resultat in all_user %}
+                    <option value="{{resultat.Code}}"/>{{resultat.Nom}}</option>
                     {% endfor %}
                   </datalist>
                 </div>
                 <div class="col-md-5">
                   <label for="employeeId" class="form-label">Section</label>
                   <select class="form-select" name="sectionid" id="sectionid">
-                    <option value="">Tous</option>
+                    <option value="0">Tous</option>
                     <option value="1">Cocody Direction Generale</option>
+                    <option value="3">Abobo CMD</option>
+                    <option value="4">Koumassi</option>
+                    <option value="6">Cocody Direction Generale</option>
                   </select>
                 </div>
                 <div class="col-12 mt-3">

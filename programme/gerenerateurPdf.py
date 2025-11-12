@@ -73,6 +73,7 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
                 <thead>
                     <tr>
                         <th>Professeur</th>
+                        <th>Classe</th>
                         <th>Jour</th>
                         <th>Date</th>
                         <th>Heures de Cours</th>
@@ -85,6 +86,7 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
                 {% for l in lignes %}
                     <tr>
                         <td>{{ l.professeur }}</td>
+                        <td>RTGL</td>
                         <td>{{ l.jour }}</td>
                         <td>{{ l.date }}</td>
                         <td>{{ l.heures_cours }}</td>

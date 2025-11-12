@@ -36,15 +36,14 @@ def read_matricule_section(section_name):
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql = """
-SELECT
-    e.IDEmploye,
-    e.Nom
-FROM empreintes e
-JOIN pointeuse pt ON pt.idPointeuse = e.idPointeuse
-LEFT JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE s.IDSection =%s;
-
-"""
+             SELECT
+             e.IDEmploye,
+             e.Nom
+             FROM empreintes e
+             JOIN pointeuse pt ON pt.idPointeuse = e.idPointeuse
+             LEFT JOIN section s ON s.idPointeuse = pt.idPointeuse
+             WHERE s.IDSection =%s;
+             """
                 cursor.execute(sql,(section_name,))
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
@@ -57,14 +56,14 @@ def read_data_from_db(section_name):
     try:
         with data_base.cursor() as cursor:
             sql1 = """
-SELECT COUNT(e.Nom) AS total_employes
-FROM empreintes e
-JOIN pointeuse pt ON pt.idPointeuse = e.IDPointeuse
-JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE s.IDSection = %s;
-"""
+    SELECT COUNT(e.Nom) AS total_employes
+    FROM empreintes e
+    JOIN pointeuse pt ON pt.idPointeuse = e.IDPointeuse
+    JOIN section s ON s.idPointeuse = pt.idPointeuse
+    WHERE s.IDSection = %s;
+    """
             sql2 = """SELECT COUNT(*) AS nb_presences
-FROM (
+    FROM (
     SELECT p.IDEmploye
     FROM pointages p
     INNER JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
@@ -73,11 +72,10 @@ FROM (
      AND s.IDSection =%s
     GROUP BY p.IDEmploye
     HAVING COUNT(*) >= 2
-) AS liste_presences;
-
-"""
+    ) AS liste_presences;
+    """
             sql3 = """SELECT COUNT(*) AS nb_retardataires
-FROM (
+    FROM (
     SELECT p.IDEmploye
     FROM pointages p
     JOIN section s ON s.idPointeuse = p.idPointeuse
@@ -86,19 +84,18 @@ FROM (
       AND p.IDEmploye IS NOT NULL
     GROUP BY p.IDEmploye
     HAVING MIN(TIME(p.date_pointage)) > '08:00:00'
-) AS retardataires;
-
-"""
+    ) AS retardataires;
+   """
             sql4 = """SELECT COUNT(*) AS nb_absents
-FROM empreintes e
-LEFT JOIN pointages p 
+    FROM empreintes e
+    LEFT JOIN pointages p 
        ON p.IDEmploye = e.IDEmploye 
       AND DATE(p.date_pointage) = CURRENT_DATE()
-LEFT JOIN pointeuse pt 
+    LEFT JOIN pointeuse pt 
        ON pt.idPointeuse = e.IDPointeuse
-LEFT JOIN section s 
+    LEFT JOIN section s 
        ON s.idPointeuse = pt.idPointeuse
-WHERE s.IDSection = %s
+    WHERE s.IDSection = %s
   AND p.IDEmploye IS NULL;
 ;
 """
