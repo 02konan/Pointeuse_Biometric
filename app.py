@@ -17,6 +17,7 @@ from functools import wraps
 from urllib.parse import unquote
 from programme.eduflowApi import api_programme,sync_programme_periodique
 import os
+
 app = Flask(__name__, static_folder='static', template_folder='template')
 app.secret_key = '&é1234azerty'
 app.permanent_session_lifetime = timedelta(minutes=10)
@@ -424,7 +425,7 @@ def validation_programme():
 
     for donnee in data:
         IDemploye = donnee[0]
-        date_pointage = f"{donnee[2]} 17:30:00"
+        date_pointage = f"{donnee[2]} {donnee[6]}"
         idpointeuse = donnee[3]
         jour_pointage = donnee[8]
         Status="Départ enregistré"

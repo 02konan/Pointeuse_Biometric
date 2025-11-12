@@ -586,7 +586,7 @@ INNER JOIN pointeuse po
 INNER JOIN section s 
     ON s.idPointeuse = po.idPointeuse
 WHERE s.IDSection = %s AND DATE(date_pointage)=CURRENT_DATE()
-GROUP BY 
+GROUP BY  
     p.professeur_code, 
     DATE(ptg.date_pointage),
     po.idPointeuse,
