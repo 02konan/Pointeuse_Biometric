@@ -4,7 +4,7 @@ from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
 from programme.insertion import insertion_
-from programme.read_superadmin import read_data_Admin,read_pointage,read_admin_presence,pointage_admin_invalid,data_chatjs,generer_presence_admin
+from programme.read_superadmin import historique_data,read_data_Admin,read_pointage,read_admin_presence,pointage_admin_invalid,data_chatjs,generer_presence_admin
 from programme.transfert_empreintes import transfert_empreintes
 from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
@@ -26,7 +26,7 @@ CORS(app)
 def init_session():
     """Initialise les variables de session si elles n'existent pas"""
     if 'user_type' not in session:
-        session['user_type'] = None  # 'section' ou 'professeur'
+        session['user_type'] = None  
     if 'section_id' not in session:
         session['section_id'] = None
     if 'professeur_code' not in session:
@@ -272,18 +272,27 @@ def dashboard_admin():
 
 @app.route("/historique-activites")
 def intf_historique():
-    data=read_data_Admin()
-    activite_recentes=data[3]
+    section=read_idsection()
+    info_section=section
+    table_info=[]
+    for NomSection in info_section:
+        table_info.append(
+            {
+                "Nom":NomSection[1]
+            }
+        )
+    data=historique_data()
+    activite_recentes=data
     activites_formatees = []
     for activite in activite_recentes:
                 activites_formatees.append({
-                    "nom": activite[0],  # Nom
+                    "nom": activite[0],
                     "date_pointage": activite[1].strftime("%Y-%m-%d %H:%M:%S") if activite[1] else None,
-                    "status": activite[2],  # Status
-                    "section": activite[3]  # NomSection
+                    "status": activite[2],
+                    "section": activite[3]
                 })
             
-    return render_template('Pointage_valid.html', active_page='pointage',historique=activites_formatees)
+    return render_template('historique.html', active_page='pointage',historique=activites_formatees,sections=table_info)
 
 @app.route('/employee')
 @login_required
@@ -690,9 +699,9 @@ def api_eduflow():
     return api_programme()
 
 if __name__ == '__main__':
-    # recuperation = threading.Thread(target=recuperation_emprientes)
-    # recuperation.daemon = True
-    # recuperation.start()
+    recuperation = threading.Thread(target=recuperation_emprientes)
+    recuperation.daemon = True
+    recuperation.start()
     # thread_insertion = threading.Thread(target=insertion_)
     # thread_insertion.daemon = True
     # thread_insertion.start()
@@ -705,8 +714,8 @@ if __name__ == '__main__':
     # thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
     # thread_sync_programme_periodique.daemon = True
     # thread_sync_programme_periodique.start()
-    # thread = threading.Thread(target=listen_attendance)
-    # thread.daemon = True
-    # thread.start()
+    thread = threading.Thread(target=listen_attendance)
+    thread.daemon = True
+    thread.start()
 
     app.run(host='0.0.0.0',port=5000,debug=True)

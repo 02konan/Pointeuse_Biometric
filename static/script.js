@@ -17,8 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Gestion du menu actif dans la sidebar
-
   // Masquer le bouton du header si la sidebar est ouverte sur mobile
   const sidebarHeader = document.querySelector('.sidebar');
   function updateToggleBtn() {
@@ -29,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
   if(sidebarToggle && sidebarHeader) {
-    // Sur ouverture/fermeture sidebar
     var observer = new MutationObserver(updateToggleBtn);
     observer.observe(sidebarHeader, { attributes: true, attributeFilter: ['class'] });
     window.addEventListener('resize', updateToggleBtn);

@@ -4,12 +4,16 @@ function filtrerActivites() {
     const dateDebut = document.getElementById('date-debut').value;
     const dateFin = document.getElementById('date-fin').value;
     const statut = document.getElementById('statut').value;
+    const section = document.getElementById('section').value;
+    const recherchetable= document.getElementById('champrecherche').value.toLowerCase();
 
     const rows = document.querySelectorAll('#dashboard_recent_activity_list tr');
 
     rows.forEach(row => {
-        const dateCell = row.cells[3].textContent; // colonne Date
-        const statutCell = row.cells[2].textContent; // colonne Statut
+        const dateCell = row.cells[3].textContent;
+        const statutCell = row.cells[2].textContent;
+        const nomCell= row.cells[0].textContent.toLowerCase();
+        const sectionCell= row.cells[4].textContent;
 
         let afficher = true;
 
@@ -17,15 +21,23 @@ function filtrerActivites() {
         if (statut !== 'tous' && statutCell !== statut) {
             afficher = false;
         }
-
         // Filtrer par date
         if (dateDebut && dateCell < dateDebut) {
             afficher = false;
         }
+
         if (dateFin && dateCell > dateFin) {
             afficher = false;
         }
-
+         // Filtrer par section
+        if (section !== 'toutes' && sectionCell !== section) {
+            afficher = false;
+        }
+        // Filtrer par recherche
+        if (recherchetable && !nomCell.toLowerCase().includes(recherchetable.toLowerCase())) {
+            afficher = false;
+        }
+        
         row.style.display = afficher ? '' : 'none';
     });
 }

@@ -1,6 +1,6 @@
 function recherchetable() {
   const searchInput = document.getElementById("champrecherche");
-  const table = document.getElementById("employeeTable");
+  const table = document.getElementById("TableauHistorique");
   const rows = table.querySelectorAll("tbody tr");
 
   searchInput.addEventListener("input", function () {

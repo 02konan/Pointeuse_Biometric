@@ -9,6 +9,32 @@
     <div class="card mb-4">
       <div class="card-body">
         <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label">Recherche:</label>
+            <input
+              id="champrecherche"
+              type="text"
+              class="form-control"
+              placeholder="Rechercher un employé..."
+            />
+          </div>
+          <div class="col-md-4">
+           <label class="form-label">Section:</label>
+            <select class="form-select" id="section">
+              <option value="toutes" selected>Toutes les section</option>
+              {% for section in sections %}
+              <option value="{{ section.Nom }}">{{ section.Nom }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+    </div>
+        </div>
+      </div>
+    </div>
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3">
           <div class="col-md-4">
             <label class="form-label">Date de début</label>
             <input type="date" class="form-control" id="date-debut" />
@@ -28,10 +54,11 @@
         </div>
       </div>
     </div>
-    <div class="card-body p-0">
-  <div class="table-responsive">
-    <table class="table table-hover mb-0">
-        <thead class="table-light">
+<div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover" id="Table">
+            <thead>
             <tr>
                 <th>#</th>
                 <th>Nom</th>
@@ -40,25 +67,25 @@
                 <th>Heure</th>
                 <th>Section</th>
             </tr>
-        </thead>
-        <tbody id="dashboard_recent_activity_list">
+            </thead>
+            <tbody id="dashboard_recent_activity_list">
             {% for activite in historique %}
             <tr>
                 <td>{{ i }}</td>
                 <td>{{ activite.nom }}</td>
-                <td>{{ activite.status }}</td>
+                <td class="text-danger">{{ activite.status }}</td>
                 <td>{{ activite.date_pointage.split(' ')[0] if activite.date_pointage else '' }}</td>
-                <td>{{ activite.date_pointage.split(' ')[1] if activite.date_pointage else '' }}</td>
-                <td>{{ activite.section }}</td>
+                <td class="">{{ activite.date_pointage.split(' ')[1] if activite.date_pointage else '' }}</td>
+                <td class="text-primary">{{ activite.section }}</td>
             </tr>
             {% endfor %}
         </tbody>
-    </table>
-</div>
-
+          </table>
+        </div>
+      </div>
+    </div>
 </div>
 
   </div>
 </div>
-<script src="{{ url_for('static', filename='historique1.js') }}"></script>
 {%endblock%}

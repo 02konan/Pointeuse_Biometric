@@ -6,6 +6,7 @@
   <script src="{{url_for('static', filename='script.js')}}" type="module" defer></script>
 {% if session['role']|lower == 'superadmin' %}
   <script src="{{ url_for('static', filename='dashboardAdmin.js') }}"></script>
+  <script src="{{ url_for('static', filename='historique.js') }}"></script>
 {% else %}
   <script src="{{ url_for('static', filename='dasboard.js') }}"></script>
 {% endif %}

@@ -95,9 +95,6 @@ WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
         AND TIME(p2.date_pointage) <= '08:30:00'
   );
 """
-            sql_chatjs="""
-
-"""
             # --- Exécution ---
             cursor.execute(sql1)
             total_employes = cursor.fetchone()[0]
@@ -392,7 +389,25 @@ def read_pointage():
      except Exception as e:
          print("Erreur Generele:",e)
 
-
+def historique_data():
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql="""
+             SELECT DISTINCT e.Nom, p.date_pointage, p.Status,s.NomSection
+             FROM pointages p
+             JOIN empreintes e ON p.IDEmploye = e.IDEmploye
+             JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+             JOIN section s ON s.idPointeuse = pt.idPointeuse
+             ORDER BY p.date_pointage DESC
+            """
+                cursor.execute(sql)
+                return cursor.fetchall()
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)
+                
 def read_raports():
     try:
         with connexion() as conn:
