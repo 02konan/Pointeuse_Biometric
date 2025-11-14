@@ -699,9 +699,9 @@ def api_eduflow():
     return api_programme()
 
 if __name__ == '__main__':
-    recuperation = threading.Thread(target=recuperation_emprientes)
-    recuperation.daemon = True
-    recuperation.start()
+    # recuperation = threading.Thread(target=recuperation_emprientes)
+    # recuperation.daemon = True
+    # recuperation.start()
     # thread_insertion = threading.Thread(target=insertion_)
     # thread_insertion.daemon = True
     # thread_insertion.start()
@@ -714,8 +714,8 @@ if __name__ == '__main__':
     # thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
     # thread_sync_programme_periodique.daemon = True
     # thread_sync_programme_periodique.start()
-    thread = threading.Thread(target=listen_attendance)
-    thread.daemon = True
-    thread.start()
+    # thread = threading.Thread(target=listen_attendance)
+    # thread.daemon = True
+    # thread.start()
 
     app.run(host='0.0.0.0',port=5000,debug=True)

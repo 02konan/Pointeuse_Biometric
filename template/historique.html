@@ -60,23 +60,25 @@
           <table class="table table-hover" id="Table">
             <thead>
             <tr>
-                <th>#</th>
                 <th>Nom</th>
                 <th>Statut</th>
                 <th>Date</th>
                 <th>Heure</th>
                 <th>Section</th>
+                <th>Action</th>
             </tr>
             </thead>
             <tbody id="dashboard_recent_activity_list">
             {% for activite in historique %}
             <tr>
-                <td>{{ i }}</td>
                 <td>{{ activite.nom }}</td>
-                <td class="text-danger">{{ activite.status }}</td>
+                <td class="text-{{ 'success'if activite.status=='Arrivée enregistrée' else 'danger' }}">{{ activite.status }}</td>
                 <td>{{ activite.date_pointage.split(' ')[0] if activite.date_pointage else '' }}</td>
                 <td class="">{{ activite.date_pointage.split(' ')[1] if activite.date_pointage else '' }}</td>
                 <td class="text-primary">{{ activite.section }}</td>
+                <td>
+                    <a href="/employe/{{ activite.employe_id }}" class="btn btn-sm btn-info text-white">Voire<span><i class="fa fa-arrow-right-short"></i></span></a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

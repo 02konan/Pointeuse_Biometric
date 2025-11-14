@@ -5,14 +5,14 @@ function filtrerActivites() {
     const dateFin = document.getElementById('date-fin').value;
     const statut = document.getElementById('statut').value;
     const section = document.getElementById('section').value;
-    const recherchetable= document.getElementById('champrecherche').value.toLowerCase();
+    const recherchetable= document.getElementById('champrecherche').value;
 
     const rows = document.querySelectorAll('#dashboard_recent_activity_list tr');
 
     rows.forEach(row => {
         const dateCell = row.cells[3].textContent;
         const statutCell = row.cells[2].textContent;
-        const nomCell= row.cells[0].textContent.toLowerCase();
+        const nomCell= row.cells[0].textContent;
         const sectionCell= row.cells[4].textContent;
 
         let afficher = true;
@@ -34,9 +34,10 @@ function filtrerActivites() {
             afficher = false;
         }
         // Filtrer par recherche
-        if (recherchetable && !nomCell.toLowerCase().includes(recherchetable.toLowerCase())) {
+        if (recherchetable && !nomCell.includes(recherchetable)) {
             afficher = false;
         }
+        
         
         row.style.display = afficher ? '' : 'none';
     });
