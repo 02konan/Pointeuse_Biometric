@@ -7,19 +7,63 @@ def is_pingable(ip):
     response = os.system(f"ping -n 1 -w 1000 {ip}" if os.name == "nt" else f"ping -c 1 -W 1 {ip}")
     return response == 0
 
-def get_etats_pointeuses():
+def maj_etat_pointeuse(id_pointeuse, etat):
     db = connexion()
     cursor = db.cursor()
-    cursor.execute("SELECT idPointeuse, AdresseIp,NomPointeuse,Emplacement,Serie,Model FROM pointeuse LIMIT 4")
-    pointeuses = cursor.fetchall()
+    cursor.execute(
+        "UPDATE pointeuse SET EstEnligne = %s WHERE idPointeuse = %s",
+        (etat, id_pointeuse)
+    )
+    db.commit()
     cursor.close()
     db.close()
 
-    etats = []
-    for pointeuse_id, ip,Nom,Localisation,Serie,Modele, in pointeuses:
-        etat = "En ligne" if is_pingable(ip) else "Hors ligne"
-        etats.append({"id":pointeuse_id, "ip": ip, "etat": etat, "Nom": Nom, "Localisation": Localisation, "Serie": Serie, "Modele": Modele})
-    return etats
+def get_etats_pointeuses(period=60, run_once=True):
+    """Vérifie l'état des pointeuses.
+
+    Si `run_once` est True la fonction effectue un seul passage et retourne la liste `etats`.
+    Si `run_once` est False, elle boucle indéfiniment en attendant `period` secondes entre chaque vérification.
+    """
+    while True:
+        db = connexion()
+        cursor = db.cursor()
+        cursor.execute("SELECT idPointeuse, AdresseIp,NomPointeuse,Emplacement,Serie,Model FROM pointeuse")
+        pointeuses = cursor.fetchall()
+        cursor.close()
+        db.close()
+        etats = []
+        for pointeuse_id, ip, Nom, Localisation, Serie, Modele in pointeuses:
+            try:
+                etat = "En ligne" if is_pingable(ip) else "Hors ligne"
+            except Exception:
+                etat = "Hors ligne"
+            try:
+                maj_etat_pointeuse(pointeuse_id, etat)
+            except Exception as e:
+                print(f"[WARN] Impossible de mettre à jour l'état en base pour {pointeuse_id} : {e}")
+
+            etats.append({
+                "id": pointeuse_id,
+                "ip": ip,
+                "etat": etat,
+                "Nom": Nom,
+                "Localisation": Localisation,
+                "Serie": Serie,
+                "Modele": Modele
+            })
+
+        print(f"[INFO] Nouvelle vérification des états.")
+        pointeuseenligne = [e['id'] for e in etats if e.get('etat') == 'En ligne']
+        print(f"[INFO] Pointeuses en ligne : {pointeuseenligne}")
+
+        # Si on ne veut qu'un seul passage, retourner immédiatement (évite de bloquer l'application)
+        if run_once:
+            return etats
+
+        # Sinon attendre et recommencer
+        print(f"[INFO] Nouvelle vérification des états dans {period} secondes...")
+        time.sleep(period)
+        
 
 def recuperation_emprientes(period=300):
     while True:

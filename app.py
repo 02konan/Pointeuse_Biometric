@@ -702,6 +702,9 @@ if __name__ == '__main__':
     # recuperation = threading.Thread(target=recuperation_emprientes)
     # recuperation.daemon = True
     # recuperation.start()
+    # etats_pointeuse = threading.Thread(target=get_etats_pointeuses)
+    # etats_pointeuse.daemon = True
+    # etats_pointeuse.start()
     # thread_insertion = threading.Thread(target=insertion_)
     # thread_insertion.daemon = True
     # thread_insertion.start()

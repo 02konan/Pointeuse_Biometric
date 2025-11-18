@@ -1,19 +1,45 @@
 
 // Fonction pour filtrer le tableau
 function filtrerActivites() {
-    const dateDebut = document.getElementById('date-debut').value;
-    const dateFin = document.getElementById('date-fin').value;
-    const statut = document.getElementById('statut').value;
-    const section = document.getElementById('section').value;
-    const recherchetable= document.getElementById('champrecherche').value;
+    const dateDebutStr = document.getElementById('date-debut') ? document.getElementById('date-debut').value : '';
+    const dateFinStr = document.getElementById('date-fin') ? document.getElementById('date-fin').value : '';
+    const statut = document.getElementById('statut') ? document.getElementById('statut').value : 'tous';
+    const section = document.getElementById('section') ? document.getElementById('section').value : 'toutes';
+    const recherchetable = document.getElementById('champrecherche') ? document.getElementById('champrecherche').value : '';
+
+    // Parse dates safely
+    function parseDate(str) {
+        if (!str) return null;
+        str = str.trim();
+        // ISO format YYYY-MM-DD
+        const isoMatch = /^\d{4}-\d{2}-\d{2}$/.test(str);
+        if (isoMatch) return new Date(str + 'T00:00:00');
+        // DD/MM/YYYY
+        const slashMatch = /^\d{2}\/\d{2}\/\d{4}$/.test(str);
+        if (slashMatch) {
+            const parts = str.split('/');
+            const d = parseInt(parts[0], 10);
+            const m = parseInt(parts[1], 10) - 1;
+            const y = parseInt(parts[2], 10);
+            return new Date(y, m, d);
+        }
+        const dt = new Date(str);
+        return isNaN(dt.getTime()) ? null : dt;
+    }
+
+    const dateDebut = parseDate(dateDebutStr);
+    const dateFin = parseDate(dateFinStr);
 
     const rows = document.querySelectorAll('#dashboard_recent_activity_list tr');
 
     rows.forEach(row => {
-        const dateCell = row.cells[3].textContent;
-        const statutCell = row.cells[2].textContent;
-        const nomCell= row.cells[0].textContent;
-        const sectionCell= row.cells[4].textContent;
+        // Colonne: 0=Nom,1=Statut,2=Date,3=Heure,4=Section,5=Action
+        const nomCell = row.cells[0] ? row.cells[0].textContent.trim() : '';
+        const statutCell = row.cells[1] ? row.cells[1].textContent.trim() : '';
+        const dateCellRaw = row.cells[2] ? row.cells[2].textContent.trim() : '';
+        const sectionCell = row.cells[4] ? row.cells[4].textContent.trim() : '';
+
+        const dateCell = parseDate(dateCellRaw);
 
         let afficher = true;
 
@@ -21,30 +47,48 @@ function filtrerActivites() {
         if (statut !== 'tous' && statutCell !== statut) {
             afficher = false;
         }
-        // Filtrer par date
-        if (dateDebut && dateCell < dateDebut) {
+
+        // Filtrer par date (utiliser objets Date pour comparaison)
+        if (dateDebut && dateCell && dateCell < dateDebut) {
+            afficher = false;
+        }
+        if (dateFin && dateCell && dateCell > dateFin) {
+            afficher = false;
+        }
+        // Si la ligne n'a pas de date et qu'un filtre de date est actif, masquer
+        if ((dateDebut || dateFin) && !dateCell) {
             afficher = false;
         }
 
-        if (dateFin && dateCell > dateFin) {
-            afficher = false;
-        }
-         // Filtrer par section
+        // Filtrer par section
         if (section !== 'toutes' && sectionCell !== section) {
             afficher = false;
         }
-        // Filtrer par recherche
-        if (recherchetable && !nomCell.includes(recherchetable)) {
+
+        // Filtrer par recherche (insensible à la casse)
+        if (recherchetable && !nomCell.toLowerCase().includes(recherchetable.toLowerCase().trim())) {
             afficher = false;
         }
-        
-        
+
         row.style.display = afficher ? '' : 'none';
     });
 }
 
-// Ajouter les écouteurs d'événements
-document.getElementById('date-debut').addEventListener('change', filtrerActivites);
-document.getElementById('date-fin').addEventListener('change', filtrerActivites);
-document.getElementById('statut').addEventListener('change', filtrerActivites);
+// Attacher les écouteurs d'événements lorsque le DOM est prêt
+document.addEventListener('DOMContentLoaded', () => {
+    const dateDebutEl = document.getElementById('date-debut');
+    const dateFinEl = document.getElementById('date-fin');
+    const statutEl = document.getElementById('statut');
+    const sectionEl = document.getElementById('section');
+    const rechercheEl = document.getElementById('champrecherche');
+
+    if (dateDebutEl) dateDebutEl.addEventListener('change', filtrerActivites);
+    if (dateFinEl) dateFinEl.addEventListener('change', filtrerActivites);
+    if (statutEl) statutEl.addEventListener('change', filtrerActivites);
+    if (sectionEl) sectionEl.addEventListener('change', filtrerActivites);
+    if (rechercheEl) rechercheEl.addEventListener('input', filtrerActivites);
+
+    // Lancer un premier filtrage pour appliquer les valeurs initiales
+    filtrerActivites();
+});
 
