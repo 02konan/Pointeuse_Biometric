@@ -618,8 +618,20 @@ def intf_rapports():
 @login_required
 def intf_appareils():
     idsection= read_idsection()
-    data= get_etats_pointeuses()
-    return render_template('materiel.html', active_page='appareils',resultats=data,sections=idsection)
+    data= read_data_pointeuse()
+    table_pointeuse=[]
+    for donne in data:
+        info_pointeuse={
+            'Nom':donne[0],
+            'etat':donne[6],
+            'Model':donne[1],
+            'AdresseIP':donne[3],
+            'Emplacement':donne[2],
+            'Serie':donne[4],
+            'Type':donne[5]
+        }
+        table_pointeuse.append(info_pointeuse)
+    return render_template('materiel.html', active_page='appareils',resultats=table_pointeuse,sections=idsection)
 
 @app.route('/add-device', methods=['POST'])
 def enregistrement_appareils():

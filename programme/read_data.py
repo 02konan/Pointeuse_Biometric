@@ -198,7 +198,7 @@ def read_data_from_pr(prof_code):
                  """
           
             sql2 = """SELECT COUNT(*) AS nb_presences
-FROM (
+ FROM (
     SELECT p.IDEmploye
     FROM pointages p
     JOIN empreintes e 
@@ -210,17 +210,17 @@ FROM (
     WHERE emp.matricule =%s
     GROUP BY p.IDEmploye
     HAVING COUNT(p.IDEmploye) >= 2
-) AS presence_employe;
-"""
+ ) AS presence_employe;
+ """
             sql3 = """SELECT COUNT(*) AS nb_retards
-FROM (
+ FROM (
     SELECT DATE(p.date_pointage) AS jour, MIN(TIME(p.date_pointage)) AS heure_arrivee
     FROM pointages p
     WHERE p.IDEmploye = %s
     GROUP BY DATE(p.date_pointage)
     HAVING heure_arrivee > '08:00:00'
-) AS retard_jours;
-"""
+ ) AS retard_jours;
+ """
             sql4 = """SELECT COUNT(*) AS nb_absences
 FROM (
     SELECT DATE(p.date_pointage) AS jour
@@ -333,7 +333,7 @@ def read_data_pointeuse():
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
-                cursor.execute("SELECT * FROM pointeuse")
+                cursor.execute("SELECT NomPointeuse,Model,Emplacement,AdresseIP, Serie, Type,EstEnligne AS etat FROM pointeuse")
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)

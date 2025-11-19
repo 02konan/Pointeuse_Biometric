@@ -76,7 +76,7 @@
               <div
                 class="d-flex justify-content-between align-items-center mb-3"
               >
-                <h5 class="card-title mb-0">{{ pointeuse.Nom }}</h5>
+                <h5 class="card-title mb-0">{{ pointeuse.NomPointeuse }}</h5>
                 <span
                   class="badge {% if pointeuse.etat == 'En ligne' %}bg-success {% elif pointeuse.etat == 'Hors ligne' %}bg-danger {% else %}bg-warning{% endif %}"
                 >
@@ -85,20 +85,16 @@
               </div>
               <div class="device-details mb-3">
                 <div class="row mb-2">
-                  <div class="col-5 text-muted">ID:</div>
-                  <div class="col-7">{{ pointeuse.ID }}</div>
-                </div>
-                <div class="row mb-2">
                   <div class="col-5 text-muted">Modèle:</div>
-                  <div class="col-7">{{ pointeuse.Modele }}</div>
+                  <div class="col-7">{{ pointeuse.Model }}</div>
                 </div>
                 <div class="row mb-2">
                   <div class="col-5 text-muted">Emplacement:</div>
-                  <div class="col-7">{{ pointeuse.Localisation }}</div>
+                  <div class="col-7">{{ pointeuse.Emplacement }}</div>
                 </div>
                 <div class="row mb-2">
                   <div class="col-5 text-muted">IP:</div>
-                  <div class="col-7">{{ pointeuse.AdresseIp }}</div>
+                  <div class="col-7">{{ pointeuse.AdresseIP }}</div>
                 </div>
                 <div class="row mb-2">
                   <div class="col-5 text-muted">Serie:</div>
