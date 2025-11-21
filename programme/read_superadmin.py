@@ -7,44 +7,62 @@ def read_data_Admin():
         with data_base.cursor() as cursor:
             # --- Total employés ---
             sql1 = """
- SELECT COUNT(IDEmploye) AS total_employes
- FROM empreintes;
- """
+         SELECT COUNT(IDEmploye) AS total_employes
+         FROM empreintes;
+        """
 
             # --- Présents aujourd’hui ---
-            sql2 = """SELECT COUNT(*) AS nb_presences
-FROM (
-    SELECT p.IDEmploye
-    FROM pointages p
-    INNER JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
-    INNER JOIN section s ON s.idPointeuse = pt.idPointeuse
-    WHERE DATE(p.date_pointage) = CURRENT_DATE()
-    GROUP BY p.IDEmploye
-    HAVING COUNT(*) >= 2
-) AS liste_presences;
-"""
-
+            sql2 = """
+         SELECT COUNT(*) AS nb_presences
+         FROM (
+         SELECT p.IDEmploye
+         FROM pointages p
+         INNER JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+         INNER JOIN section s ON s.idPointeuse = pt.idPointeuse
+         WHERE DATE(p.date_pointage) = CURRENT_DATE()
+         GROUP BY p.IDEmploye
+         HAVING COUNT(*) >= 2
+         ) AS liste_presences;
+         """
             # --- Retardataires aujourd’hui ---
             sql3 = """
-SELECT COUNT(*) AS nb_retardataires
-FROM (
-    SELECT p.IDEmploye
-    FROM pointages p
-    WHERE DATE(p.date_pointage) = CURRENT_DATE()
-      AND p.IDEmploye IS NOT NULL
-    GROUP BY p.IDEmploye
-    HAVING MIN(TIME(p.date_pointage)) > '08:00:00'
-) AS retardataires;
-"""
+         SELECT COUNT(*) AS nb_retardataires
+         FROM (
+         SELECT 
+         p.IDEmploye,
+         MIN(TIME(p.date_pointage)) AS heure_arrivee_reelle,
+         pr.heure_arrivee AS heure_cours
+         FROM pointages p
+         JOIN Programme pr 
+         ON pr.professeur_code = p.IDEmploye
+         AND pr.jour = p.jour_pointage
+         JOIN section s ON s.idPointeuse = p.idPointeuse
+         WHERE p.Status = 'Arrivée enregistrée' 
+         AND DATE(p.date_pointage) = CURRENT_DATE()
+         AND p.IDEmploye IS NOT NULL
+         GROUP BY p.IDEmploye, pr.heure_arrivee
+         HAVING heure_arrivee_reelle > pr.heure_arrivee
+         ) AS retardataires;
+         """
 
             # --- Absents aujourd’hui ---
             sql4 = """
 SELECT COUNT(*) AS nb_absents
-FROM empreintes e
+FROM Programme pr
 LEFT JOIN pointages p 
-       ON p.IDEmploye = e.IDEmploye 
+       ON p.IDEmploye = pr.professeur_code
       AND DATE(p.date_pointage) = CURRENT_DATE()
-WHERE p.IDEmploye IS NULL;
+WHERE pr.jour =
+    CASE DAYOFWEEK(CURRENT_DATE())
+        WHEN 2 THEN 'Lundi'
+        WHEN 3 THEN 'Mardi'
+        WHEN 4 THEN 'Mercredi'
+        WHEN 5 THEN 'Jeudi'
+        WHEN 6 THEN 'Vendredi'
+        WHEN 7 THEN 'Samedi'
+        WHEN 1 THEN 'Dimanche'
+    END
+  AND p.IDEmploye IS NULL;
 """
 
             # --- Activité récente ---
@@ -180,12 +198,12 @@ def pointage_admin_invalid():
     p.heure_depart,
     p.duree_cours,
     ptg.jour_pointage
-FROM Programme p
-INNER JOIN pointages ptg ON p.professeur_code = ptg.IDEmploye
+    FROM Programme p
+    INNER JOIN pointages ptg ON p.professeur_code = ptg.IDEmploye
     AND DATE(ptg.date_pointage) =CURDATE() AND ptg.jour_pointage=p.jour
-INNER JOIN pointeuse po ON po.idPointeuse = ptg.idPointeuse
-INNER JOIN section s ON s.idPointeuse = po.idPointeuse
-GROUP BY 
+    INNER JOIN pointeuse po ON po.idPointeuse = ptg.idPointeuse
+    INNER JOIN section s ON s.idPointeuse = po.idPointeuse
+    GROUP BY 
     p.professeur_code,
     p.professeur_nom
     HAVING COUNT(DISTINCT ptg.id)=1
@@ -255,29 +273,29 @@ SELECT
     COUNT(lp.IDEmploye) AS nb_presences
 FROM jours j
 LEFT JOIN (
-    SELECT p.IDEmploye, DATE(p.date_pointage) AS jour_pointage
-    FROM pointages p
-    JOIN empreintes e ON e.IDEmploye = p.IDEmploye
-    GROUP BY p.IDEmploye, DATE(p.date_pointage)
-    HAVING COUNT(p.IDEmploye) >= 2
+    SELECT 
+        IDEmploye, 
+        DATE(date_pointage) AS jour_pointage
+    FROM pointages
+    GROUP BY IDEmploye, DATE(date_pointage)
+    HAVING COUNT(*) >= 2
 ) AS lp
 ON lp.jour_pointage = j.jour
 GROUP BY j.jour
 ORDER BY 
     CASE DAYOFWEEK(j.jour)
-        WHEN 2 THEN 1  -- Lundi
-        WHEN 3 THEN 2  -- Mardi
-        WHEN 4 THEN 3  -- Mercredi
-        WHEN 5 THEN 4  -- Jeudi
-        WHEN 6 THEN 5  -- Vendredi
-        WHEN 7 THEN 6  -- Samedi
-        WHEN 1 THEN 7  -- Dimanche
+        WHEN 2 THEN 1
+        WHEN 3 THEN 2
+        WHEN 4 THEN 3
+        WHEN 5 THEN 4
+        WHEN 6 THEN 5
+        WHEN 7 THEN 6
+        WHEN 1 THEN 7
     END;
 """
 
             # --- Retardataires aujourd’hui ---
-            sql3 = """
-WITH jours AS (
+            sql3 = """WITH jours AS (
     SELECT CURDATE() - INTERVAL n DAY AS jour
     FROM (
         SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3
@@ -285,11 +303,27 @@ WITH jours AS (
     ) AS nums
 ),
 retardataires AS (
-    SELECT p.IDEmploye, DATE(p.date_pointage) AS jour_pointage
+    SELECT 
+        p.IDEmploye,
+        DATE(p.date_pointage) AS jour_pointage,
+        MIN(TIME(p.date_pointage)) AS heure_arrivee_reelle,
+        pr.heure_arrivee AS heure_cours
     FROM pointages p
-    WHERE p.date_pointage >= CURDATE() - INTERVAL 6 DAY
-    GROUP BY p.IDEmploye, DATE(p.date_pointage)
-    HAVING MIN(TIME(p.date_pointage)) > '08:00:00'
+    JOIN Programme pr 
+        ON pr.professeur_code = p.IDEmploye
+        AND pr.jour = CASE DAYOFWEEK(p.date_pointage)
+                        WHEN 1 THEN 'Dimanche'
+                        WHEN 2 THEN 'Lundi'
+                        WHEN 3 THEN 'Mardi'
+                        WHEN 4 THEN 'Mercredi'
+                        WHEN 5 THEN 'Jeudi'
+                        WHEN 6 THEN 'Vendredi'
+                        WHEN 7 THEN 'Samedi'
+                      END
+    WHERE p.Status = 'Arrivée enregistrée'
+      AND p.date_pointage >= CURDATE() - INTERVAL 6 DAY
+    GROUP BY p.IDEmploye, DATE(p.date_pointage), pr.heure_arrivee
+    HAVING heure_arrivee_reelle > heure_cours
 )
 SELECT 
     CASE DAYOFWEEK(j.jour)
@@ -303,8 +337,8 @@ SELECT
     END AS jour_francais,
     COUNT(r.IDEmploye) AS nb_retard
 FROM jours j
-LEFT JOIN retardataires r
-    ON r.jour_pointage = j.jour
+LEFT JOIN retardataires r 
+       ON r.jour_pointage = j.jour
 GROUP BY j.jour
 ORDER BY 
     CASE DAYOFWEEK(j.jour)
@@ -316,18 +350,12 @@ ORDER BY
         WHEN 7 THEN 6  -- Samedi
         WHEN 1 THEN 7  -- Dimanche
     END;
+
 """
 
             # --- Absents aujourd’hui ---
             sql4 = """
-WITH jours AS (
-    SELECT CURDATE() - INTERVAL n DAY AS jour
-    FROM (
-        SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION
-        SELECT 4 UNION SELECT 5 UNION SELECT 6
-    ) AS nums
-)
-SELECT 
+ SELECT 
     CASE DAYOFWEEK(j.jour)
         WHEN 1 THEN 'Dimanche'
         WHEN 2 THEN 'Lundi'
@@ -337,23 +365,41 @@ SELECT
         WHEN 6 THEN 'Vendredi'
         WHEN 7 THEN 'Samedi'
     END AS jour_francais,
-    COUNT(e.IDEmploye) AS nb_absents
-FROM jours j
-CROSS JOIN empreintes e
+    COUNT(prc.IDEmploye) AS nb_absents
+ FROM (
+    SELECT CURDATE() - INTERVAL n DAY AS jour
+    FROM (
+        SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION
+        SELECT 4 UNION SELECT 5 UNION SELECT 6
+    ) AS nums
+  ) AS j
+JOIN (
+    SELECT pr.professeur_code AS IDEmploye, pr.jour AS jour_cours
+    FROM Programme pr
+) AS prc
+  ON prc.jour_cours = CASE DAYOFWEEK(j.jour)
+                            WHEN 1 THEN 'Dimanche'
+                            WHEN 2 THEN 'Lundi'
+                            WHEN 3 THEN 'Mardi'
+                            WHEN 4 THEN 'Mercredi'
+                            WHEN 5 THEN 'Jeudi'
+                            WHEN 6 THEN 'Vendredi'
+                            WHEN 7 THEN 'Samedi'
+                        END
 LEFT JOIN pointages p 
-       ON p.IDEmploye = e.IDEmploye
+       ON p.IDEmploye = prc.IDEmploye
       AND DATE(p.date_pointage) = j.jour
 WHERE p.IDEmploye IS NULL
 GROUP BY j.jour
 ORDER BY 
     CASE DAYOFWEEK(j.jour)
-        WHEN 2 THEN 1  -- Lundi
-        WHEN 3 THEN 2  -- Mardi
-        WHEN 4 THEN 3  -- Mercredi
-        WHEN 5 THEN 4  -- Jeudi
-        WHEN 6 THEN 5  -- Vendredi
-        WHEN 7 THEN 6  -- Samedi
-        WHEN 1 THEN 7  -- Dimanche
+        WHEN 2 THEN 1
+        WHEN 3 THEN 2
+        WHEN 4 THEN 3
+        WHEN 5 THEN 4
+        WHEN 6 THEN 5
+        WHEN 7 THEN 6
+        WHEN 1 THEN 7
     END;
 """
             

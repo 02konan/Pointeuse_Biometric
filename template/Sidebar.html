@@ -131,13 +131,13 @@
         </button>
       </form>
     </li>
-    <!-- <li class="{% if active_page == 'appareils' %}active{% endif %}">
+    <li class="{% if active_page == 'appareils' %}active{% endif %}">
       <form action="{{ url_for('intf_appareils') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
           <i class="fas fa-fingerprint"></i> Appareils
         </button>
       </form>
-    </li> -->
+    </li>
     <li class="{% if active_page == 'utilisateurs' %}active{% endif %}">
       <form action="{{ url_for('lister_utilisateurs') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">

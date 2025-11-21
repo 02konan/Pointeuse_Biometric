@@ -75,16 +75,23 @@ def read_data_from_db(section_name):
     ) AS liste_presences;
     """
             sql3 = """SELECT COUNT(*) AS nb_retardataires
-    FROM (
-    SELECT p.IDEmploye
+ FROM (
+    SELECT 
+        p.IDEmploye,
+        MIN(TIME(p.date_pointage)) AS heure_arrivee_reelle,
+        pr.heure_arrivee AS heure_cours
     FROM pointages p
+    JOIN Programme pr 
+        ON pr.professeur_code = p.IDEmploye
+        AND pr.jour = p.jour_pointage
     JOIN section s ON s.idPointeuse = p.idPointeuse
-    WHERE DATE(p.date_pointage) = CURRENT_DATE()
-      AND s.IDSection =%s
-      AND p.IDEmploye IS NOT NULL
-    GROUP BY p.IDEmploye
-    HAVING MIN(TIME(p.date_pointage)) > '08:00:00'
-    ) AS retardataires;
+    WHERE p.Status = 'Arrivée enregistrée' 
+    AND DATE(p.date_pointage) = CURRENT_DATE()
+    AND p.IDEmploye IS NOT NULL
+    AND s.IDSection =%s
+    GROUP BY p.IDEmploye, pr.heure_arrivee
+    HAVING heure_arrivee_reelle > pr.heure_arrivee
+ ) AS retardataires;
    """
             sql4 = """SELECT COUNT(*) AS nb_absents
     FROM empreintes e
@@ -97,21 +104,20 @@ def read_data_from_db(section_name):
        ON s.idPointeuse = pt.idPointeuse
     WHERE s.IDSection = %s
   AND p.IDEmploye IS NULL;
-;
-"""
+   """
             sql5 = """SELECT DISTINCT e.Nom, p.date_pointage,p.Status,s.NomSection
-FROM pointages p
-JOIN empreintes e ON p.IDEmploye = e.IDEmploye
-JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
-JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE s.IDSection =%s
-ORDER BY p.date_pointage DESC
-LIMIT 10;
-"""
+     FROM pointages p
+     JOIN empreintes e ON p.IDEmploye = e.IDEmploye
+     JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+     JOIN section s ON s.idPointeuse = pt.idPointeuse
+     WHERE s.IDSection =%s
+     ORDER BY p.date_pointage DESC
+     LIMIT 10;
+    """
             # Actifs du mois
             sql6_mois = """
-SELECT COUNT(DISTINCT sous.IDEmploye) AS employes_actifs_mois
-FROM (
+        SELECT COUNT(DISTINCT sous.IDEmploye) AS employes_actifs_mois
+        FROM (
         SELECT p.IDEmploye
         FROM pointages p
         JOIN empreintes e ON e.IDEmploye = p.IDEmploye
@@ -122,36 +128,36 @@ FROM (
             AND s.IDSection = %s
         GROUP BY p.IDEmploye, DATE(p.date_pointage)
         HAVING COUNT(p.date_pointage) >= 2
-) AS sous;
-"""
+        ) AS sous;
+        """
             # Jours travaillés dans le mois
             sql7_mois = """
-SELECT COUNT(DISTINCT DATE(p.date_pointage)) AS jours_travailles
-FROM pointages p
-JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
-JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
-    AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
-    AND s.IDSection = %s;
-"""
+        SELECT COUNT(DISTINCT DATE(p.date_pointage)) AS jours_travailles
+        FROM pointages p
+        JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+        JOIN section s ON s.idPointeuse = pt.idPointeuse
+        WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
+        AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
+        AND s.IDSection = %s;
+       """
             # Retards du mois
             sql8_mois = """
-SELECT COUNT(DISTINCT p.IDEmploye) AS employes_retard_mois
-FROM pointages p
-JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
-JOIN section s ON s.idPointeuse = pt.idPointeuse
-WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
-    AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
-    AND TIME(p.date_pointage) > '08:30:00'
-    AND NOT EXISTS (
-        SELECT 1
-        FROM pointages p2
-        WHERE p2.IDEmploye = p.IDEmploye
+         SELECT COUNT(DISTINCT p.IDEmploye) AS employes_retard_mois
+         FROM pointages p
+         JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+         JOIN section s ON s.idPointeuse = pt.idPointeuse
+         WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
+         AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
+         AND TIME(p.date_pointage) > '08:30:00'
+         AND NOT EXISTS (
+         SELECT 1
+         FROM pointages p2
+         WHERE p2.IDEmploye = p.IDEmploye
             AND DATE(p2.date_pointage) = DATE(p.date_pointage)
             AND TIME(p2.date_pointage) <= '08:30:00'
-    )
-    AND s.IDSection = %s;
-"""
+         )
+         AND s.IDSection = %s;
+         """
             # --- Exécution ---
             cursor.execute(sql1, (section_name,))
             total_eleves = cursor.fetchone()[0]
@@ -184,6 +190,7 @@ WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
     except Exception as e:
         print("Erreur lors de la lecture des données du tableau de bord :", e)
         return None
+
 
 def read_data_from_pr(prof_code):
     data_base = connexion()
