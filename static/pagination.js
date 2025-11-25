@@ -1,4 +1,4 @@
-const rowsPerPage = 25;
+const rowsPerPage = 100;
   let currentPage = 1;
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -20,7 +20,7 @@ const rowsPerPage = 25;
     function renderPagination(totalRows, currentPage) {
       const totalPages = Math.ceil(totalRows / rowsPerPage);
       const pagination = document.querySelector(".pagination");
-      pagination.innerHTML = "";
+      pagination.innerHTML ="";
 
       const prevLi = document.createElement("li");
       prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;

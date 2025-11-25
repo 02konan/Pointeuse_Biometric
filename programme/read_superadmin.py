@@ -47,12 +47,12 @@ def read_data_Admin():
 
             # --- Absents aujourd’hui ---
             sql4 = """
-SELECT COUNT(*) AS nb_absents
-FROM Programme pr
-LEFT JOIN pointages p 
+ SELECT COUNT(*) AS nb_absents
+ FROM Programme pr
+ LEFT JOIN pointages p 
        ON p.IDEmploye = pr.professeur_code
       AND DATE(p.date_pointage) = CURRENT_DATE()
-WHERE pr.jour =
+ WHERE pr.jour =
     CASE DAYOFWEEK(CURRENT_DATE())
         WHEN 2 THEN 'Lundi'
         WHEN 3 THEN 'Mardi'
@@ -440,7 +440,7 @@ def historique_data():
         with connexion() as conn:
             with conn.cursor() as cursor:
                 sql="""
-             SELECT DISTINCT e.Nom, p.date_pointage, p.Status,s.NomSection
+             SELECT DISTINCT e.Nom, date(p.date_pointage) as date_pointage,time(p.date_pointage) as heure_pointage, p.Status,s.NomSection
              FROM pointages p
              JOIN empreintes e ON p.IDEmploye = e.IDEmploye
              JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse

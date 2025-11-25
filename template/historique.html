@@ -61,9 +61,9 @@
             <thead>
             <tr>
                 <th>Nom</th>
-                <th>Statut</th>
                 <th>Date</th>
                 <th>Heure</th>
+                <th>Statut</th>
                 <th>Section</th>
                 <th>Action</th>
             </tr>
@@ -72,9 +72,9 @@
             {% for activite in historique %}
             <tr>
                 <td>{{ activite.nom }}</td>
+                <td class="">{{ activite.date_pointage}}</td>
+                <td>{{activite.heure_pointage}}</td>
                 <td class="text-{{ 'success'if activite.status=='Arrivée enregistrée' else 'danger' }}">{{ activite.status }}</td>
-                <td>{{ activite.date_pointage.split(' ')[0] if activite.date_pointage else '' }}</td>
-                <td class="">{{ activite.date_pointage.split(' ')[1] if activite.date_pointage else '' }}</td>
                 <td class="text-primary">{{ activite.section }}</td>
                 <td>
                     <a href="/employe/{{ activite.employe_id }}" class="btn btn-sm btn-info text-white">Voire<span><i class="fa fa-arrow-right-short"></i></span></a>
@@ -87,7 +87,6 @@
       </div>
     </div>
 </div>
-
   </div>
 </div>
 {%endblock%}

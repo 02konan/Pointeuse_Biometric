@@ -176,3 +176,13 @@ document.addEventListener("DOMContentLoaded", () => {
   chargerDonneesDashboard();
   setInterval(chargerDonneesDashboard, 10000);
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const voirToutBtn = document.querySelector('.card-header button');
+    if (voirToutBtn) {
+        voirToutBtn.addEventListener('click', function() {
+            console.log('Voir toutes les activités');
+            window.location.href = '/historique-activites';
+        });
+    }
+});

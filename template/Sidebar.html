@@ -5,7 +5,6 @@
     <i class="fas fa-fingerprint"></i>
     <span>Biometric</span>
   </div>
-
   <ul class="sidebar-menu">
     <li class="{% if active_page == 'index' %}active{% endif %}">
       <form action="{{ url_for('index') }}" method="get" style="width:100%;">
@@ -22,13 +21,13 @@
         </button>
       </form>
     </li>
-    <!-- <li class="{% if active_page == 'pointage' %}active{% endif %}">
+    <li class="{% if active_page == 'pointage' %}active{% endif %}">
       <form action="{{ url_for('intf_historique') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">
           <i class="fas fa-clock"></i>Historique Pointage
         </button>
       </form>
-    </li> -->
+    </li>
     <li class="{% if active_page == 'presence' %}active{% endif %}">
       <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
         <button type="submit" class="sidebar-btn">

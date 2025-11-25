@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from programme.read_data import pointeuse,read_matricule_section,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur,generer_absence,generer_unique_presence,generer_presence,generer_retard
+from programme.read_data import pointeuse,historique_pointage,read_matricule_section,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur,generer_absence,generer_unique_presence,generer_presence,generer_retard
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
@@ -272,27 +272,31 @@ def dashboard_admin():
 
 @app.route("/historique-activites")
 def intf_historique():
-    section=read_idsection()
-    info_section=section
-    table_info=[]
+    section = read_idsection()
+    info_section = section
+    table_info = []
     for NomSection in info_section:
-        table_info.append(
-            {
-                "Nom":NomSection[1]
-            }
-        )
-    data=historique_data()
-    activite_recentes=data
+        table_info.append({
+            "Nom": NomSection[1]
+        })
+
+    # Récupérer les activités récentes selon le rôle
     activites_formatees = []
+    if session['role'] == "superadmin":
+        activite_recentes = historique_data() or []
+    else:
+        activite_recentes = historique_pointage(session['section']) or []
+    # Formater les activités pour la vue
     for activite in activite_recentes:
-                activites_formatees.append({
-                    "nom": activite[0],
-                    "date_pointage": activite[1].strftime("%Y-%m-%d %H:%M:%S") if activite[1] else None,
-                    "status": activite[2],
-                    "section": activite[3]
-                })
-            
-    return render_template('historique.html', active_page='pointage',historique=activites_formatees,sections=table_info)
+        activites_formatees.append({
+            "nom": activite[0],
+            "date_pointage": activite[1].strftime("%d-%m-%Y") if activite[1] else None,
+            "heure_pointage": activite[2],
+            "status": activite[3],
+            "section": activite[4]
+        })
+
+    return render_template('historique.html', active_page='pointage', historique=activites_formatees, sections=table_info)
 
 @app.route('/employee')
 @login_required

@@ -9,21 +9,41 @@
     <div class="card mb-4">
       <div class="card-body">
         <div class="row g-3">
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label">Date de début</label>
             <input type="date" class="form-control" />
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label">Date de fin</label>
             <input type="date" class="form-control" />
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label">Statut</label>
             <select class="form-select">
               <option selected>Tous les statuts</option>
               <option>Présent</option>
               <option>Absent</option>
             </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Nombre de lignes</label>
+            <select name="" class="form-select" id="lignesaffichees"> >
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card mb-2">
+      <div class="card-body">
+        <div class="row g-2">
+          <div class="col-md-12">
+            <label class="form-label">Recherche:</label>
+            <input type="search" class="form-control" placeholder="chercher ici...">
           </div>
         </div>
       </div>
@@ -69,7 +89,7 @@
                 </td>
                 <td>
                   {% if attendance.Date is string %} {{ attendance.Date }} {%
-                  else %} {{ attendance.Date.strftime('%d/%m/%Y') }} {% endif %}
+                  else %} {{ attendance.Date.strftime('%d/%m/%Y')}} {% endif %}
                 </td>
                 <td>{{ attendance.jour }}</td>
                 <td>{{ attendance.arrivee }}</td>

@@ -35,9 +35,9 @@ function filtrerActivites() {
     rows.forEach(row => {
         // Colonne: 0=Nom,1=Statut,2=Date,3=Heure,4=Section,5=Action
         const nomCell = row.cells[0] ? row.cells[0].textContent.trim() : '';
-        const statutCell = row.cells[1] ? row.cells[1].textContent.trim() : '';
-        const dateCellRaw = row.cells[2] ? row.cells[2].textContent.trim() : '';
-        const sectionCell = row.cells[4] ? row.cells[4].textContent.trim() : '';
+        const statutCell = row.cells[3] ? row.cells[3].textContent.trim() : '';
+        const dateCellRaw = row.cells[1] ? row.cells[1].textContent.trim() : '';
+        const sectionCell = row.cells[4] ? row.cells[4].textContent.trim() : ''; 
 
         const dateCell = parseDate(dateCellRaw);
 

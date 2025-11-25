@@ -191,6 +191,25 @@ def read_data_from_db(section_name):
         print("Erreur lors de la lecture des données du tableau de bord :", e)
         return None
 
+def historique_pointage(section_name):
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql="""
+             SELECT DISTINCT e.Nom, date(p.date_pointage) as date_pointage,time(p.date_pointage) as heure_pointage, p.Status,s.NomSection
+             FROM pointages p
+             JOIN empreintes e ON p.IDEmploye = e.IDEmploye
+             JOIN pointeuse pt ON pt.idPointeuse = p.idPointeuse
+             JOIN section s ON s.idPointeuse = pt.idPointeuse
+             WHERE s.IDSection=%s
+             ORDER BY p.date_pointage DESC
+            """
+                cursor.execute(sql,(section_name))
+                return cursor.fetchall()
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)
 
 def read_data_from_pr(prof_code):
     data_base = connexion()
