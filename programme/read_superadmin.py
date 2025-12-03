@@ -7,7 +7,7 @@ def read_data_Admin():
         with data_base.cursor() as cursor:
             # --- Total employés ---
             sql1 = """
-         SELECT COUNT(IDEmploye) AS total_employes
+         SELECT COUNT(Distinct IDEmploye) AS total_employes
          FROM empreintes;
         """
 
@@ -24,6 +24,7 @@ def read_data_Admin():
          HAVING COUNT(*) >= 2
          ) AS liste_presences;
          """
+            
             # --- Retardataires aujourd’hui ---
             sql3 = """
          SELECT COUNT(*) AS nb_retardataires
@@ -92,27 +93,53 @@ FROM (
 
             # --- Jours travaillés du mois ---
             sql7_mois = """
-SELECT COUNT(DISTINCT DATE(p.date_pointage)) AS jours_travailles
-FROM pointages p
-WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
-  AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE());
+            SELECT COUNT(*) AS nb_absents_mois
+FROM Programme pr
+WHERE EXISTS (
+        SELECT 1 
+        FROM pointages p2
+        WHERE p2.jour_pointage = pr.jour
+          AND YEAR(p2.date_pointage) = YEAR(CURRENT_DATE())
+          AND MONTH(p2.date_pointage) = MONTH(CURRENT_DATE())
+    )
+    AND NOT EXISTS (
+        SELECT 1
+        FROM pointages p
+        WHERE p.IDEmploye = pr.professeur_code
+          AND p.jour_pointage = pr.jour
+          AND YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
+          AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
+    );
 """
 
             # --- Retardataires du mois ---
             sql8_mois = """
-SELECT COUNT(DISTINCT p.IDEmploye) AS employes_retard_mois
-FROM pointages p
-WHERE YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
-  AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
-  AND TIME(p.date_pointage) > '08:30:00'
-  AND NOT EXISTS (
-      SELECT 1
-      FROM pointages p2
-      WHERE p2.IDEmploye = p.IDEmploye
-        AND DATE(p2.date_pointage) = DATE(p.date_pointage)
-        AND TIME(p2.date_pointage) <= '08:30:00'
-  );
+SELECT COUNT(*) AS employes_retard_mois
+FROM (
+    SELECT
+        p.IDEmploye,
+        DATE(p.date_pointage) AS jour,
+        MIN(TIME(p.date_pointage)) AS heure_arrivee_reelle,
+        pr.heure_arrivee AS heure_programme
+    FROM pointages p
+    JOIN Programme pr
+        ON pr.professeur_code = p.IDEmploye
+       AND pr.jour = p.jour_pointage
+    WHERE 
+        YEAR(p.date_pointage) = YEAR(CURRENT_DATE())
+        AND MONTH(p.date_pointage) = MONTH(CURRENT_DATE())
+        AND p.Status = 'Arrivée enregistrée'
+        AND p.IDEmploye IS NOT NULL
+    GROUP BY 
+        p.IDEmploye,
+        DATE(p.date_pointage),
+        pr.heure_arrivee
+    HAVING 
+        heure_arrivee_reelle > heure_programme
+) AS retards;
+
 """
+           
             # --- Exécution ---
             cursor.execute(sql1)
             total_employes = cursor.fetchone()[0]
@@ -223,6 +250,7 @@ def generer_presence_admin(date_debut, date_fin,idemployee):
                 SELECT 
     pr.professeur_nom,jour_pointage,
     DATE(p.date_pointage) AS date_pointage,
+    s.NomSection as Section,
     SEC_TO_TIME(SUM(TIME_TO_SEC(pr.duree_cours))) AS total_heures_cours,
     SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale))) AS total_heures_effectuer,
     SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale)) - SUM(TIME_TO_SEC(pr.duree_cours))) AS ecart,
@@ -234,11 +262,12 @@ def generer_presence_admin(date_debut, date_fin,idemployee):
     END AS observation
     FROM pointage_programe pp
     JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
-JOIN pointages p ON p.id = pp.IDPointage
-JOIN pointeuse pt on pt.idPointeuse=p.IDPointeuse
-WHERE DATE(p.date_pointage) BETWEEN %s AND %s AND p.IDEmploye=%s
-GROUP BY pr.professeur_nom, jour_pointage, p.date_pointage
-ORDER BY p.date_pointage;
+    JOIN pointages p ON p.id = pp.IDPointage
+    JOIN pointeuse pt on pt.idPointeuse=p.IDPointeuse
+    JOIN section s on s.idPointeuse=pt.idPointeuse
+    WHERE DATE(p.date_pointage) BETWEEN %s AND %s AND p.IDEmploye=%s
+    GROUP BY pr.professeur_nom, jour_pointage, p.date_pointage
+    ORDER BY p.date_pointage;
                 """
                 cursor.execute(sql, (date_debut, date_fin, idemployee))
                 return cursor.fetchall()

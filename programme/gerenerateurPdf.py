@@ -42,10 +42,11 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
                 print("⚠️ Ligne incomplète dans les données de présence (attendu 7 champs) :", row)
                 # compléter avec des valeurs vides
                 row = list(row) + [""] * (7 - len(row))
-            professeur, jour_pointage, date_pointage, total_heures_cours, total_heures_effectuer, ecart, observation = row
+            professeur, jour_pointage,Section_name, date_pointage, total_heures_cours, total_heures_effectuer, ecart, observation = row
             lignes.append({
                 'professeur': str(professeur),
                 'jour': str(jour_pointage),
+                'Section': str(Section_name),
                 'date': str(date_pointage),
                 'heures_cours': str(total_heures_cours),
                 'heures_effectuees': str(total_heures_effectuer),
@@ -73,8 +74,8 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
                 <thead>
                     <tr>
                         <th>Professeur</th>
-                        <th>Classe</th>
                         <th>Jour</th>
+                        <th>Section</th>
                         <th>Date</th>
                         <th>Heures de Cours</th>
                         <th>Heures Effectuées</th>
@@ -86,9 +87,9 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
                 {% for l in lignes %}
                     <tr>
                         <td>{{ l.professeur }}</td>
-                        <td>RTGL</td>
                         <td>{{ l.jour }}</td>
-                        <td>{{ l.date }}</td>
+                        <td>{{ l.date}}</td>
+                        <td>{{ l.Section }}</td>
                         <td>{{ l.heures_cours }}</td>
                         <td>{{ l.heures_effectuees }}</td>
                         <td>{{ l.ecart }}</td>
@@ -117,4 +118,3 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
     except Exception as e:
         print("❌ Erreur lors de la génération du PDF :", e)
         return False
-

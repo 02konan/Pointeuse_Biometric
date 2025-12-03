@@ -40,7 +40,7 @@ function updateStatistics(data) {
     const employesActifsMois = data.employes_actifs_mois || 0;
     const joursTravillesMois = data.jours_travailles_mois || 0;
     const employesRetardMois = data.employes_retard_mois || 0;
-    const absencesMois = data.employes_retard_mois;
+    const absencesMois = data.jours_travailles_mois;
     
     // Mise à jour des compteurs du jour
     animateCounter('dash_presents-count', totalPresents);

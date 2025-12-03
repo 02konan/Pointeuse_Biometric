@@ -9,23 +9,25 @@ function filtrerActivites() {
 
     // Parse dates safely
     function parseDate(str) {
-        if (!str) return null;
-        str = str.trim();
-        // ISO format YYYY-MM-DD
-        const isoMatch = /^\d{4}-\d{2}-\d{2}$/.test(str);
-        if (isoMatch) return new Date(str + 'T00:00:00');
-        // DD/MM/YYYY
-        const slashMatch = /^\d{2}\/\d{2}\/\d{4}$/.test(str);
-        if (slashMatch) {
-            const parts = str.split('/');
-            const d = parseInt(parts[0], 10);
-            const m = parseInt(parts[1], 10) - 1;
-            const y = parseInt(parts[2], 10);
-            return new Date(y, m, d);
-        }
-        const dt = new Date(str);
-        return isNaN(dt.getTime()) ? null : dt;
+    if (!str) return null;
+    str = str.trim();
+
+    // Format ISO : YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        const [y, m, d] = str.split("-");
+        return new Date(y, m - 1, d);
     }
+
+    // Format DD/MM/YYYY
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+        const [d, m, y] = str.split("-");
+        return new Date(y, m - 1, d);
+    }
+
+    // Fallback
+    return null;
+}
+
 
     const dateDebut = parseDate(dateDebutStr);
     const dateFin = parseDate(dateFinStr);
@@ -33,10 +35,10 @@ function filtrerActivites() {
     const rows = document.querySelectorAll('#dashboard_recent_activity_list tr');
 
     rows.forEach(row => {
-        // Colonne: 0=Nom,1=Statut,2=Date,3=Heure,4=Section,5=Action
+        // Colonne: 0=Nom,1=Date,2=Heure,3=Statut,4=Section,5=Action
         const nomCell = row.cells[0] ? row.cells[0].textContent.trim() : '';
-        const statutCell = row.cells[3] ? row.cells[3].textContent.trim() : '';
         const dateCellRaw = row.cells[1] ? row.cells[1].textContent.trim() : '';
+        const statutCell = row.cells[3] ? row.cells[3].textContent.trim() : '';
         const sectionCell = row.cells[4] ? row.cells[4].textContent.trim() : ''; 
 
         const dateCell = parseDate(dateCellRaw);
@@ -49,16 +51,16 @@ function filtrerActivites() {
         }
 
         // Filtrer par date (utiliser objets Date pour comparaison)
-        if (dateDebut && dateCell && dateCell < dateDebut) {
+        if (dateDebut && dateCell< dateDebut) {
             afficher = false;
         }
-        if (dateFin && dateCell && dateCell > dateFin) {
+        if (dateFin && dateCell> dateFin) {
             afficher = false;
         }
-        // Si la ligne n'a pas de date et qu'un filtre de date est actif, masquer
-        if ((dateDebut || dateFin) && !dateCell) {
-            afficher = false;
-        }
+        // // Si la ligne n'a pas de date et qu'un filtre de date est actif, masquer
+        // if ((dateDebut || dateFin) && !dateCell) {
+        //     afficher = false;
+        // }
 
         // Filtrer par section
         if (section !== 'toutes' && sectionCell !== section) {
