@@ -300,7 +300,7 @@ def read_data_employe(section_name):
     e.poste,
     e.date_embauche,
     e.section,
-    e.id
+    e.ID_Employe
 FROM employe e
 LEFT JOIN Programme p 
     ON e.matricule = p.professeur_code
@@ -314,7 +314,7 @@ WHERE NOT EXISTS (
     WHERE s.IDSection =%s
       AND em.IDEmploye = e.matricule
 )
-ORDER BY e.id DESC   
+ORDER BY e.ID_Employe DESC   
 
 """
                 cursor.execute(sql,section_name)
