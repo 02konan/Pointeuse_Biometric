@@ -7,8 +7,8 @@ def read_data_Admin():
         with data_base.cursor() as cursor:
             # --- Total employés ---
             sql1 = """
-         SELECT COUNT(Distinct IDEmploye) AS total_employes
-         FROM empreintes;
+         SELECT COUNT(Distinct matricule) AS total_employes
+         FROM employe;
         """
 
             # --- Présents aujourd’hui ---
