@@ -24,7 +24,6 @@ app.permanent_session_lifetime = timedelta(minutes=10)
 
 CORS(app)
 def init_session():
-    """Initialise les variables de session si elles n'existent pas"""
     if 'user_type' not in session:
         session['user_type'] = None  
     if 'section_id' not in session:
@@ -488,6 +487,7 @@ def api_fiche_presence():
         pdfexecut = generer_fiche_presence_pdf(username, identifiant, chemin_pdf, data)
 
         if pdfexecut and os.path.exists(chemin_pdf):
+            flash("PDF généré avec succès !", "success")
             return jsonify({
                 "success": True,
                 "type": "Présence",
@@ -496,7 +496,7 @@ def api_fiche_presence():
                 "auteur": username,
                 "date": datetime.now().strftime("%Y-%m-%d %H:%M")
             }), 200
-
+        flash("Erreur lors de la génération du PDF", "danger")
         return jsonify({'success': False, 'error': 'Erreur lors de la génération du PDF'}), 500
 
     except Exception as e:
@@ -548,6 +548,7 @@ def api_fiche_presence_admin():
         pdfexecut = generer_fiche_presence_pdf(username, identifiant, chemin_pdf, data)
 
         if pdfexecut and os.path.exists(chemin_pdf):
+            flash("PDF généré avec succès !", "success")
             return jsonify({
                 "success": True,
                 "type": "Présence",
