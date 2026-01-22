@@ -56,7 +56,6 @@ def listen_attendance():
                         db = connexion()
                         cursor = db.cursor()
 
-                        # Vérifier combien de pointages déjà dans la journée
                         verification = """
                             SELECT COUNT(*)
                             FROM pointages
@@ -71,7 +70,6 @@ def listen_attendance():
                         jour = jour_semaine[record.timestamp.weekday()]
 
                         if nb_pointages == 0:
-                            # Premier pointage -> INSERT
                             insertion = """
                                 INSERT IGNORE INTO pointages (IDEmploye, date_pointage, jour_pointage, idPointeuse,Status)
                                 VALUES (%s, %s, %s, %s,%s)
@@ -80,7 +78,6 @@ def listen_attendance():
                             print(f"[NOUVEAU 1er] ID: {record.user_id} | Heure: {record.timestamp}")
 
                         elif nb_pointages == 1:
-                            # Deuxième pointage -> INSERT
                             insertion = """
                                 INSERT IGNORE INTO pointages (IDEmploye, date_pointage, jour_pointage, idPointeuse,Status)
                                 VALUES (%s, %s, %s, %s,%s)
@@ -89,7 +86,6 @@ def listen_attendance():
                             print(f"[NOUVEAU 2e] ID: {record.user_id} | Heure: {record.timestamp}")
 
                         else:
-                            # 3e et suivants -> UPDATE uniquement le 2e pointage
                             cursor.execute("""
                                 SELECT id
                                 FROM pointages
@@ -114,7 +110,6 @@ def listen_attendance():
                         db.close()
                         new_timestamps.append(record.timestamp)
 
-                # Met à jour le dernier timestamp global après avoir tout traité
                 if new_timestamps:
                     last_processed_timestamp = max(new_timestamps)
 
@@ -177,7 +172,6 @@ ON DUPLICATE KEY UPDATE
     jour_programme = VALUES(jour_programme),
     Date_Programme = VALUES(Date_Programme),
     section = VALUES(section);
-
                     """
                     curseur.execute(sql_insert)
                     conn.commit()

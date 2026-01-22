@@ -242,7 +242,7 @@ def pointage_admin_invalid():
         print("Erreur MySQL :", e)
         return []
 
-def generer_presence_admin(date_debut, date_fin,idemployee):
+def generer_presence_idemployee(date_debut, date_fin,idemployee):
     try:
         with connexion() as conn:
             with conn.cursor() as cursor:
@@ -270,6 +270,40 @@ def generer_presence_admin(date_debut, date_fin,idemployee):
     ORDER BY p.date_pointage;
                 """
                 cursor.execute(sql, (date_debut, date_fin, idemployee))
+                return cursor.fetchall()
+    except pymysql.MySQLError as e:
+        print("Erreur MySQL :", e)
+    except Exception as e:
+        print("Erreur générale :", e)
+
+def generer_presence_idsection(date_debut, date_fin,idsection):
+    try:
+        with connexion() as conn:
+            with conn.cursor() as cursor:
+                sql = """
+                SELECT
+    pr.professeur_nom,jour_pointage,
+    DATE(p.date_pointage) AS date_pointage, 
+    s.NomSection as Section,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pr.duree_cours))) AS total_heures_cours,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale))) AS total_heures_effectuer,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(pp.Duree_finale)) - SUM(TIME_TO_SEC(pr.duree_cours))) AS ecart,
+    CASE
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) = SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Complet'
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) < SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Manque du temps'
+        WHEN SUM(TIME_TO_SEC(pp.Duree_finale)) > SUM(TIME_TO_SEC(pr.duree_cours)) THEN 'Excédent'
+        ELSE 'Non défini'
+    END AS observation
+    FROM pointage_programe pp
+    JOIN Programme pr ON pr.IDProgramme = pp.IDProgramme
+    JOIN pointages p ON p.id = pp.IDPointage
+    JOIN pointeuse pt on pt.idPointeuse=p.IDPointeuse
+    JOIN section s on s.idPointeuse=pt.idPointeuse
+    WHERE DATE(p.date_pointage) BETWEEN %s AND %s AND s.idSection=%s
+    GROUP BY pr.professeur_nom, jour_pointage, p.date_pointage
+    ORDER BY p.date_pointage;
+                """
+                cursor.execute(sql, (date_debut, date_fin, idsection))
                 return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("Erreur MySQL :", e)

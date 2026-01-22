@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
-from programme.read_data import pointeuse,historique_pointage,read_matricule_section,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur,generer_absence,generer_unique_presence,generer_presence,generer_retard
+from programme.read_data import pointeuse,historique_pointage,read_matricule_section,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur,generer_presence
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
 from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
 from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
 from programme.insertion import insertion_
-from programme.read_superadmin import historique_data,read_data_Admin,read_pointage,read_admin_presence,pointage_admin_invalid,data_chatjs,generer_presence_admin
+from programme.read_superadmin import historique_data,read_data_Admin,read_pointage,read_admin_presence,pointage_admin_invalid,data_chatjs,generer_presence_idsection,generer_presence_idemployee
 from programme.transfert_empreintes import transfert_empreintes
 from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
@@ -176,7 +176,13 @@ def dashboard_data():
             })
     return jsonify({})
 
+@app.route('/api/horair_calculer', methods=['GET'])
+@login_required
+def horair_calculer():
+    return jsonify({"message": "Calcul de l'horaire effectué avec succès"})
+
 @app.route("/api/dashboard_admin", methods=["GET"])
+@login_required
 def dashboard_admin():
    if session.get('role')=="superadmin":
         
@@ -523,16 +529,23 @@ def api_fiche_presence_admin():
 
         try:
             sectionid = int(sectionid) if sectionid is not None and str(sectionid).strip() != '' else None
+            idemployee = str(idemployee) if idemployee is not None and str(idemployee).strip() != '' else None
         except (ValueError, TypeError):
             sectionid = None
+            idemployee=None
 
         if sectionid == 0:
-            data = generer_presence_admin(date_debut, date_fin, idemployee)
+            idemployee = idemployee if idemployee is not None else session.get('identifiant')
+            data = generer_presence_idemployee(date_debut, date_fin, idemployee)
+        elif sectionid is not None and idemployee is not None:
+            data = generer_presence(date_debut, date_fin, idemployee, sectionid)
+        elif sectionid!= 0 and idemployee is None:
+            sectionid = sectionid if sectionid is not None else session.get('section')
+            data = generer_presence_idsection(date_debut, date_fin, sectionid)
         else:
-            section_to_use = sectionid if sectionid is not None else session.get('section')
-            data = generer_presence(date_debut, date_fin, idemployee, section_to_use)
-            
-        uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+            return jsonify({'success': False, 'error': 'Veuillez fournir soit un ID d\'employé, soit un ID de section.'}), 400
+
+        uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')                    
         os.makedirs(uploads_dir, exist_ok=True)
 
         base_filename = f"fichePresence_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
