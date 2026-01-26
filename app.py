@@ -547,7 +547,6 @@ def api_fiche_presence_admin():
 
         uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')                    
         os.makedirs(uploads_dir, exist_ok=True)
-
         base_filename = f"fichePresence_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
         filename = f"{base_filename}.pdf"
         chemin_pdf = os.path.join(uploads_dir, filename)
