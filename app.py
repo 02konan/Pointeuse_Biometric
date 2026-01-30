@@ -10,11 +10,9 @@ from programme.enrollement import enroler_utilisateur
 from werkzeug.utils import secure_filename
 from programme.gerenerateurPdf import generer_fiche_presence_pdf
 from flask_cors import CORS
-from programme.base_donnee import connexion
 from datetime import datetime,timedelta
 import threading
 from functools import wraps
-from urllib.parse import unquote
 from programme.eduflowApi import api_programme,sync_programme_periodique
 import os
 
@@ -64,7 +62,7 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        # Vérification des identifiants
+
         utilisateur = verification_utilisateur(username, password)
         if utilisateur:
             session.clear()
@@ -74,7 +72,7 @@ def login():
             session['identifiant'] = utilisateur['identifiants']
             session['role'] = utilisateur['nom_roles']
             session['section'] = utilisateur['id_section']
-            # Redirection selon le rôle
+
             if utilisateur['nom_roles'].lower() == 'superadmin':
                 return redirect(url_for('index'))
             elif utilisateur['nom_roles'].lower() == 'admin':
@@ -480,7 +478,7 @@ def api_fiche_presence():
         uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
         os.makedirs(uploads_dir, exist_ok=True)
 
-        base_filename = f"fichePresence_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
+        base_filename = f"Rapport_du_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
         filename = f"{base_filename}.pdf"
         chemin_pdf = os.path.join(uploads_dir, filename)
 
@@ -550,7 +548,6 @@ def api_fiche_presence_admin():
         base_filename = f"fichePresence_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
         filename = f"{base_filename}.pdf"
         chemin_pdf = os.path.join(uploads_dir, filename)
-
         compteur = 1
         while os.path.exists(chemin_pdf):
             filename = f"{base_filename}_{compteur}.pdf"
