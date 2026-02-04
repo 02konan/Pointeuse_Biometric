@@ -20,7 +20,7 @@ def get_employes():
     try:
         with connexion() as db:
             cursor = db.cursor()
-            cursor.execute("SELECT DISTINCT(professeur_code), professeur_nom FROM Programme")
+            cursor.execute("SELECT DISTINCT(professeur_code), professeur_nom FROM ORDER BY professeur_code DESC Programme")
             return cursor.fetchall()
     except pymysql.MySQLError as e:
         print("❌ Erreur lors de la récupération des employés :", e)

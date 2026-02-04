@@ -1,11 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  // Charger la liste des rapports existants
   fetch("/api/liste_rapports")
     .then(res => res.json())
     .then(liste => liste.forEach(ajouterLigneRapport));
 
-  // Fonction pour ajouter une ligne dans le tableau
   function ajouterLigneRapport(data) {
     const ligne = document.createElement("tr");
     ligne.innerHTML = `

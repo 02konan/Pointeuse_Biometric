@@ -275,6 +275,7 @@ def dashboard_admin():
 
 @app.route("/historique-activites")
 def intf_historique():
+    
     section = read_idsection()
     info_section = section
     table_info = []
@@ -283,13 +284,12 @@ def intf_historique():
             "Nom": NomSection[1]
         })
 
-    # Récupérer les activités récentes selon le rôle
     activites_formatees = []
     if session['role'] == "superadmin":
         activite_recentes = historique_data() or []
     else:
         activite_recentes = historique_pointage(session['section']) or []
-    # Formater les activités pour la vue
+
     for activite in activite_recentes:
         activites_formatees.append({
             "nom": activite[0],
@@ -619,14 +619,23 @@ def liste_rapports():
 @app.route('/rapports')
 @login_required
 def intf_rapports():
-     table=[]
-     for userall in read_matricule():
+    section = read_idsection()
+    info_section = section
+    table_info = []
+    for NomSection in info_section:
+        table_info.append({
+            "Identifiant": NomSection[0],
+            "Nom": NomSection[1]
+        })
+        
+    table=[]
+    for userall in read_matricule():
          lectureid={
              'Code':userall[0],
              'Nom':userall[1]
          }
          table.append(lectureid) 
-     return render_template('rapport.html', active_page='rapports',all_user=table)
+    return render_template('rapport.html', active_page='rapports',all_user=table,sections=table_info)
 
 @app.route('/appareils')
 @login_required

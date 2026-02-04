@@ -33,7 +33,6 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
 
         creat_rapports(file_path, utilisateur, id_utilisateur, 'Presence')
 
-        # --- Préparer et agréger les lignes + totaux ---
         def parse_to_timedelta(value):
             if isinstance(value, timedelta):
                 return value
@@ -134,7 +133,10 @@ def generer_fiche_presence_pdf(utilisateur, id_utilisateur, filename=None, data=
                         <td>{{ l.professeur }}</td>
                         <td>{{ l.jour }}</td>
                         <td>{{ l.Section }}</td>
-                        <td>{{ l.date }}</td>
+                        <td>
+                         {% if l.date is string %} {{ l.date }} {%
+                         else %} {{ l.date.strftime('%d/%m/%Y') }} {% endif %}
+                        </td>
                         <td>{{ l.heures_cours }}</td>
                         <td>{{ l.heures_effectuees }}</td>
                         <td>{{ l.ecart }}</td>

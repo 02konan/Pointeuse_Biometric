@@ -144,10 +144,9 @@
                   <label for="employeeId" class="form-label">Section</label>
                   <select class="form-select" name="sectionid" id="sectionid">
                     <option value="0">Tous</option>
-                    <option value="1">Cocody Direction Generale</option>
-                    <option value="3">Abobo CMD</option>
-                    <option value="4">Koumassi</option>
-                    <option value="6">Cocody Direction Generale</option>
+                   {% for section in sections %}
+                     <option value="{{ section.Identifiant }}">{{ section.Nom }}</option>
+                   {% endfor %}
                   </select>
                 </div>
                 <div class="col-12 mt-3">
