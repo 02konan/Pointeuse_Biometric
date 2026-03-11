@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function ajouterLigneRapport(data) {
     const ligne = document.createElement("tr");
     ligne.innerHTML = `
-      <td>${data.nom}</td>
+      <td>Fiche d’émargement générée</td>
       <td>${data.type}</td>
       <td>${data.auteur}</td>
       <td>${data.date}</td>
@@ -87,9 +87,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const dateFin_admin = document.getElementById("date_fin_admin").value;
       const employeeid_admin = document.getElementById("idEmploye_admin").value;
       const section_admin =document.getElementById("sectionid").value;
+
+      if (!dateDebut_admin || !dateFin_admin) {
+      NotificationMsg("Erreur!","Veuillez sélectionner une date de début et une date de fin.","alert-danger");
+      return;
+    }
       
       btnGenereradmin.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Génération en cours...';
       btnGenereradmin.disabled = true;
+      setInterval(() => {
+        location.reload()
+      }, 5000);
 
       fetch("/api/fiche_presence_admin", {
         method: "POST",
@@ -102,8 +110,29 @@ document.addEventListener("DOMContentLoaded", () => {
           employeeid_admin: employeeid_admin,
           section_admin: section_admin
         })
-      });
+      }).then(response=>response.json()).then(
+        data=>{
+          if (data.success) {
+            NotificationMsg("Valider.",data.error,"alert-success")
+          } else {
+            NotificationMsg("Erreur!",data.error,"alert-danger")
+          }
+        }
+      );
     });
+
+    function NotificationMsg(ctgmessage,message,couleur) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert ${couleur} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    alertDiv.style.zIndex = '9999';
+    alertDiv.innerHTML = `
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <strong>${ctgmessage}</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    setTimeout(() => alertDiv.remove(), 5000);
+}
 
     // document.getElementById("form-fiche-absences")
     // .addEventListener("click", () => {

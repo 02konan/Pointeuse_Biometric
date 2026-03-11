@@ -1,25 +1,4 @@
 {% extends 'index.html' %} {% block content %}
-<div class="toast-container">
-  {% with messages = get_flashed_messages(with_categories=true) %} {% for
-  category, message in messages %}
-  <div
-    class="toast align-items-center text-bg-{{ 'success' if category == 'success' else 'danger' }} border-0 mb-2"
-    role="alert"
-    aria-live="assertive"
-    aria-atomic="true"
-  >
-    <div class="d-flex">
-      <div class="toast-body">{{ message }}</div>
-      <button
-        type="button"
-        class="btn-close btn-close-white me-2 m-auto"
-        data-bs-dismiss="toast"
-        aria-label="Close"
-      ></button>
-    </div>
-  </div>
-  {% endfor %} {% endwith %}
-</div>
 <div id="reports-content" class="content-section">
   <div class="container-fluid p-4">
 <h2 class="mb-4 text-center p-3 bg-primary text-white rounded shadow-sm w-100">
@@ -154,7 +133,6 @@
                     type="submit"
                     class="btn btn-primary btn-generer px-4 py-2"
                     id="btn-fiche-presence-admin"
-                    onclick="location.reload();"
                   >
                     <i class="fas fa-file-pdf me-2"></i>Générer le rapport
                   </button>
@@ -355,14 +333,6 @@
           </table>
         </div>
       </div>
-    </div>
-    <div class="progress mb-2 d-none" style="height: 6px">
-      <div
-        id="progress-bar-fiche"
-        class="progress-bar bg-primary"
-        role="progressbar"
-        style="width: 0%"
-      ></div>
     </div>
   </div>
 </div>

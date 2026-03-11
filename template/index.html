@@ -3,6 +3,327 @@
   <head>
     {%include "header.html"%}
   </head>
+  <style>
+  .navbar {
+    height: 64px;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 0 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #ffffff;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06) !important;
+  }
+
+  /* --- SEARCH BAR --- */
+  .search-wrapper {
+    position: relative;
+    width: 280px;
+  }
+
+  .search-wrapper .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+    font-size: 0.85rem;
+    pointer-events: none;
+    transition: color 0.2s;
+  }
+
+  .search-wrapper input {
+    width: 100%;
+    padding: 0.45rem 1rem 0.45rem 2.25rem;
+    border: 1.5px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    background: #f8f9fa;
+    color: #495057;
+    outline: none;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .search-wrapper input::placeholder {
+    color: #adb5bd;
+  }
+
+  .search-wrapper input:focus {
+    background: #fff;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+  }
+
+  .search-wrapper input:focus + .search-icon,
+  .search-wrapper:focus-within .search-icon {
+    color: #4f46e5;
+  }
+
+  /* Fix icon position (icon is before input in DOM, use sibling trick) */
+  .search-wrapper .search-icon {
+    z-index: 2;
+  }
+
+  /* --- ICON BUTTONS --- */
+  .nav-icon-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: #f8f9fa;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .nav-icon-btn:hover {
+    background: #e9ecef;
+    color: #4f46e5;
+    transform: translateY(-1px);
+  }
+
+  .nav-icon-btn .badge-dot {
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    animation: pulse-dot 2s infinite;
+  }
+
+  .nav-icon-btn .badge-count {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 17px;
+    height: 17px;
+    background: #ef4444;
+    border-radius: 9px;
+    border: 2px solid #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding: 0 3px;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+    50% { box-shadow: 0 0 0 4px rgba(239,68,68,0); }
+  }
+
+  /* --- DIVIDER --- */
+  .nav-divider {
+    width: 1px;
+    height: 28px;
+    background: #e9ecef;
+    margin: 0 4px;
+  }
+
+  /* --- AVATAR / USER DROPDOWN --- */
+  .avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #e9ecef;
+    flex-shrink: 0;
+  }
+
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .user-btn {
+    background: none;
+    border: 1.5px solid #e9ecef;
+    border-radius: 12px;
+    padding: 4px 10px 4px 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #343a40;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .user-btn:hover {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+  }
+
+  .user-btn .fa-chevron-down {
+    font-size: 0.65rem;
+    color: #adb5bd;
+    transition: transform 0.2s;
+  }
+
+  .user-btn[aria-expanded="true"] .fa-chevron-down {
+    transform: rotate(180deg);
+  }
+
+  /* --- DROPDOWN MENU --- */
+  .dropdown-menu {
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    padding: 6px;
+    min-width: 180px;
+    margin-top: 6px !important;
+  }
+
+  .dropdown-menu .dropdown-item {
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    color: #495057;
+    transition: all 0.15s;
+  }
+
+  .dropdown-menu .dropdown-item:hover {
+    background: #f3f4ff;
+    color: #4f46e5;
+  }
+
+  .dropdown-menu .dropdown-item.text-danger:hover {
+    background: #fff5f5;
+    color: #ef4444;
+  }
+
+  .dropdown-divider {
+    margin: 4px 0;
+    border-color: #f0f0f0;
+  }
+
+  /* --- NOTIFICATION DROPDOWN --- */
+  .notif-dropdown {
+    min-width: 320px;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .notif-header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .notif-header h6 {
+    margin: 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #212529;
+  }
+
+  .notif-header a {
+    font-size: 0.75rem;
+    color: #4f46e5;
+    text-decoration: none;
+  }
+
+  .notif-list {
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 6px;
+  }
+
+  .notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .notif-item:hover {
+    background: #f8f9fa;
+  }
+
+  .notif-item.unread {
+    background: #f3f4ff;
+  }
+
+  .notif-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .notif-icon.blue { background: #e0e7ff; color: #4f46e5; }
+  .notif-icon.green { background: #d1fae5; color: #10b981; }
+  .notif-icon.orange { background: #ffedd5; color: #f97316; }
+
+  .notif-content p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #343a40;
+    line-height: 1.4;
+  }
+
+  .notif-content span {
+    font-size: 0.72rem;
+    color: #adb5bd;
+  }
+
+  .notif-footer {
+    padding: 10px 16px;
+    border-top: 1px solid #f0f0f0;
+    text-align: center;
+  }
+
+  .notif-footer a {
+    font-size: 0.8rem;
+    color: #4f46e5;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  #sidebar-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1.5px solid #e9ecef;
+    background: #f8f9fa;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.2s;
+  }
+
+  #sidebar-toggle:hover {
+    background: #e9ecef;
+    color: #4f46e5;
+  }
+</style>
+
   <body>
     <!-- Loader -->
     <div
@@ -28,53 +349,132 @@
         <span class="visually-hidden">Chargement...</span>
       </div>
     </div>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-      <div class="container-fluid">
-        <button id="sidebar-toggle" class="btn">
-          <i class="fas fa-bars"></i>
-        </button>
-        <div class="d-flex align-items-center ms-auto">
-          <div class="dropdown">
-            <button
-              class="btn dropdown-toggle d-flex align-items-center"
-              type="button"
-              id="dropdownMenuButton"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <div class="avatar me-2">
-                <img
-                  src="static\images\icons8-test-account-96.png"
-                  alt="Admin"
-                />
-              </div>
-              <span>{{ session['username'] }}</span>
-            </button>
-            <ul
-              class="dropdown-menu dropdown-menu-end"
-              aria-labelledby="dropdownMenuButton"
-            >
-              <li>
-                <a class="dropdown-item" href="#"
-                  ><i class="fas fa-user me-2"></i> Profil</a
-                >
-              </li>
-              <!-- <li><a class="dropdown-item" href="{{ url_for('intf_Parametres') }}"><i class="fas fa-cog me-2"></i> Paramètres</a></li>
-                        <li><hr class="dropdown-divider"></li> -->
-              <li>
-                <a class="dropdown-item" href="/logout" id="dropdown-logout"
-                  ><i class="fas fa-sign-out-alt me-2"></i> Déconnexion</a
-                >
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </nav>
-    <!-- Sous-barre pour combler le vide -->
-    <div class="bg-white py-2 px-4" style="min-height: 48px">
-      <!-- Tu peux ajouter ici du texte, des liens ou laisser vide pour juste combler l'espace -->
+   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <div class="container-fluid gap-3">
+
+    <!-- Toggle Sidebar -->
+    <button id="sidebar-toggle" class="btn">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Search Bar -->
+    <div class="search-wrapper d-none d-md-block">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" placeholder="Rechercher..." aria-label="Recherche" />
     </div>
+
+    <!-- Right Actions -->
+    <div class="d-flex align-items-center gap-2 ms-auto">
+
+      <!-- Search (mobile) -->
+      <button class="nav-icon-btn d-md-none" title="Rechercher">
+        <i class="fas fa-search"></i>
+      </button>
+
+      <!-- Messages -->
+      <button class="nav-icon-btn" title="Messages">
+        <i class="fas fa-envelope"></i>
+        <span class="badge-dot"></span>
+      </button>
+
+      <!-- Notifications -->
+      <div class="dropdown">
+        <button
+          class="nav-icon-btn"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          title="Notifications"
+        >
+          <i class="fas fa-bell"></i>
+          <span class="badge-count">3</span>
+        </button>
+
+        <ul class="dropdown-menu dropdown-menu-end notif-dropdown">
+          <div class="notif-header">
+            <h6>Notifications</h6>
+            <a href="#">Tout marquer lu</a>
+          </div>
+          <div class="notif-list">
+            <div class="notif-item unread">
+              <div class="notif-icon blue"><i class="fas fa-user-plus"></i></div>
+              <div class="notif-content">
+                <p>Nouvel utilisateur inscrit sur la plateforme</p>
+                <span>Il y a 5 min</span>
+              </div>
+            </div>
+            <div class="notif-item unread">
+              <div class="notif-icon green"><i class="fas fa-check-circle"></i></div>
+              <div class="notif-content">
+                <p>Rapport mensuel généré avec succès</p>
+                <span>Il y a 1 heure</span>
+              </div>
+            </div>
+            <div class="notif-item unread">
+              <div class="notif-icon orange"><i class="fas fa-exclamation-triangle"></i></div>
+              <div class="notif-content">
+                <p>Alerte : Activité inhabituelle détectée</p>
+                <span>Il y a 3 heures</span>
+              </div>
+            </div>
+            <div class="notif-item">
+              <div class="notif-icon blue"><i class="fas fa-cog"></i></div>
+              <div class="notif-content">
+                <p>Mise à jour système disponible</p>
+                <span>Hier, 14h30</span>
+              </div>
+            </div>
+          </div>
+          <div class="notif-footer">
+            <a href="#">Voir toutes les notifications</a>
+          </div>
+        </ul>
+      </div>
+
+      <!-- Divider -->
+      <div class="nav-divider"></div>
+
+      <!-- User Dropdown -->
+      <div class="dropdown">
+        <button
+          class="user-btn dropdown-toggle"
+          type="button"
+          id="dropdownMenuButton"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+        >
+          <div class="avatar">
+            <img src="static/images/icons8-test-account-96.png" alt="Admin" />
+          </div>
+          <span>{{ session['username'] }}</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+          <li>
+            <a class="dropdown-item" href="#">
+              <i class="fas fa-user me-2"></i> Profil
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="#">
+              <i class="fas fa-cog me-2"></i> Paramètres
+            </a>
+          </li>
+          <li><hr class="dropdown-divider" /></li>
+          <li>
+            <a class="dropdown-item text-danger" href="/logout" id="dropdown-logout">
+              <i class="fas fa-sign-out-alt me-2"></i> Déconnexion
+            </a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</nav>
+    <!-- <div class="bg-white py-2 px-4" style="min-height: 48px">
+    </div> -->
     <div id="dashboard">
       {%include "Sidebar.html"%}
         <div class="main-content">

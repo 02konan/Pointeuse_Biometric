@@ -293,7 +293,7 @@ def intf_historique():
     for activite in activite_recentes:
         activites_formatees.append({
             "nom": activite[0],
-            "date_pointage": activite[1].strftime("%d-%m-%Y") if activite[1] else None,
+            "date_pointage": activite[1].strftime("%d/%m/%Y") if activite[1] else None,
             "heure_pointage": activite[2],
             "status": activite[3],
             "section": activite[4]
@@ -500,7 +500,6 @@ def api_fiche_presence():
                 "auteur": username,
                 "date": datetime.now().strftime("%Y-%m-%d %H:%M")
             }), 200
-        flash("Erreur lors de la génération du PDF", "danger")
         return jsonify({'success': False, 'error': 'Erreur lors de la génération du PDF'}), 500
 
     except Exception as e:

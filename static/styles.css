@@ -18,7 +18,7 @@
   /* General Styles */
   body {
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f5f7fb;
+    background-color: #E2E8F0;
     color: #333;
   }
   #toast-container {
@@ -228,7 +228,55 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
   }
-  
+  /* ── Tooltips ── */
+.sidebar-btn[data-tooltip] {
+  position: relative;
+}
+
+.sidebar-btn[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 999;
+}
+
+.sidebar-btn[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+/* ── Badges ── */
+.sidebar-badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+  background: #6c757d;   /* gris par défaut */
+  color: #fff;
+}
+
+.sidebar-badge--alert {
+  background: #dc3545;   /* rouge — pointages invalides */
+}
+
+.sidebar-badge--success {
+  background: #28a745;   /* vert — appareils connectés */
+}
   .main-content {
     margin-left: var(--sidebar-width);
     transition: all 0.3s;
