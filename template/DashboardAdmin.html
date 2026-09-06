@@ -1,223 +1,43 @@
+{% import "macros.html" as ui %}
 <div id="dashboard-content" class="content-section">
-  <div class="container-fluid py-2">
-    <div class="row mb-4">
-      <!-- Présents aujourd'hui -->
-      <div class="col-md-3 mb-3">
-        <div class="card stat-card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-subtitle mb-1 text-muted">Présents aujourd'hui</h6>
-                <h3 class="card-title mb-0" id="dash_presents-count">0</h3>
-              </div>
-              <div class="stat-icon bg-primary-soft">
-                <i class="fas fa-user-check text-primary"></i>
-              </div>
-            </div>
-            <div class="progress mt-3" style="height: 5px;">
-              <div id="dash_bar-present" class="progress-bar bg-primary" role="progressbar" style="width: 0%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Absents aujourd'hui -->
-      <div class="col-md-3 mb-3">
-        <div class="card stat-card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-subtitle mb-1 text-muted">Absents aujourd'hui</h6>
-                <h3 class="card-title mb-0" id="dash_absents-count">0</h3>
-              </div>
-              <div class="stat-icon bg-danger-soft">
-                <i class="fas fa-user-times text-danger"></i>
-              </div>
-            </div>
-            <div class="progress mt-3" style="height: 5px;">
-              <div id="dash_bar-absent" class="progress-bar bg-danger" role="progressbar" style="width: 0%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Retards aujourd'hui -->
-      <div class="col-md-3 mb-3">
-        <div class="card stat-card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-subtitle mb-1 text-muted">Retards aujourd'hui</h6>
-                <h3 class="card-title mb-0" id="dash_retard-count">0</h3>
-              </div>
-              <div class="stat-icon bg-warning-soft">
-                <i class="fas fa-clock text-warning"></i>
-              </div>
-            </div>
-            <div class="progress mt-3" style="height: 5px;">
-              <div id="dash_bar-retard" class="progress-bar bg-warning" role="progressbar" style="width: 0%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Total Employés -->
-      <div class="col-md-3 mb-3">
-        <div class="card stat-card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-subtitle mb-1 text-muted">Total Employés</h6>
-                <h3 class="card-title mb-0" id="dash_total-eleves">0</h3>
-              </div>
-              <div class="stat-icon bg-info-soft">
-                <i class="fas fa-users text-info"></i>
-              </div>
-            </div>
-            <div class="progress mt-3" style="height: 5px;">
-              <div id="dash_total-eleves-bar" class="progress-bar bg-info" role="progressbar" style="width: 0%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <div class="page-header">
+    <div>
+      <h1><span class="page-header-icon"><i class="fas fa-gauge-high"></i></span> Bonjour {{ session['username'] }}</h1>
+      <p>Vue consolidée de toutes les sections et de tous les terminaux.</p>
     </div>
-
-    <!-- Statistiques du mois -->
-    <div class="row mb-4">
-      <!-- Présence du mois -->
-      <div class="col-md-3 mb-3">
-        <div class="card stat-card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-subtitle mb-1 text-muted">Présence ce mois</h6>
-                <h3 class="card-title mb-0" id="dash_presence-mois-count">0</h3>
-              </div>
-              <div class="stat-icon bg-success-soft">
-                <i class="fas fa-user-check text-success"></i>
-              </div>
-            </div>
-            <div class="progress mt-3" style="height: 5px;">
-              <div id="dash_bar-presence-mois" class="progress-bar bg-success" role="progressbar" style="width: 0%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Absence du mois -->
-      <div class="col-md-3 mb-3">
-        <div class="card stat-card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-subtitle mb-1 text-muted">Absence ce mois</h6>
-                <h3 class="card-title mb-0" id="dash_absence-mois-count">0</h3>
-              </div>
-              <div class="stat-icon bg-danger-soft">
-                <i class="fas fa-user-times text-danger"></i>
-              </div>
-            </div>
-            <div class="progress mt-3" style="height: 5px;">
-              <div id="dash_bar-absence-mois" class="progress-bar bg-danger" role="progressbar" style="width: 0%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Retards du mois -->
-      <div class="col-md-3 mb-3">
-        <div class="card stat-card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-subtitle mb-1 text-muted">Retards ce mois</h6>
-                <h3 class="card-title mb-0" id="dash_retard-mois-count">0</h3>
-              </div>
-              <div class="stat-icon bg-warning-soft">
-                <i class="fas fa-clock text-warning"></i>
-              </div>
-            </div>
-            <div class="progress mt-3" style="height: 5px;">
-              <div id="dash_bar-retard-mois" class="progress-bar bg-warning" role="progressbar" style="width: 0%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Nouveaux employés ce mois -->
-      <div class="col-md-3 mb-3">
-        <div class="card stat-card">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 class="card-subtitle mb-1 text-muted">Nouveaux employés ce mois</h6>
-                <h3 class="card-title mb-0" id="dash_new-employee-count">0</h3>
-              </div>
-              <div class="stat-icon bg-info-soft">
-                <i class="fas fa-user-plus text-info"></i>
-              </div>
-            </div>
-            <div class="progress mt-3" style="height: 5px;">
-              <div id="dash_bar-new-employee" class="progress-bar bg-info" role="progressbar" style="width: 0%;"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="page-header-actions">
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('intf_appareils') }}">
+        <i class="fas fa-fingerprint me-2"></i>Pointeuses
+      </a>
+      <a class="btn btn-primary btn-sm" href="{{ url_for('intf_rapports') }}">
+        <i class="fas fa-file-pdf me-2"></i>Générer un rapport
+      </a>
     </div>
-    <!-- <div class="row">
-      <div class="col-md- 12 mb-3">
-        <div class="card">
-          <div class="card-header bg-white">
-            <h5 class="card-title mb-0">Pointage par section</h5>
-          </div>
-          <div class="card-body">
-            <canvas id="dash_barChart" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-    </div> -->
-    <!-- Graphiques -->
-    <div class="row mb-4">
-      <div class="col-md-8 mb-3">
-        <div class="card">
-          <div class="card-header bg-white">
-            <h5 class="card-title mb-0">Tendance de présence</h5>
-          </div>
-          <div class="card-body">
-            <canvas id="dash_attendanceChart" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-4 mb-3">
-        <div class="card">
-          <div class="card-header bg-white">
-            <h5 class="card-title mb-0">Répartition des présences</h5>
-          </div>
-          <div class="card-body">
-            <canvas id="dash_attendancePieChart" height="200"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
+  </div>
 
-    <!-- Activité récente -->
-    <div class="row">
-      <div class="col-md-12 mb-3">
-        <div class="card">
-          <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5 class="card-title mb-0">Activité récente</h5>
-            <button class="btn btn-sm btn-outline-primary">Voir tout</button>
-          </div>
-          <div class="card-body p-0">
-            <ul class="list-group list-group-flush" id="dash_recent-activity-list">
-              <li class="list-group-item text-center text-muted py-4">
-                <i class="fas fa-inbox fa-2x mb-2"></i>
-                <p class="mb-0">Aucune activité récente</p>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
+  <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.72rem; letter-spacing: 0.09em">Aujourd'hui</h6>
+  <div class="row g-3 mb-4">
+    {{ ui.stat("Présents", "dash_presents-count", "dash_bar-present", "fa-user-check", "primary") }}
+    {{ ui.stat("Absents", "dash_absents-count", "dash_bar-absent", "fa-user-xmark", "danger") }}
+    {{ ui.stat("Retards", "dash_retard-count", "dash_bar-retard", "fa-clock", "warning") }}
+    {{ ui.stat("Total employés", "dash_total-eleves", "dash_total-eleves-bar", "fa-users", "info") }}
+  </div>
+
+  <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.72rem; letter-spacing: 0.09em">Ce mois-ci</h6>
+  <div class="row g-3 mb-4">
+    {{ ui.stat("Présences", "dash_presence-mois-count", "dash_bar-presence-mois", "fa-user-check", "success") }}
+    {{ ui.stat("Absences", "dash_absence-mois-count", "dash_bar-absence-mois", "fa-user-xmark", "danger") }}
+    {{ ui.stat("Retards", "dash_retard-mois-count", "dash_bar-retard-mois", "fa-clock", "warning") }}
+    {{ ui.stat("Nouveaux employés", "dash_new-employee-count", "dash_bar-new-employee", "fa-user-plus", "info") }}
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">{{ ui.graphique("Tendance de présence", "dash_attendanceChart", "320px") }}</div>
+    <div class="col-lg-4">{{ ui.graphique("Répartition des présences", "dash_attendancePieChart", "320px") }}</div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">{{ ui.activite("dash_recent-activity-list") }}</div>
+    <div class="col-lg-4">{{ ui.pointeuses_panel(pointeuses) }}</div>
   </div>
 </div>

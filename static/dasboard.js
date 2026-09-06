@@ -1,188 +1,208 @@
-let attendanceChart = null;
-let attendancePieChart = null;
+/* =====================================================================
+   BiometricWeb — tableau de bord (admin de section / professeur)
+   Alimente les compteurs, les barres de progression, les graphiques et
+   la liste d'activité à partir de /api/dashboard.
+   ===================================================================== */
+(function () {
+  "use strict";
 
-function chargerDonneesDashboard() {
-  fetch("/api/dashboard")
-    .then(res => res.json())
-    .then(data => {
-      // --- ACTIVITES RECENTES ---
-      if (data["activité_recentes"]) {
-        afficherActivites(data["activité_recentes"]);
-      }
-      if (data["activité_recentes_user"]) {
-        afficherActivites(data["activité_recentes_user"]);
-      }
+  let attendanceChart = null;
+  let attendancePieChart = null;
+  let dernieresDonnees = null;
 
-      // --- CHARTS ---
-      if (data.total_eleves !== undefined) {
-        afficherChartsAdmin(data);
-      } else if (data.pointage !== undefined) {
-        afficherChartsProf(data);
-      }
+  const PALETTE = {
+    primary: "#4361ee",
+    danger: "#dc2626",
+    warning: "#f59e0b",
+  };
 
-      // --- COMPTEURS ---
-      const counters = [
-        ["presents-count", data.presents],
-        ["absents-count", data.absents],
-        ["retard-count", data.retard],
-        ["total-eleves", data.total_eleves],
-        ["presents-prof", data.presents_user],
-        ["absents-prof", data.absents_user],
-        ["retard-prof", data.retard_user],
-        ["new-pointage", data.pointage]
-      ];
+  function themeSombre() {
+    return document.documentElement.getAttribute("data-bs-theme") === "dark";
+  }
 
-      counters.forEach(([id, value]) => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value ?? 0;
-      });
+  function couleurGrille() {
+    return themeSombre() ? "rgba(255,255,255,0.08)" : "rgba(15,23,42,0.07)";
+  }
 
-      // --- BARRES DE PROGRESSION ---
-      const bars = [
-        ["bar-present", data.pourcentage_presents ?? data.pourcentage_presents_user],
-        ["bar-absent", data.pourcentage_absents ?? data.pourcentage_absents_user],
-        ["bar-retard", data.pourcentage_retards ?? data.pourcentage_retards_user]
-      ];
+  function couleurTexte() {
+    return themeSombre() ? "#94a1bb" : "#6b7689";
+  }
 
-      bars.forEach(([id, pct]) => {
-        const el = document.getElementById(id);
-        if (el) el.style.width = (pct ?? 0) + "%";
-      });
+  function optionsCommunes() {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: couleurTexte(), usePointStyle: true, padding: 16 } },
+      },
+      scales: {
+        x: { ticks: { color: couleurTexte() }, grid: { color: couleurGrille() } },
+        y: {
+          beginAtZero: true,
+          ticks: { color: couleurTexte(), precision: 0 },
+          grid: { color: couleurGrille() },
+        },
+      },
+    };
+  }
 
-      // --- COMPTEURS MENSUELS (admin uniquement) ---
-      if (data.total_eleves !== undefined) {
-        const moisCounters = [
-          ["presence-mois-count", data.employes_actifs_mois],
-          ["absence-mois-count", data.total_eleves - (data.employes_actifs_mois ?? 0)],
-          ["retard-mois-count", data.employes_retard_mois],
-          ["new-employee-count", 0]
-        ];
+  function definir(id, valeur) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = valeur ?? 0;
+  }
 
-        moisCounters.forEach(([id, value]) => {
-          const el = document.getElementById(id);
-          if (el) el.textContent = value ?? 0;
-        });
-      }
-    })
-    .catch(error => console.error("Erreur lors du chargement du dashboard :", error));
-}
+  function barre(id, pourcentage) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const p = Math.min(Math.max(Number(pourcentage) || 0, 0), 100);
+    el.style.width = p + "%";
+    el.setAttribute("aria-valuenow", p.toFixed(0));
+  }
 
-function afficherActivites(activites) {
-  const container = document.getElementById("recent-activity-list");
-  if (!container) return;
-  container.innerHTML = "";
+  function chargerDonnees() {
+    fetch("/api/dashboard")
+      .then((res) => res.json())
+      .then((data) => {
+        dernieresDonnees = data;
 
-  activites.forEach(([id, date, Status,NomSection]) => {
-    const couleur = Status === "Arrivée enregistrée" ? "badge bg-success" : "badge bg-danger";
+        afficherActivites(data["activité_recentes"] || data["activité_recentes_user"]);
 
-    const item = document.createElement("li");
-    item.className = "list-group-item d-flex justify-content-between align-items-center p-3";
-    item.innerHTML = `
-      <div class="d-flex align-items-center">
-         <div class="avatar me-2">
-            <img src="static/images/icons8-life-cycle-96.png" alt="">
-         </div>
-        <div>
-          <h6 class="mb-0">${id}</h6>
-          <small class="${couleur}">${Status}</small>
-        </div>
-      </div>
-      <div>
-          <h6 class="mb-0">${new Date(date).toLocaleString()}</h6>
-          <small class="text-primary">${NomSection}</small>
-      </div>
-    `;
-    container.appendChild(item);
-  });
-}
+        // Compteurs (les identifiants absents de la page sont ignorés)
+        definir("presents-count", data.presents);
+        definir("absents-count", data.absents);
+        definir("retard-count", data.retard);
+        definir("total-eleves", data.total_eleves);
+        definir("presents-prof", data.presents_user);
+        definir("absents-prof", data.absents_user);
+        definir("retard-prof", data.retard_user);
+        definir("new-pointage", data.pointage);
 
-function afficherChartsAdmin(data) {
-  const lineCanvas = document.getElementById("attendanceChart");
-  const pieCanvas = document.getElementById("attendancePieChart");
-  if (!lineCanvas || !pieCanvas) return;
+        barre("bar-present", data.pourcentage_presents ?? data.pourcentage_presents_user);
+        barre("bar-absent", data.pourcentage_absents ?? data.pourcentage_absents_user);
+        barre("bar-retard", data.pourcentage_retards ?? data.pourcentage_retards_user);
+        barre("total-eleves-bar", data.total_eleves ? 100 : 0);
 
-  if (attendanceChart) attendanceChart.destroy();
-  if (attendancePieChart) attendancePieChart.destroy();
+        if (data.total_eleves !== undefined) {
+          const actifs = data.employes_actifs_mois ?? 0;
+          const total = data.total_eleves || 0;
+          const jours = data.jours_travailles_mois || 0;
+          const maximum = total * jours;
 
-  // --- CHART LINE ---
-  const ctxLine = lineCanvas.getContext("2d");
-  attendanceChart = new Chart(ctxLine, {
-    type: "line",
-    data: {
-      labels: ["Présents", "Absents", "Retards"],
-      datasets: [{
-        label: "Statistiques du jour",
-        data: [data.presents ?? 0, data.absents ?? 0, data.retard ?? 0],
-        backgroundColor: "rgba(54, 162, 235, 0.2)",
-        borderColor: "rgba(54, 162, 235, 1)",
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: { responsive: true }
-  });
+          definir("presence-mois-count", actifs);
+          definir("absence-mois-count", Math.max(total - actifs, 0));
+          definir("retard-mois-count", data.employes_retard_mois);
 
-  // --- CHART PIE ---
-  const ctxPie = pieCanvas.getContext("2d");
-  attendancePieChart = new Chart(ctxPie, {
-    type: "pie",
-    data: {
-      labels: ["Présents", "Absents", "Retards"],
-      datasets: [{
-        label: "Répartition",
-        data: [
-          data.pourcentage_presents ?? 0,
-          data.pourcentage_absents ?? 0,
-          data.pourcentage_retards ?? 0
-        ],
-        backgroundColor: [
-          "rgba(54, 162, 235, 0.7)",
-          "rgba(255, 99, 132, 0.7)",
-          "rgba(255, 206, 86, 0.7)"
-        ]
-      }]
-    },
-    options: { responsive: true, plugins: { legend: { position: "bottom" } } }
-  });
-}
+          barre("bar-presence-mois", maximum ? (actifs / maximum) * 100 : 0);
+          barre("bar-absence-mois", total ? ((total - actifs) / total) * 100 : 0);
+          barre("bar-retard-mois", total ? ((data.employes_retard_mois ?? 0) / total) * 100 : 0);
+        }
 
-function afficherChartsProf(data) {
-  const lineCanvas = document.getElementById("attendanceChart");
-  if (!lineCanvas) return;
+        dessinerGraphiques(data);
+      })
+      .catch((e) => console.error("Chargement du tableau de bord impossible :", e));
+  }
 
-  if (attendanceChart) attendanceChart.destroy();
+  function afficherActivites(activites) {
+    const conteneur = document.getElementById("recent-activity-list");
+    if (!conteneur) return;
 
-  const ctxLine = lineCanvas.getContext("2d");
-  attendanceChart = new Chart(ctxLine, {
-    type: "line",
-    data: {
-      labels: ["Présents", "Absents", "Retards"],
-      datasets: [{
-        label: "Statistiques du jour (Professeur)",
-        data: [data.presents_user ?? 0, data.absents_user ?? 0, data.retard_user ?? 0],
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4
-      }]
-    },
-    options: { responsive: true }
-  });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  chargerDonneesDashboard();
-  setInterval(chargerDonneesDashboard, 10000);
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    const voirToutBtn = document.querySelector('.card-header button');
-    if (voirToutBtn) {
-        voirToutBtn.addEventListener('click', function() {
-            console.log('Voir toutes les activités');
-            window.location.href = '/historique-activites';
-        });
+    if (!activites || !activites.length) {
+      conteneur.innerHTML =
+        '<li class="list-group-item"><div class="empty-state"><i class="fas fa-inbox"></i>Aucune activité récente</div></li>';
+      return;
     }
-});
+
+    conteneur.innerHTML = "";
+    activites.forEach(function (ligne) {
+      const [nom, date, statut, section] = ligne;
+      const arrivee = statut === "Arrivée enregistrée";
+      const item = document.createElement("li");
+      item.className = "list-group-item d-flex justify-content-between align-items-center gap-3";
+      item.innerHTML = `
+        <div class="d-flex align-items-center gap-2 min-w-0">
+          <span class="stat-icon bg-${arrivee ? "success" : "danger"}-soft" style="width:38px;height:38px;font-size:.9rem">
+            <i class="fas ${arrivee ? "fa-arrow-right-to-bracket" : "fa-arrow-right-from-bracket"} text-${arrivee ? "success" : "danger"}"></i>
+          </span>
+          <div class="min-w-0">
+            <div class="fw-semibold text-truncate">${nom ?? ""}</div>
+            <span class="badge bg-${arrivee ? "success" : "danger"}">${statut ?? ""}</span>
+          </div>
+        </div>
+        <div class="text-end">
+          <div class="small">${date ? new Date(date).toLocaleString("fr-FR") : ""}</div>
+          ${section ? `<small class="text-muted">${section}</small>` : ""}
+        </div>`;
+      conteneur.appendChild(item);
+    });
+  }
+
+  function dessinerGraphiques(data) {
+    const prof = data.total_eleves === undefined;
+    const presents = prof ? data.presents_user ?? 0 : data.presents ?? 0;
+    const absents = prof ? data.absents_user ?? 0 : data.absents ?? 0;
+    const retards = prof ? data.retard_user ?? 0 : data.retard ?? 0;
+
+    const ligne = document.getElementById("attendanceChart");
+    if (ligne) {
+      if (attendanceChart) attendanceChart.destroy();
+      attendanceChart = new Chart(ligne.getContext("2d"), {
+        type: "bar",
+        data: {
+          labels: ["Présents", "Absents", "Retards"],
+          datasets: [
+            {
+              label: "Statistiques du jour",
+              data: [presents, absents, retards],
+              backgroundColor: [PALETTE.primary, PALETTE.danger, PALETTE.warning],
+              borderRadius: 8,
+              maxBarThickness: 64,
+            },
+          ],
+        },
+        options: Object.assign(optionsCommunes(), {
+          plugins: { legend: { display: false } },
+        }),
+      });
+    }
+
+    const camembert = document.getElementById("attendancePieChart");
+    if (camembert) {
+      if (attendancePieChart) attendancePieChart.destroy();
+      attendancePieChart = new Chart(camembert.getContext("2d"), {
+        type: "doughnut",
+        data: {
+          labels: ["Présents", "Absents", "Retards"],
+          datasets: [
+            {
+              data: [presents, absents, retards],
+              backgroundColor: [PALETTE.primary, PALETTE.danger, PALETTE.warning],
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "62%",
+          plugins: {
+            legend: {
+              position: "bottom",
+              labels: { color: couleurTexte(), usePointStyle: true, padding: 16 },
+            },
+          },
+        },
+      });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!document.getElementById("dashboard-content")) return;
+    chargerDonnees();
+    setInterval(chargerDonnees, 60000);
+  });
+
+  // Redessine les graphiques lorsque l'utilisateur change de thème.
+  document.addEventListener("bw:theme", function () {
+    if (dernieresDonnees) dessinerGraphiques(dernieresDonnees);
+  });
+})();

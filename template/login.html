@@ -1,117 +1,154 @@
-{%include "header.html"%}
-<div id="login-page" class="container-fluid">
-  <div class="toast-container p-3 position-fixed top-0 end-0" style="z-index: 1100;">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="toast align-items-center text-bg-{{ 'success' if category == 'success' else 'danger' }} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
-          <div class="d-flex">
-            <div class="toast-body">
-              {{ message }}
-            </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-          </div>
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    {% include "header.html" %}
+  </head>
+  <body>
+    {% include "flash.html" %}
+
+    <div id="login-page">
+      <!-- Panneau de présentation -->
+      <aside class="login-aside">
+        <div class="login-aside-brand">
+          <i class="fas fa-fingerprint"></i>
+          <span>BiometricWeb</span>
         </div>
-      {% endfor %}
-    {% endwith %}
-  </div>
-  <div class="row vh-100 justify-content-center align-items-center">
-    <div class="col-md-4">
-      <div class="card shadow">
-        <div class="card-body p-5">
-          <div class="text-center mb-4">
-            <i class="fas fa-fingerprint primary-color fa-4x mb-3"></i>
-            <h2 class="fw-bold">Système de Pointage</h2>
-            <p class="text-muted">Connectez-vous pour accéder au système</p>
+
+        <div>
+          <h1>Le pointage biométrique,<br />sans zone d'ombre.</h1>
+          <p>
+            Suivez en temps réel les arrivées, les départs et les retards
+            remontés par vos pointeuses, section par section.
+          </p>
+          <ul class="login-features">
+            <li><i class="fas fa-bolt"></i> Synchronisation continue des terminaux</li>
+            <li><i class="fas fa-chart-line"></i> Tableaux de bord par section et par rôle</li>
+            <li><i class="fas fa-file-pdf"></i> Fiches de présence exportables en PDF</li>
+          </ul>
+        </div>
+
+        <div class="login-aside-footer">© {{ now_year }} BiometricWeb — Système de pointage</div>
+      </aside>
+
+      <!-- Panneau de connexion -->
+      <main class="login-panel">
+        <div class="login-card">
+          <div class="text-center mb-4 d-lg-none">
+            <i class="fas fa-fingerprint primary-color fa-3x"></i>
           </div>
-          <form id="adminForm" action="{{ url_for('login') }}" method="POST">
+
+          <h2>Connexion</h2>
+          <p class="login-sub">Accédez à votre espace de supervision.</p>
+
+          <div class="login-tabs" role="tablist">
+            <button type="button" class="active" id="tab-admin" role="tab" aria-selected="true">
+              <i class="fas fa-user-shield me-2"></i>Administration
+            </button>
+            <button type="button" id="tab-prof" role="tab" aria-selected="false">
+              <i class="fas fa-chalkboard-user me-2"></i>Professeur
+            </button>
+          </div>
+
+          <!-- Formulaire administrateur -->
+          <form id="adminForm" action="{{ url_for('login') }}" method="POST" novalidate>
             <div class="mb-3">
               <label for="username" class="form-label">Nom d'utilisateur</label>
-              <input
-                type="text"
-                class="form-control"
-                name="username"
-                required
-              />
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                <input type="text" class="form-control" id="username" name="username"
+                       autocomplete="username" required autofocus />
+              </div>
             </div>
             <div class="mb-3">
               <label for="password" class="form-label">Mot de passe</label>
-              <input
-                type="password"
-                class="form-control"
-                name="password"
-                required
-              />
+              <div class="input-group password-wrap">
+                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                <input type="password" class="form-control" id="password" name="password"
+                       autocomplete="current-password" required />
+                <button class="btn btn-outline-secondary toggle-password" type="button"
+                        data-cible="password" aria-label="Afficher le mot de passe">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
             </div>
-            <div class="mb-3 form-check">
-              <input type="checkbox" class="form-check-input" name="remember" />
-              <label class="form-check-label" for="remember"
-                >Se souvenir de moi</label
-              >
+            <div class="form-check mb-4">
+              <input type="checkbox" class="form-check-input" id="remember" name="remember" />
+              <label class="form-check-label" for="remember">Se souvenir de moi</label>
             </div>
             <button type="submit" class="btn btn-primary w-100 py-2">
-              Connexion
+              <i class="fas fa-right-to-bracket me-2"></i>Se connecter
             </button>
           </form>
-          <form id="profForm" style="display: none;" action="{{ url_for('login_prof') }}" method="POST">
-            <!-- <div class="mb-3">
-              <label for="username1" class="form-label">Nom d'utilisateur</label>
-              <input
-                type="text"
-                class="form-control"
-                name="username1"
-                required
-              />
-            </div> -->
+
+          <!-- Formulaire professeur -->
+          <form id="profForm" action="{{ url_for('login_prof') }}" method="POST" style="display: none" novalidate>
             <div class="mb-3">
               <label for="code" class="form-label">Code utilisateur</label>
-              <input
-                type="password"
-                class="form-control"
-                name="code"
-                required
-              />
-            </div>
-            <div class="mb-3 form-check">
-              <input type="checkbox" class="form-check-input" name="remember" />
-              <label class="form-check-label" for="remember"
-                >Se souvenir de moi</label
-              >
+              <div class="input-group password-wrap">
+                <span class="input-group-text"><i class="fas fa-key"></i></span>
+                <input type="password" class="form-control" id="code" name="code"
+                       autocomplete="off" required />
+                <button class="btn btn-outline-secondary toggle-password" type="button"
+                        data-cible="code" aria-label="Afficher le code">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <small class="text-muted">Le code personnel figure sur votre fiche d'émargement.</small>
             </div>
             <button type="submit" class="btn btn-primary w-100 py-2">
-              Connexion
+              <i class="fas fa-right-to-bracket me-2"></i>Se connecter
             </button>
           </form>
-          <!-- <a class="underline color-danger" id="prof" href="">Compte Professeur</a> -->
+
+          <p class="text-center text-muted mt-4 mb-0" style="font-size: 0.8rem">
+            <i class="fas fa-shield-halved me-1"></i>Accès réservé au personnel autorisé
+          </p>
         </div>
-      </div>
+      </main>
     </div>
-  </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // Active tous les toasts automatiquement
-  document.addEventListener("DOMContentLoaded", function() {
-    const toastElList = [].slice.call(document.querySelectorAll('.toast'))
-    toastElList.forEach(function (toastEl) {
-      const toast = new bootstrap.Toast(toastEl)
-      toast.show()
-    })
-    const adminForm = document.getElementById("adminForm");
-    const profForm = document.getElementById("profForm");
-    const profLink = document.getElementById("prof");
 
-    profLink.addEventListener("click", function (e) {
-      e.preventDefault();
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Notifications
+        document.querySelectorAll(".toast").forEach(function (el) {
+          bootstrap.Toast.getOrCreateInstance(el).show();
+        });
 
-      if (adminForm.style.display !== "none") {
-        adminForm.style.display = "none";
-        profForm.style.display = "block";
-        profLink.textContent = "Compte Administrateur";
-      } else {
-        adminForm.style.display = "block";
-        profForm.style.display = "none";
-        profLink.textContent = "Compte Professeur";
-      }
-    });
-  });
-</script>
+        // Bascule entre les deux formulaires
+        var adminForm = document.getElementById("adminForm");
+        var profForm = document.getElementById("profForm");
+        var tabAdmin = document.getElementById("tab-admin");
+        var tabProf = document.getElementById("tab-prof");
+
+        function afficher(mode) {
+          var admin = mode === "admin";
+          adminForm.style.display = admin ? "" : "none";
+          profForm.style.display = admin ? "none" : "";
+          tabAdmin.classList.toggle("active", admin);
+          tabProf.classList.toggle("active", !admin);
+          tabAdmin.setAttribute("aria-selected", String(admin));
+          tabProf.setAttribute("aria-selected", String(!admin));
+          var premier = (admin ? adminForm : profForm).querySelector("input");
+          if (premier) premier.focus();
+        }
+
+        tabAdmin.addEventListener("click", function () { afficher("admin"); });
+        tabProf.addEventListener("click", function () { afficher("prof"); });
+
+        // Afficher / masquer les mots de passe
+        document.querySelectorAll(".toggle-password").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var champ = document.getElementById(btn.getAttribute("data-cible"));
+            if (!champ) return;
+            var visible = champ.type === "text";
+            champ.type = visible ? "password" : "text";
+            btn.innerHTML = visible
+              ? '<i class="fas fa-eye"></i>'
+              : '<i class="fas fa-eye-slash"></i>';
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

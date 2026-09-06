@@ -12,6 +12,8 @@ async function loadDashboardData() {
             throw new Error(result.error || 'Erreur inconnue');
         }
         
+        dernieresDonnees = result;
+
         // Mise à jour des statistiques
         updateStatistics(result);
         
@@ -40,7 +42,9 @@ function updateStatistics(data) {
     const employesActifsMois = data.employes_actifs_mois || 0;
     const joursTravillesMois = data.jours_travailles_mois || 0;
     const employesRetardMois = data.employes_retard_mois || 0;
-    const absencesMois = data.jours_travailles_mois;
+    // Absences du mois = employés jamais pointés ce mois-ci.
+    // (auparavant la carte affichait le nombre de jours travaillés)
+    const absencesMois = Math.max(totalEmployes - employesActifsMois, 0);
     
     // Mise à jour des compteurs du jour
     animateCounter('dash_presents-count', totalPresents);
@@ -66,7 +70,7 @@ function updateStatistics(data) {
     // Mise à jour des barres de progression (mois)
     const maxPresencesMois = joursTravillesMois * totalEmployes;
     const presenceMoisPercentage = maxPresencesMois > 0 ? (employesActifsMois / maxPresencesMois) * 100 : 0;
-    const absenceMoisPercentage = maxPresencesMois > 0 ? (absencesMois / maxPresencesMois) * 100 : 0;
+    const absenceMoisPercentage = totalEmployes > 0 ? (absencesMois / totalEmployes) * 100 : 0;
     const retardMoisPercentage = maxPresencesMois > 0 ? (employesRetardMois / maxPresencesMois) * 100 : 0;
     
     updateProgressBar('dash_bar-presence-mois', presenceMoisPercentage);
@@ -119,9 +123,11 @@ function updateRecentActivity(activities) {
     
     if (!activities || activities.length === 0) {
         activityList.innerHTML = `
-            <li class="list-group-item text-center text-muted py-4">
-                <i class="fas fa-inbox fa-2x mb-2"></i>
-                <p class="mb-0">Aucune activité récente</p>
+            <li class="list-group-item">
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    Aucune activité récente
+                </div>
             </li>
         `;
         return;
@@ -204,8 +210,11 @@ function updateAttendanceLineChart(data) {
         attendanceChart.destroy();
     }
 
-    // Utiliser les labels et les données envoyées par Flask
-    const labels =['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+    // Libellés renvoyés par l'API (7 derniers jours), avec repli statique.
+    const labels =
+        Array.isArray(data.labels) && data.labels.length
+            ? data.labels
+            : ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
     const chartjs_Presents = data.chartjs_Presents || [];
     const chartjs_absents = data.chartjs_absents || [];
     const chartjs_retard = data.chartjs_retard || [];
@@ -218,24 +227,24 @@ function updateAttendanceLineChart(data) {
                 {
                     label: 'Présents',
                     data: chartjs_Presents,
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    borderColor: '#4361ee',
+                    backgroundColor: 'rgba(67, 97, 238, 0.12)',
                     tension: 0.4,
                     fill: true
                 },
                 {
                     label: 'Absents',
                     data: chartjs_absents,
-                    borderColor: '#dc3545',
-                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    borderColor: '#dc2626',
+                    backgroundColor: 'rgba(220, 38, 38, 0.12)',
                     tension: 0.4,
                     fill: true
                 },
                 {
                     label: 'Retards',
                     data: chartjs_retard,
-                    borderColor: '#ffc107',
-                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.12)',
                     tension: 0.4,
                     fill: true
                 }
@@ -245,7 +254,7 @@ function updateAttendanceLineChart(data) {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'top' },
+                legend: { position: 'top', labels: { color: couleurTexte(), usePointStyle: true, padding: 16 } },
                 tooltip: {
                     mode: 'index',
                     intersect: false,
@@ -254,23 +263,16 @@ function updateAttendanceLineChart(data) {
                     }
                 }
             },
-            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            scales: {
+                x: { ticks: { color: couleurTexte() }, grid: { color: couleurGrille() } },
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1, color: couleurTexte() },
+                    grid: { color: couleurGrille() }
+                }
+            }
         }
     });
-}
-
-// Fonction auxiliaire pour générer des données de tendance
-function generateTrendData(currentValue, days) {
-    const data = [];
-    const variance = Math.max(2, Math.floor(currentValue * 0.15));
-    
-    for (let i = 0; i < days - 1; i++) {
-        const randomVariance = Math.floor(Math.random() * variance * 2) - variance;
-        data.push(Math.max(0, currentValue + randomVariance));
-    }
-    data.push(currentValue);
-    
-    return data;
 }
 
 // Graphique circulaire - Répartition des présences
@@ -292,18 +294,18 @@ function updateAttendancePieChart(data) {
             labels: ['Présents', 'Absents', 'Retards'],
             datasets: [{
                 data: [totalPresents, totalAbsents, totalRetard],
-                backgroundColor: ['#0d6efd','#dc3545','#ffc107'],
-                borderWidth: 2,
-                borderColor: '#fff'
+                backgroundColor: ['#4361ee','#dc2626','#f59e0b'],
+                borderWidth: 0
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: '62%',
             plugins: {
                 legend: {
                     position: 'bottom',
-                    labels: { padding: 15, font: { size: 12 } }
+                    labels: { padding: 15, font: { size: 12 }, color: couleurTexte(), usePointStyle: true }
                 },
                 tooltip: {
                     callbacks: {
@@ -323,16 +325,11 @@ function updateAttendancePieChart(data) {
 
 // Fonction pour afficher une notification d'erreur
 function showErrorNotification(message) {
-    const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
-    alertDiv.style.zIndex = '9999';
-    alertDiv.innerHTML = `
-        <i class="fas fa-exclamation-circle me-2"></i>
-        <strong>Erreur!</strong> ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    document.body.appendChild(alertDiv);
-    setTimeout(() => alertDiv.remove(), 5000);
+    if (typeof window.bwToast === 'function') {
+        window.bwToast(message, 'danger');
+        return;
+    }
+    console.error(message);
 }
 
 // Fonction pour rafraîchir le dashboard
@@ -340,18 +337,26 @@ function refreshDashboard() {
     loadDashboardData();
 }
 
+// Couleurs d'axes et de légendes dépendant du thème clair/sombre
+function couleurTexte() {
+    return document.documentElement.getAttribute('data-bs-theme') === 'dark' ? '#94a1bb' : '#6b7689';
+}
+function couleurGrille() {
+    return document.documentElement.getAttribute('data-bs-theme') === 'dark'
+        ? 'rgba(255,255,255,0.08)'
+        : 'rgba(15,23,42,0.07)';
+}
+
+let dernieresDonnees = null;
+
 // Charger les données au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
+    if (!document.getElementById('dashboard-content')) return;
     loadDashboardData();
-    setInterval(refreshDashboard, 5 * 60 * 1000);
+    setInterval(refreshDashboard, 60 * 1000);
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    const voirToutBtn = document.querySelector('.card-header button');
-    if (voirToutBtn) {
-        voirToutBtn.addEventListener('click', function() {
-            console.log('Voir toutes les activités');
-            window.location.href = '/historique-activites';
-        });
-    }
+// Redessiner les graphiques lors d'un changement de thème
+document.addEventListener('bw:theme', function () {
+    if (dernieresDonnees) updateCharts(dernieresDonnees);
 });

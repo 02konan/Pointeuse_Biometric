@@ -1,221 +1,93 @@
-<!-- Sidebar -->
-{% if session['role']|lower == 'admin'%}
-<div class="sidebar">
-  <div class="sidebar-header">
-    <i class="fas fa-fingerprint"></i>
-    <span>Biometric</span>
-  </div>
-  <ul class="sidebar-menu">
-    <li class="{% if active_page == 'index' %}active{% endif %}">
-      <form action="{{ url_for('index') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-tachometer-alt"></i> Tableau de bord
-        </button>
-      </form>
-    </li>
+{# ---------------------------------------------------------------------
+   Menu latéral — construit à partir du rôle de la session.
+   Chaque entrée : (endpoint, clé active_page, icône, libellé)
+   --------------------------------------------------------------------- #}
+{% set role = (session['role'] or '')|lower %}
 
-    <li class="{% if active_page == 'employee' %}active{% endif %}">
-      <form action="{{ url_for('intf_employee') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-users"></i>Employee
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'pointage' %}active{% endif %}">
-      <form action="{{ url_for('intf_historique') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-clock"></i>Historique Pointage
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'presence' %}active{% endif %}">
-      <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-check-circle"></i>Pointage Valide
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'pointage_invalie' %}active{% endif %}">
-      <form action="{{ url_for('intf_pointage_invalie') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-times-circle"></i>Pointage Invalide
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'rapports' %}active{% endif %}">
-      <form action="{{ url_for('intf_rapports') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-chart-bar"></i> Rapports
-        </button>
-      </form>
-    </li>
-    <!-- <li class="{% if active_page == 'appareils' %}active{% endif %}">
-      <form action="{{ url_for('intf_appareils') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-fingerprint"></i> Appareils
-        </button>
-      </form>
-    </li> -->
-    <!-- <li class="{% if active_page == 'utilisateurs' %}active{% endif %}">
-      <form action="{{ url_for('lister_utilisateurs') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-user-plus"></i> Utilisateur
-        </button>
-      </form>
-    </li> -->
-    <!-- <li class="{% if active_page == 'parametres' %}active{% endif %}">
-      <form action="{{ url_for('intf_Parametres') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-cog"></i> Paramètres
-        </button>
-      </form>
-    </li> -->
-  </ul>
-  <div class="sidebar-footer">
-    <form action="/logout" method="get" style="width:100%;">
-      <button type="submit" class="btn btn-sm btn-outline-light w-100">
-        <i class="fas fa-sign-out-alt"></i> Déconnexion
-      </button>
-    </form>
-  </div>
-</div>
+{% if role == 'professeur' %}
+  {% set menu_principal = [
+    ('index', 'index', 'fa-gauge-high', 'Tableau de bord')
+  ] %}
+  {% set menu_suivi = [
+    ('intf_presence', 'presence', 'fa-circle-check', 'Pointage valide'),
+    ('intf_pointage_invalie', 'pointage_invalie', 'fa-circle-xmark', 'Pointage invalide')
+  ] %}
+  {% set menu_admin = [
+    ('intf_rapports', 'rapports', 'fa-chart-column', 'Rapports')
+  ] %}
+{% elif role == 'superadmin' %}
+  {% set menu_principal = [
+    ('index', 'index', 'fa-gauge-high', 'Tableau de bord'),
+    ('intf_employee', 'employee', 'fa-users', 'Employés')
+  ] %}
+  {% set menu_suivi = [
+    ('intf_historique', 'pointage', 'fa-clock-rotate-left', 'Historique pointages'),
+    ('intf_presence', 'presence', 'fa-circle-check', 'Pointage valide'),
+    ('intf_pointage_invalie', 'pointage_invalie', 'fa-circle-xmark', 'Pointage invalide')
+  ] %}
+  {% set menu_admin = [
+    ('intf_rapports', 'rapports', 'fa-chart-column', 'Rapports'),
+    ('intf_appareils', 'appareils', 'fa-fingerprint', 'Pointeuses'),
+    ('lister_utilisateurs', 'utilisateurs', 'fa-user-shield', 'Utilisateurs')
+  ] %}
+{% else %}
+  {% set menu_principal = [
+    ('index', 'index', 'fa-gauge-high', 'Tableau de bord'),
+    ('intf_employee', 'employee', 'fa-users', 'Employés')
+  ] %}
+  {% set menu_suivi = [
+    ('intf_historique', 'pointage', 'fa-clock-rotate-left', 'Historique pointages'),
+    ('intf_presence', 'presence', 'fa-circle-check', 'Pointage valide'),
+    ('intf_pointage_invalie', 'pointage_invalie', 'fa-circle-xmark', 'Pointage invalide')
+  ] %}
+  {% set menu_admin = [
+    ('intf_rapports', 'rapports', 'fa-chart-column', 'Rapports')
+  ] %}
 {% endif %}
-{% if session['role']|lower == 'superadmin'%}
-<div class="sidebar">
+
+{% macro entree(item) %}
+  <li class="{% if active_page == item[1] %}active{% endif %}">
+    <a class="sidebar-link" href="{{ url_for(item[0]) }}" data-title="{{ item[3] }}"
+       {% if active_page == item[1] %}aria-current="page"{% endif %}>
+      <i class="fas {{ item[2] }}"></i><span>{{ item[3] }}</span>
+    </a>
+  </li>
+{% endmacro %}
+
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-header">
     <i class="fas fa-fingerprint"></i>
-    <span>Biometric</span>
+    <span class="sidebar-brand">
+      <strong>BiometricWeb</strong>
+      <small>Pointage</small>
+    </span>
   </div>
 
-  <ul class="sidebar-menu">
-    <li class="{% if active_page == 'index' %}active{% endif %}">
-      <form action="{{ url_for('index') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-tachometer-alt"></i> Tableau de bord
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'employee' %}active{% endif %}">
-      <form action="{{ url_for('intf_employee') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-users"></i> Employee
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'pointage' %}active{% endif %}">
-      <form action="{{ url_for('intf_historique') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-clock"></i>Historique Pointage
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'presence' %}active{% endif %}">
-      <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-check-circle"></i>Pointage Valide
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'pointage_invalie' %}active{% endif %}">
-      <form action="{{ url_for('intf_pointage_invalie') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-times-circle"></i>Pointage Invalide
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'rapports' %}active{% endif %}">
-      <form action="{{ url_for('intf_rapports') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-chart-bar"></i> Rapports
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'appareils' %}active{% endif %}">
-      <form action="{{ url_for('intf_appareils') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-fingerprint"></i> Appareils
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'utilisateurs' %}active{% endif %}">
-      <form action="{{ url_for('lister_utilisateurs') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-user-plus"></i> Utilisateur
-        </button>
-      </form>
-    </li>
-    <!-- <li class="{% if active_page == 'parametres' %}active{% endif %}">
-      <form action="{{ url_for('intf_Parametres') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-cog"></i> Paramètres
-        </button>
-      </form>
-    </li> -->
-  </ul>
+  <nav class="sidebar-menu" aria-label="Navigation principale">
+    <ul class="list-unstyled mb-0">
+      <li class="sidebar-section">Pilotage</li>
+      {% for item in menu_principal %}{{ entree(item) }}{% endfor %}
+
+      <li class="sidebar-section">Suivi des pointages</li>
+      {% for item in menu_suivi %}{{ entree(item) }}{% endfor %}
+
+      <li class="sidebar-section">Administration</li>
+      {% for item in menu_admin %}{{ entree(item) }}{% endfor %}
+    </ul>
+  </nav>
+
   <div class="sidebar-footer">
-    <form action="/logout" method="get" style="width:100%;">
-      <button type="submit" class="btn btn-sm btn-outline-light w-100">
-        <i class="fas fa-sign-out-alt"></i> Déconnexion
-      </button>
-    </form>
-  </div>
-</div>
-{% endif %}
-{% if session['role']|lower == 'professeur' %}
-<div class="sidebar">
-  <div class="sidebar-header">
-    <i class="fas fa-fingerprint"></i>
-    <span>Biometric</span>
-  </div>
-  <ul class="sidebar-menu">
-    <li class="{% if active_page == 'index' %}active{% endif %}">
-      <a class="text-white text-decoration-none" href="{{ url_for('index') }}">
-        <i class="fas fa-tachometer-alt"></i> Tableau de bord</a
-      >
-    </li>
-    <li class="{% if active_page == 'presence' %}active{% endif %}">
-      <form action="{{ url_for('intf_presence') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-check-circle"></i>Pointage Valide
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'pointage_invalie' %}active{% endif %}">
-      <form action="{{ url_for('intf_pointage_invalie') }}" method="get" style="width:100%;">
-        <button type="submit" class="sidebar-btn">
-          <i class="fas fa-times-circle"></i>Pointage Invalide
-        </button>
-      </form>
-    </li>
-    <li class="{% if active_page == 'rapports' %}active{% endif %}">
-      <a
-        class="text-white text-decoration-none"
-        href="{{ url_for('intf_rapports') }}"
-      >
-        <i class="fas fa-chart-bar"></i>Rapports</a
-      >
-    </li>
-    <!-- <li class="{% if active_page == 'utilisateurs' %}active{% endif %}">
-      <a
-        class="text-white text-decoration-none"
-        href="{{ url_for('lister_utilisateurs') }}"
-      >
-        <i class="fas fa-user-plus "></i>Utilisateur</a
-      >
-    </li> -->
-     <!-- <li class="{% if active_page == 'parametres' %}active{% endif %}">
-      <a
-        class="text-white text-decoration-none"
-        href="{{ url_for('intf_Parametres') }}"
-      >
-        <i class="fas fa-cog "></i>Paramètres</a
-      >
-    </li> -->
-  </ul>
-  <div class="sidebar-footer">
-    <a href="/logout" class="btn btn-sm btn-outline-light">
-      <i class="fas fa-sign-out-alt"></i> Déconnexion
+    <div class="sidebar-user">
+      <div class="avatar">
+        <img src="{{ url_for('static', filename='images/icons8-test-account-96.png') }}" alt="" />
+      </div>
+      <div class="sidebar-user-info">
+        <strong>{{ session['username'] }}</strong>
+        <small>{{ session['role'] }}</small>
+      </div>
+    </div>
+    <a href="{{ url_for('logout') }}" class="sidebar-logout" data-title="Déconnexion">
+      <i class="fas fa-right-from-bracket"></i><span>Déconnexion</span>
     </a>
   </div>
-</div>
-{% endif %}
+</aside>

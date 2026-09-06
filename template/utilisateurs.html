@@ -1,187 +1,137 @@
-{% extends 'index.html' %} {% block content %}
-<div id="attendance-content" class="content-section">
-  <div class="container-fluid p-4">
-    <h2 class="mb-4">Gestion des Utilisateurs</h2>
-    <div class="card mb-4">
-      <div class="card">
-        <div
-          class="card-body d-flex justify-content-between align-items-center flex-wrap gap-3"
-        >
-          <!-- Gauche : bouton + sélecteur -->
-          <div class="d-flex align-items-center gap-3 flex-wrap">
-            <!-- Bouton ajout -->
-            <button
-              class="btn btn-primary"
-              data-bs-toggle="modal"
-              data-bs-target="#ajoutModal"
-            >
-              Ajouter un utilisateur
-            </button>
+{% extends 'index.html' %}
+{% block content %}
+<div id="users-content" class="content-section">
+  <div class="page-header">
+    <div>
+      <h1><span class="page-header-icon"><i class="fas fa-user-shield"></i></span> Utilisateurs</h1>
+      <p>Comptes d'accès à l'application et rôles associés.</p>
+    </div>
+    <div class="page-header-actions">
+      <span class="badge text-bg-light border">{{ utilisateurs|length }} compte{{ 's' if utilisateurs|length > 1 else '' }}</span>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ajoutModal">
+        <i class="fas fa-user-plus me-2"></i>Ajouter un utilisateur
+      </button>
+    </div>
+  </div>
 
-            <!-- Sélecteur du nombre -->
-            <div class="d-flex align-items-center">
-              <label for="itemsPerPage" class="me-2 mb-0">Afficher :</label>
-              <select class="form-select w-auto" id="itemsPerPage">
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Droite : champ recherche -->
-          <div class="input-group w-auto">
-            <span class="input-group-text"><i class="fas fa-search"></i></span>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="Rechercher..."
-              id="searchInput"
-            />
+  <div class="card mb-3 filter-bar">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-lg-8 col-md-7">
+          <label class="form-label" for="searchInput">Recherche</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-magnifying-glass"></i></span>
+            <input type="text" class="form-control" id="searchInput"
+                   data-table-search="Table" placeholder="Nom, email, rôle, section…" />
           </div>
         </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-hover" id="Table">
-            <thead>
-              <tr>
-                <th type="hidden">id</th>
-                <th>Nom d'utilisateur</th>
-                <th>Email</th>
-                <th>Mot de pass</th>
-                <th>Role</th>
-                <th>Section</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for u in utilisateurs %}
-              <tr>
-                <td type="hidden">{{ u.id }}</td>
-                <td>{{ u.Nom }}</td>
-                <td>{{ u.Email }}</td>
-                <td>{{ u.Motpass }}</td>
-                <td><span class="badge bg-info">{{ u.role }}</span></td>
-                <td><span class="badge bg-info">{{ u.section }}</span></td>
-                <td>
-                  <a
-                    href="#"
-                    class="btn btn-sm btn-outline-secondary btn-edit-user"
-                    data-bs-toggle="modal"
-                    data-bs-target="#editModal"
-                    data-id="{{ u.id }}"
-                    data-nom="{{ u.Nom }}"
-                    data-email="{{ u.Email }}"
-                    data-section="{{ u.section }}"
-                    data-role="{{ u.role }}"
-                  >
-                    <i class="fas fa-edit"></i>
-                  </a>
-                  <a
-                    href=""
-                    class="btn btn-sm btn-outline-danger"
-                    data-bs-toggle="modal"
-                    data-bs-target=""
-                  >
-                    <i class="fas fa-trash"></i>
-                  </a>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="col-lg-2 col-md-3 col-6">
+          <label class="form-label" for="itemsPerPage">Lignes</label>
+          <select class="form-select" id="itemsPerPage">
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
         </div>
       </div>
     </div>
   </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle" id="Table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Email</th>
+              <th>Mot de passe</th>
+              <th>Rôle</th>
+              <th>Section</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-empty-state="true">
+              <td colspan="5">
+                <div class="empty-state">
+                  <i class="fas fa-user-slash"></i>
+                  Aucun utilisateur ne correspond à votre recherche.
+                </div>
+              </td>
+            </tr>
+            {% for u in utilisateurs %}
+            <tr>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar avatar-sm me-2">
+                    <img src="{{ url_for('static', filename='images/icons8-test-account-96.png') }}" alt="" />
+                  </div>
+                  <span class="fw-semibold">{{ u.Nom }}</span>
+                </div>
+              </td>
+              <td class="text-muted">{{ u.Email }}</td>
+              <td class="text-muted" title="Le mot de passe n'est pas affiché">••••••••</td>
+              <td><span class="badge bg-primary-soft text-primary text-capitalize">{{ u.role }}</span></td>
+              <td><span class="badge bg-info-soft text-info">{{ u.section }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <nav aria-label="Pagination du tableau" class="mt-3">
+        <ul class="pagination justify-content-center"></ul>
+      </nav>
+    </div>
+  </div>
 </div>
-<!-- Modal pour ajouter un utilisateur -->
-<div
-  class="modal fade"
-  id="ajoutModal"
-  tabindex="-1"
-  aria-labelledby="ajoutModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
+
+<!-- Modale d'ajout d'utilisateur -->
+<div class="modal fade" id="ajoutModal" tabindex="-1" aria-labelledby="ajoutModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="ajoutModalLabel">Ajouter un utilisateur</h5>
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
-      <form
-        id="addUserForm"
-        method="POST"
-        action="{{ url_for('ajouter_utilisateur') }}"
-      >
+      <form id="addUserForm" method="POST" action="{{ url_for('ajouter_utilisateur') }}">
         <div class="modal-body">
-          <div class="mb-3">
-            <label for="nom" class="form-label">Nom d'utilisateur</label>
-            <input
-              type="text"
-              class="form-control"
-              id="nom"
-              name="nomuser"
-              required
-            />
-          </div>
-          <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input
-              type="email"
-              class="form-control"
-              id="email"
-              name="Email"
-              required
-            />
-          </div>
-          <div class="mb-3">
-            <label for="motpass" class="form-label">Mot de passe</label>
-            <input
-              type="password"
-              class="form-control"
-              id="motpass"
-              name="pass"
-              required
-            />
-          </div>
-          <div class="mb-3">
-            <label for="role" class="form-label">Role</label>
-            <select class="form-select" id="role" name="role">
-              <option value="">Sélectionner un rôle</option>
-              {% for role in roles %}
-              <option value="{{ role[0] }}">{{ role[1] }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="section" class="form-label">Section</label>
-            <select class="form-select" id="section" name="section">
-              <option value="">Sélectionner une section</option>
-              {% for section in sections %}
-              <option value="{{ section[0] }}">{{ section[1] }}</option>
-              {% endfor %}
-            </select>
+          <div class="row g-3">
+            <div class="col-12">
+              <label for="nom" class="form-label">Nom d'utilisateur</label>
+              <input type="text" class="form-control" id="nom" name="nomuser" required />
+            </div>
+            <div class="col-12">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" name="Email" required />
+            </div>
+            <div class="col-12">
+              <label for="motpass" class="form-label">Mot de passe</label>
+              <input type="password" class="form-control" id="motpass" name="pass" required />
+            </div>
+            <div class="col-md-6">
+              <label for="role" class="form-label">Rôle</label>
+              <select class="form-select" id="role" name="role" required>
+                <option value="">Sélectionner un rôle</option>
+                {% for role in roles %}
+                <option value="{{ role[0] }}">{{ role[1] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="section" class="form-label">Section</label>
+              <select class="form-select" id="section" name="section" required>
+                <option value="">Sélectionner une section</option>
+                {% for section in sections %}
+                <option value="{{ section[0] }}">{{ section[1] }}</option>
+                {% endfor %}
+              </select>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Enregistrez</button>
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Fermer
-          </button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-floppy-disk me-2"></i>Enregistrer</button>
         </div>
       </form>
     </div>

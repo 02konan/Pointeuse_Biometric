@@ -20,6 +20,21 @@ app = Flask(__name__, static_folder='static', template_folder='template')
 app.secret_key = '&é1234azerty'
 app.permanent_session_lifetime = timedelta(minutes=10)
 
+# Dossier des rapports PDF générés
+UPLOADS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
+
+def chemin_rapport(nom):
+    """Chemin absolu d'un rapport, nom de fichier assaini.
+
+    secure_filename empêche qu'un nom transmis dans l'URL (« ../.. ») ne
+    sorte du dossier des rapports.
+    """
+    nom_sur = secure_filename(nom or '')
+    if not nom_sur:
+        return None
+    return os.path.join(UPLOADS_DIR, nom_sur)
+
+
 CORS(app)
 def init_session():
     if 'user_type' not in session:
@@ -34,6 +49,11 @@ def init_session():
 @app.before_request
 def before_request():
     init_session()
+
+@app.context_processor
+def injecter_variables_globales():
+    """Variables disponibles dans tous les gabarits (pied de page, etc.)."""
+    return {'now_year': datetime.now().year}
 
 def login_required(f):
     @wraps(f)
@@ -216,16 +236,16 @@ def dashboard_admin():
             chartjs_retard_formatees=[]
             chartjs_absents_formatees=[]
 
+            # Les trois séries couvrent les mêmes jours : les libellés ne sont
+            # collectés qu'une fois, sinon l'axe du graphique est trois fois trop long.
             for iteme_presents_chart in chartjs_Presents:
                 labels.append(iteme_presents_chart[0])
                 chartjs_Presents_formatees.append(iteme_presents_chart[1])
 
             for iteme_retard_chart in chartjs_retard:
-                labels.append(iteme_retard_chart[0])
                 chartjs_retard_formatees.append(iteme_retard_chart[1])
 
             for iteme_absents_chart in chartjs_absents:
-                labels.append(iteme_absents_chart[0])
                 chartjs_absents_formatees.append(iteme_absents_chart[1])
 
 
@@ -272,6 +292,13 @@ def dashboard_admin():
                 "error": "Erreur serveur interne",
                 "details": str(e)
             }), 500
+
+   # Sans ce retour, la vue renvoyait None (erreur 500) pour tout autre rôle.
+   else:
+        return jsonify({
+            "success": False,
+            "error": "Accès refusé : tableau de bord réservé au superadmin"
+        }), 403
 
 @app.route("/historique-activites")
 def intf_historique():
@@ -475,7 +502,7 @@ def api_fiche_presence():
 
         data = generer_presence(date_debut, date_fin, idemployee, section)
 
-        uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+        uploads_dir = UPLOADS_DIR
         os.makedirs(uploads_dir, exist_ok=True)
 
         base_filename = f"Rapport_du_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
@@ -543,7 +570,7 @@ def api_fiche_presence_admin():
         else:
             return jsonify({'success': False, 'error': 'Veuillez fournir soit un ID d\'employé, soit un ID de section.'}), 400
 
-        uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')                    
+        uploads_dir = UPLOADS_DIR
         os.makedirs(uploads_dir, exist_ok=True)
         base_filename = f"fichePresence_{date_debut}_au_{date_fin}".replace(":", "-").replace("/", "-")
         filename = f"{base_filename}.pdf"
@@ -574,30 +601,36 @@ def api_fiche_presence_admin():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/telechargement/<nom>')
+@login_required
 def telecharger_rapport(nom):
-    chemin = os.path.join('uploads', nom)
-    if os.path.exists(chemin):
+    chemin = chemin_rapport(nom)
+    if chemin and os.path.exists(chemin):
       return send_file(chemin, as_attachment=True)
     return "Fichier non trouvé", 404
 
 @app.route('/impression/<nom>')
+@login_required
 def imprimer_rapport(nom):
-    chemin = os.path.join('uploads', nom)
-    if os.path.exists(chemin):
+    chemin = chemin_rapport(nom)
+    if chemin and os.path.exists(chemin):
         return send_file(chemin)
     return "Fichier non trouvé", 404
 
 @app.route('/suppression/<nom>', methods=['DELETE'])
+@login_required
 def supprimer_rapport(nom):
-    chemin = os.path.join('uploads', nom)
-    if os.path.exists(chemin):
+    chemin = chemin_rapport(nom)
+    if chemin and os.path.exists(chemin):
         os.remove(chemin)
         return jsonify({"success": True})
     return jsonify({"error": "Fichier introuvable"}), 404
 
 @app.route('/api/liste_rapports')
+@login_required
 def liste_rapports():
-    uploads_dir = os.path.join(os.path.dirname(__file__), 'uploads')
+    uploads_dir = UPLOADS_DIR
+    # Le dossier n'existe pas tant qu'aucun rapport n'a été généré.
+    os.makedirs(uploads_dir, exist_ok=True)
     uploads_list = sorted(os.listdir(uploads_dir), reverse=True)
     base_list = read_raports(session['username'])
     fichiers_base = {os.path.basename(row[0]) for row in base_list} if base_list else set()
@@ -625,8 +658,9 @@ def intf_rapports():
              'Code':userall[0],
              'Nom':userall[1]
          }
-         table.append(lectureid) 
-     return render_template('rapport.html', active_page='rapports',all_user=table)
+         table.append(lectureid)
+     sections = read_idsection() or []
+     return render_template('rapport.html', active_page='rapports',all_user=table, sections=sections)
 
 @app.route('/appareils')
 @login_required
