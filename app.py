@@ -36,6 +36,10 @@ def chemin_rapport(nom):
 
 
 CORS(app)
+
+# API REST consommée par l'application mobile (préfixe /api).
+from App.routes import api as api_mobile_blueprint
+app.register_blueprint(api_mobile_blueprint)
 def init_session():
     if 'user_type' not in session:
         session['user_type'] = None  
