@@ -1,0 +1,16 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+pubspec.lock
+
+# Dossiers de plateforme générés par « flutter create »
+# (à committer si vous y ajoutez de la configuration : icônes, Firebase…)
+.idea/
+*.iml
+
+# Firebase — ne jamais committer
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
