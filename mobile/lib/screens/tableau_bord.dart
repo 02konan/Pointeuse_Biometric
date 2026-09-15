@@ -7,6 +7,7 @@ import '../services/session.dart';
 import '../theme.dart';
 import '../widgets/communs.dart';
 import '../widgets/graphiques.dart';
+import 'classement.dart';
 import 'notifications.dart';
 
 /// Tableau de bord : en-tête de marque, statut du jour, assiduité du mois,
@@ -19,11 +20,13 @@ class TableauBordEcran extends StatefulWidget {
 }
 
 class _DonneesBord {
-  const _DonneesBord(this.jour, this.stats, this.cours, this.historique);
+  const _DonneesBord(
+      this.jour, this.stats, this.cours, this.historique, this.classement);
   final Pointage jour;
   final Statistiques stats;
   final List<Cours> cours;
   final List<Pointage> historique;
+  final Classement classement;
 }
 
 class _TableauBordEcranState extends State<TableauBordEcran> {
@@ -42,12 +45,14 @@ class _TableauBordEcranState extends State<TableauBordEcran> {
       api.statistiques(),
       api.programmeDuJour(),
       api.pointages(limite: 7),
+      api.classement(),
     ]);
     return _DonneesBord(
       resultats[0] as Pointage,
       resultats[1] as Statistiques,
       resultats[2] as List<Cours>,
       resultats[3] as List<Pointage>,
+      resultats[4] as Classement,
     );
   }
 
@@ -340,6 +345,8 @@ class _Contenu extends StatelessWidget {
       children: [
         const SizedBox(height: 56),
 
+        if (donnees.classement.moi != null) _CarteRang(classement: donnees.classement),
+
         const TitreSection('Ce mois-ci'),
         CarteApp(
           child: Row(
@@ -521,6 +528,87 @@ class _Mesure extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Rappel du classement sur le tableau de bord : le rang, l'objectif suivant,
+/// et un accès direct à l'écran complet.
+class _CarteRang extends StatelessWidget {
+  const _CarteRang({required this.classement});
+
+  final Classement classement;
+
+  @override
+  Widget build(BuildContext context) {
+    final moi = classement.moi!;
+    final objectif = classement.objectif;
+
+    return InkWell(
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => const ClassementEcran()),
+      ),
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          gradient: Charte.enTete,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Center(
+                child: moi.rang == 1
+                    ? const Icon(Icons.workspace_premium,
+                        color: Color(0xFFE0B341), size: 26)
+                    : Text(
+                        '${moi.rang}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 21,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 13),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    moi.rang == 1
+                        ? 'Première place de la section'
+                        : '${moi.rang}e sur ${classement.total} dans votre section',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    objectif?.phrase ?? '${moi.joursComplets} journées complètes ce mois-ci',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.82),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right,
+                color: Colors.white.withOpacity(0.8), size: 22),
+          ],
+        ),
+      ),
     );
   }
 }

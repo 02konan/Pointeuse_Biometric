@@ -205,3 +205,114 @@ class Notification {
         date: json['date']?.toString() ?? '',
       );
 }
+
+/// Une ligne du classement de la section.
+class RangEnseignant {
+  final int rang;
+  final String matricule;
+  final String nom;
+  final int joursPointes;
+  final int joursComplets;
+  final double heures;
+
+  const RangEnseignant({
+    required this.rang,
+    required this.matricule,
+    required this.nom,
+    required this.joursPointes,
+    required this.joursComplets,
+    required this.heures,
+  });
+
+  factory RangEnseignant.depuisJson(Map<String, dynamic> json) =>
+      RangEnseignant(
+        rang: (json['rang'] as num?)?.toInt() ?? 0,
+        matricule: json['matricule']?.toString() ?? '',
+        nom: json['nom']?.toString() ?? '',
+        joursPointes: (json['jours_pointes'] as num?)?.toInt() ?? 0,
+        joursComplets: (json['jours_complets'] as num?)?.toInt() ?? 0,
+        heures: (json['heures'] as num?)?.toDouble() ?? 0,
+      );
+
+  /// Initiale affichée dans la pastille, à défaut d'une photo.
+  String get initiale => nom.trim().isEmpty ? '?' : nom.trim()[0].toUpperCase();
+}
+
+/// Ce qu'il manque à l'utilisateur pour gagner une place.
+class Objectif {
+  final int rangVise;
+  final int journeesManquantes;
+  final double heuresManquantes;
+
+  const Objectif({
+    required this.rangVise,
+    required this.journeesManquantes,
+    required this.heuresManquantes,
+  });
+
+  factory Objectif.depuisJson(Map<String, dynamic> json) => Objectif(
+        rangVise: (json['rang_vise'] as num?)?.toInt() ?? 0,
+        journeesManquantes: (json['journees_manquantes'] as num?)?.toInt() ?? 0,
+        heuresManquantes: (json['heures_manquantes'] as num?)?.toDouble() ?? 0,
+      );
+
+  /// Phrase affichée à l'utilisateur, au singulier ou au pluriel.
+  String get phrase {
+    if (journeesManquantes > 0) {
+      final j = journeesManquantes;
+      return 'Encore $j journée${j > 1 ? 's' : ''} complète'
+          '${j > 1 ? 's' : ''} pour passer ${rangVise}e';
+    }
+    if (heuresManquantes > 0) {
+      return 'Encore ${heuresManquantes.toStringAsFixed(1)} h '
+          'pour passer ${rangVise}e';
+    }
+    return 'Vous jouez la ${rangVise}e place';
+  }
+}
+
+/// Classement complet d'une section sur un mois.
+class Classement {
+  final String mois;
+  final String? section;
+  final int total;
+  final List<RangEnseignant> lignes;
+  final RangEnseignant? moi;
+  final Objectif? objectif;
+
+  const Classement({
+    required this.mois,
+    required this.lignes,
+    required this.total,
+    this.section,
+    this.moi,
+    this.objectif,
+  });
+
+  factory Classement.depuisJson(Map<String, dynamic> json) {
+    final moiJson = (json['moi'] as Map?)?.cast<String, dynamic>();
+    final objectifJson =
+        (moiJson?['pour_gagner_un_rang'] as Map?)?.cast<String, dynamic>();
+    final lignes = ((json['classement'] as List?) ?? [])
+        .map((e) => RangEnseignant.depuisJson((e as Map).cast<String, dynamic>()))
+        .toList();
+    return Classement(
+      mois: json['mois']?.toString() ?? '',
+      section: json['section']?.toString(),
+      total: (json['total'] as num?)?.toInt() ?? lignes.length,
+      lignes: lignes,
+      moi: moiJson == null ? null : RangEnseignant.depuisJson(moiJson),
+      objectif: objectifJson == null ? null : Objectif.depuisJson(objectifJson),
+    );
+  }
+
+  /// Les trois premiers, dans l'ordre d'affichage du podium : 2e, 1er, 3e.
+  List<RangEnseignant?> get podium {
+    RangEnseignant? a(int rang) =>
+        lignes.length >= rang ? lignes[rang - 1] : null;
+    return [a(2), a(1), a(3)];
+  }
+
+  List<RangEnseignant> get suite =>
+      lignes.length > 3 ? lignes.sublist(3) : const [];
+}

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../services/session.dart';
 import '../theme.dart';
+import 'classement.dart';
 import 'notifications.dart';
 import 'pointages.dart';
 import 'profil.dart';
@@ -26,6 +27,7 @@ class _AccueilEcranState extends State<AccueilEcran> {
   static const _titres = [
     'Tableau de bord',
     'Mes pointages',
+    'Classement',
     'Emploi du temps',
     'Mon profil',
   ];
@@ -41,15 +43,16 @@ class _AccueilEcranState extends State<AccueilEcran> {
         ? const [
             TableauBordEcran(),
             PointagesEcran(),
+            ClassementEcran(),
             ProgrammeEcran(),
             ProfilEcran(),
           ]
         : const [ProfilEcran()];
 
     final index = _onglet.clamp(0, pages.length - 1);
-    // Tableau de bord et profil portent leur propre en-tête dégradé ;
-    // seuls Pointages et Programme reçoivent une barre d'application.
-    final avecBarre = enseignant && (index == 1 || index == 2);
+    // Tableau de bord, classement et profil portent leur propre en-tête
+    // dégradé ; seuls Pointages et Programme reçoivent une barre.
+    final avecBarre = enseignant && (index == 1 || index == 3);
 
     return Scaffold(
       appBar: !avecBarre
@@ -84,6 +87,10 @@ class _AccueilEcranState extends State<AccueilEcran> {
                     icon: Icon(Icons.access_time),
                     selectedIcon: Icon(Icons.access_time_filled),
                     label: 'Pointages'),
+                NavigationDestination(
+                    icon: Icon(Icons.emoji_events_outlined),
+                    selectedIcon: Icon(Icons.emoji_events),
+                    label: 'Classement'),
                 NavigationDestination(
                     icon: Icon(Icons.calendar_month_outlined),
                     selectedIcon: Icon(Icons.calendar_month),

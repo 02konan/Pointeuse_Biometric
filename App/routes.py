@@ -348,6 +348,48 @@ def programme_semaine():
 
 
 # ---------------------------------------------------------------------------
+# Classement
+# ---------------------------------------------------------------------------
+
+@api.get("/classement")
+@authentification_requise
+def classement():
+    """Classement de la section de l'utilisateur pour un mois donné.
+
+    La réponse porte aussi la position de l'appelant et ce qui lui manque
+    pour gagner un rang : un objectif atteignable motive davantage qu'un
+    numéro de place.
+    """
+    matricule, erreur = _exige_matricule()
+    if erreur:
+        return erreur
+
+    section = g.utilisateur.get("section")
+    donnees = api_mobile.classement(section, request.args.get("mois"))
+    lignes = donnees["classement"]
+
+    moi = next((l for l in lignes if l["matricule"] == matricule), None)
+    if moi:
+        moi = dict(moi)
+        rang = moi["rang"]
+        if rang > 1:
+            dessus = lignes[rang - 2]
+            manque = dessus["jours_complets"] - moi["jours_complets"]
+            moi["pour_gagner_un_rang"] = {
+                "rang_vise": rang - 1,
+                "journees_manquantes": max(manque, 0),
+                # À égalité de journées, ce sont les heures qui départagent.
+                "heures_manquantes": round(
+                    max(dessus["heures"] - moi["heures"], 0), 1)
+                if manque <= 0 else 0,
+            }
+
+    donnees["moi"] = moi
+    donnees["success"] = True
+    return jsonify(donnees)
+
+
+# ---------------------------------------------------------------------------
 # Notifications
 # ---------------------------------------------------------------------------
 

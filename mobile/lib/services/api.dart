@@ -236,6 +236,15 @@ class ApiClient {
   }
 
   // -------------------------------------------------------------------------
+  // Classement
+  // -------------------------------------------------------------------------
+
+  Future<Classement> classement({String? mois}) async {
+    final corps = await _get('/api/classement', {if (mois != null) 'mois': mois});
+    return Classement.depuisJson(corps);
+  }
+
+  // -------------------------------------------------------------------------
   // Notifications
   // -------------------------------------------------------------------------
 

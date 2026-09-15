@@ -334,6 +334,79 @@ def programme_semaine(matricule):
 
 
 # ---------------------------------------------------------------------------
+# Classement
+# ---------------------------------------------------------------------------
+
+def classement(section, mois=None, limite=50):
+    """Classement des enseignants d'une section sur un mois.
+
+    Le rang se joue d'abord sur le nombre de journées complètes (arrivée ET
+    départ pointés), les heures cumulées ne servant qu'à départager. Compter
+    les heures en premier récompenserait les journées interminables plutôt
+    que la régularité.
+
+    Les enseignants sans aucun pointage sur le mois ne sont pas classés : ils
+    apparaîtraient tous ex æquo en dernier, sans que l'on sache s'ils étaient
+    absents, en congé ou simplement non rattachés à une pointeuse.
+    """
+    reference = date.today()
+    if mois:
+        annee, numero = (int(part) for part in mois.split("-")[:2])
+        reference = date(annee, numero, 1)
+    debut = reference.replace(day=1)
+    fin = (debut + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+    lignes = _executer(
+        """
+        SELECT
+            j.matricule,
+            COALESCE(MAX(pr.professeur_nom), j.matricule) AS nom,
+            COUNT(*) AS jours_pointes,
+            SUM(j.complet) AS jours_complets,
+            SUM(j.secondes) AS secondes
+        FROM (
+            SELECT
+                p.IDEmploye AS matricule,
+                DATE(p.date_pointage) AS jour,
+                (COUNT(*) >= 2) AS complet,
+                CASE WHEN COUNT(*) >= 2
+                     THEN TIME_TO_SEC(TIMEDIFF(MAX(p.date_pointage),
+                                               MIN(p.date_pointage)))
+                     ELSE 0 END AS secondes
+            FROM pointages p
+            WHERE DATE(p.date_pointage) BETWEEN %s AND %s
+            GROUP BY p.IDEmploye, DATE(p.date_pointage)
+        ) AS j
+        JOIN employe e ON e.matricule = j.matricule
+        LEFT JOIN Programme pr ON pr.professeur_code = j.matricule
+        WHERE (%s IS NULL OR e.section = %s)
+        GROUP BY j.matricule
+        ORDER BY jours_complets DESC, secondes DESC, nom ASC
+        LIMIT %s
+        """,
+        (debut.isoformat(), fin.isoformat(), section, section, int(limite)),
+    )
+
+    resultat = []
+    for rang, ligne in enumerate(lignes, start=1):
+        resultat.append({
+            "rang": rang,
+            "matricule": ligne[0],
+            "nom": ligne[1],
+            "jours_pointes": ligne[2] or 0,
+            "jours_complets": int(ligne[3] or 0),
+            "heures": round((ligne[4] or 0) / 3600, 1),
+        })
+
+    return {
+        "mois": debut.strftime("%Y-%m"),
+        "section": section,
+        "total": len(resultat),
+        "classement": resultat,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Notifications  (table créée par database/migrations/001_mobile.sql)
 # ---------------------------------------------------------------------------
 
