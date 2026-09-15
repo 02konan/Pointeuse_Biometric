@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../services/api.dart';
 import '../services/session.dart';
+import '../theme.dart';
 import '../widgets/communs.dart';
 
 /// Profil de l'utilisateur : consultation, modification des coordonnées,
@@ -23,75 +24,139 @@ class ProfilEcran extends StatelessWidget {
     final utilisateur = session.utilisateur;
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.zero,
       children: [
-        Center(
+        // En-tête dégradé, identique à celui du tableau de bord.
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.fromLTRB(
+              20, MediaQuery.of(context).padding.top + 22, 20, 28),
+          decoration: const BoxDecoration(
+            gradient: Charte.enTete,
+            borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+          ),
           child: Column(
             children: [
-              CircleAvatar(
-                radius: 40,
-                child: Text(
-                  _initiale(profil?.nom ?? utilisateur?.nom),
-                  style: const TextStyle(fontSize: 30),
+              Container(
+                width: 84,
+                height: 84,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.18),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white.withOpacity(0.35), width: 2),
+                ),
+                child: Center(
+                  child: Text(
+                    _initiale(profil?.nom ?? utilisateur?.nom),
+                    style: const TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 12),
-              Text(profil?.nom ?? utilisateur?.nom ?? '',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold)),
-              if (utilisateur != null)
-                Chip(label: Text(utilisateur.role)),
+              const SizedBox(height: 14),
+              Text(
+                profil?.nom ?? utilisateur?.nom ?? '',
+                style: const TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              if (utilisateur != null) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.18),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    utilisateur.role,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 22),
 
-        if (profil != null) ...[
-          Card(
-            child: Column(
-              children: [
-                _Ligne(icone: Icons.badge_outlined, libelle: 'Matricule', valeur: profil.matricule),
-                _Ligne(icone: Icons.work_outline, libelle: 'Poste', valeur: profil.poste),
-                _Ligne(icone: Icons.apartment_outlined, libelle: 'Section', valeur: profil.section),
-                _Ligne(icone: Icons.phone_outlined, libelle: 'Téléphone', valeur: profil.telephone),
-                _Ligne(icone: Icons.mail_outline, libelle: 'Email', valeur: profil.email),
-                _Ligne(icone: Icons.home_outlined, libelle: 'Adresse', valeur: profil.adresse),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (profil != null) ...[
+                const TitreSection('Mes informations'),
+                CarteApp(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      _Ligne(icone: Icons.badge_outlined, libelle: 'Matricule', valeur: profil.matricule),
+                      _Ligne(icone: Icons.work_outline, libelle: 'Poste', valeur: profil.poste),
+                      _Ligne(icone: Icons.apartment_outlined, libelle: 'Section', valeur: profil.section),
+                      _Ligne(icone: Icons.phone_outlined, libelle: 'Téléphone', valeur: profil.telephone),
+                      _Ligne(icone: Icons.mail_outline, libelle: 'Email', valeur: profil.email),
+                      _Ligne(icone: Icons.home_outlined, libelle: 'Adresse', valeur: profil.adresse, dernier: true),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                OutlinedButton.icon(
+                  onPressed: () => _modifierCoordonnees(context),
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  label: const Text('Modifier mes coordonnées'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(46),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ] else
+                CarteApp(
+                  padding: const EdgeInsets.symmetric(vertical: 26),
+                  child: const EtatVide(
+                    icone: Icons.person_outline,
+                    message: 'Aucune fiche employé associée à ce compte',
+                  ),
+                ),
+
+              if (utilisateur?.type == 'utilisateur') ...[
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: () => _changerMotDePasse(context),
+                  icon: const Icon(Icons.lock_outline, size: 18),
+                  label: const Text('Changer mon mot de passe'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(46),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
               ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: () => _modifierCoordonnees(context),
-            icon: const Icon(Icons.edit_outlined),
-            label: const Text('Modifier mes coordonnées'),
-          ),
-        ] else
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: EtatVide(
-                icone: Icons.person_outline,
-                message: 'Aucune fiche employé associée à ce compte',
+
+              const SizedBox(height: 26),
+              FilledButton.tonalIcon(
+                onPressed: () => _confirmerDeconnexion(context),
+                icon: const Icon(Icons.logout, size: 18),
+                label: const Text('Déconnexion'),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
               ),
-            ),
+            ],
           ),
-
-        if (utilisateur?.type == 'utilisateur') ...[
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: () => _changerMotDePasse(context),
-            icon: const Icon(Icons.lock_outline),
-            label: const Text('Changer mon mot de passe'),
-          ),
-        ],
-
-        const SizedBox(height: 24),
-        FilledButton.tonalIcon(
-          onPressed: () => _confirmerDeconnexion(context),
-          icon: const Icon(Icons.logout),
-          label: const Text('Déconnexion'),
         ),
       ],
     );
@@ -236,21 +301,49 @@ class ProfilEcran extends StatelessWidget {
 }
 
 class _Ligne extends StatelessWidget {
-  const _Ligne({required this.icone, required this.libelle, this.valeur});
+  const _Ligne({
+    required this.icone,
+    required this.libelle,
+    this.valeur,
+    this.dernier = false,
+  });
 
   final IconData icone;
   final String libelle;
   final String? valeur;
+  final bool dernier;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      dense: true,
-      leading: Icon(icone, size: 20),
-      title: Text(libelle, style: Theme.of(context).textTheme.bodySmall),
-      subtitle: Text(
-        (valeur == null || valeur!.isEmpty) ? '—' : valeur!,
-        style: const TextStyle(fontWeight: FontWeight.w500),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 11),
+      decoration: dernier
+          ? null
+          : BoxDecoration(
+              border: Border(bottom: BorderSide(color: context.filet)),
+            ),
+      child: Row(
+        children: [
+          Icon(icone, size: 18, color: context.encreDouce),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  libelle,
+                  style: TextStyle(fontSize: 11, color: context.encreDouce),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  (valeur == null || valeur!.isEmpty) ? '—' : valeur!,
+                  style: const TextStyle(
+                      fontSize: 13.5, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

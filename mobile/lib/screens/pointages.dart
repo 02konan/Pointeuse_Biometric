@@ -6,8 +6,10 @@ import '../services/api.dart';
 import '../services/session.dart';
 import '../theme.dart';
 import '../widgets/communs.dart';
+import '../widgets/graphiques.dart';
 
-/// Historique des pointages, regroupés par journée.
+/// Historique des pointages présenté en frise : une colonne de repères relie
+/// les journées, chacune portant son arrivée, son départ et sa durée.
 class PointagesEcran extends StatefulWidget {
   const PointagesEcran({super.key});
 
@@ -50,39 +52,19 @@ class _PointagesEcranState extends State<PointagesEcran> {
     });
   }
 
-  void _effacerPeriode() {
-    setState(() {
-      _periode = null;
-      _pointages = _charger();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          child: Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _choisirPeriode,
-                  icon: const Icon(Icons.date_range),
-                  label: Text(_periode == null
-                      ? 'Toutes les dates'
-                      : '${_periode!.start.day}/${_periode!.start.month} – '
-                          '${_periode!.end.day}/${_periode!.end.month}'),
-                ),
-              ),
-              if (_periode != null)
-                IconButton(
-                  tooltip: 'Effacer le filtre',
-                  onPressed: _effacerPeriode,
-                  icon: const Icon(Icons.close),
-                ),
-            ],
-          ),
+        _BarreFiltre(
+          periode: _periode,
+          onChoisir: _choisirPeriode,
+          onEffacer: _periode == null
+              ? null
+              : () => setState(() {
+                    _periode = null;
+                    _pointages = _charger();
+                  }),
         ),
         Expanded(
           child: RefreshIndicator(
@@ -116,11 +98,25 @@ class _PointagesEcranState extends State<PointagesEcran> {
                   ]);
                 }
 
-                return ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                  itemCount: pointages.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 8),
-                  itemBuilder: (context, i) => _CartePointage(pointages[i]),
+                final total = pointages.fold<double>(0, (s, p) => s + p.heures);
+                final incomplets = pointages.where((p) => !p.complet).length;
+
+                return ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
+                  children: [
+                    _Bilan(
+                      journees: pointages.length,
+                      heures: total,
+                      incomplets: incomplets,
+                    ),
+                    const TitreSection('Détail des journées'),
+                    for (var i = 0; i < pointages.length; i++)
+                      _LigneFrise(
+                        pointage: pointages[i],
+                        premiere: i == 0,
+                        derniere: i == pointages.length - 1,
+                      ),
+                  ],
                 );
               },
             ),
@@ -131,55 +127,290 @@ class _PointagesEcranState extends State<PointagesEcran> {
   }
 }
 
-class _CartePointage extends StatelessWidget {
-  const _CartePointage(this.pointage);
+class _BarreFiltre extends StatelessWidget {
+  const _BarreFiltre({
+    required this.periode,
+    required this.onChoisir,
+    this.onEffacer,
+  });
+
+  final DateTimeRange? periode;
+  final VoidCallback onChoisir;
+  final VoidCallback? onEffacer;
+
+  @override
+  Widget build(BuildContext context) {
+    final actif = periode != null;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: onChoisir,
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: actif
+                      ? Charte.primaire.withOpacity(0.10)
+                      : context.surfaceCarte,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: actif ? Charte.primaire : context.filet),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.date_range,
+                        size: 18,
+                        color: actif ? Charte.primaire : context.encreDouce),
+                    const SizedBox(width: 9),
+                    Text(
+                      actif
+                          ? '${periode!.start.day}/${periode!.start.month} – '
+                              '${periode!.end.day}/${periode!.end.month}'
+                          : 'Toutes les dates',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        color: actif
+                            ? Charte.primaire
+                            : context.couleurs.onSurface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (onEffacer != null)
+            IconButton(
+              tooltip: 'Effacer le filtre',
+              onPressed: onEffacer,
+              icon: const Icon(Icons.close),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Trois chiffres de synthèse sur la période affichée.
+class _Bilan extends StatelessWidget {
+  const _Bilan({
+    required this.journees,
+    required this.heures,
+    required this.incomplets,
+  });
+
+  final int journees;
+  final double heures;
+  final int incomplets;
+
+  @override
+  Widget build(BuildContext context) {
+    return CarteApp(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        children: [
+          _Chiffre(valeur: '$journees', libelle: 'journées'),
+          Container(width: 1, height: 32, color: context.filet),
+          _Chiffre(valeur: heures.toStringAsFixed(1), libelle: 'heures'),
+          Container(width: 1, height: 32, color: context.filet),
+          _Chiffre(
+            valeur: '$incomplets',
+            libelle: 'incomplètes',
+            etat: incomplets > 0 ? 'alerte' : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Chiffre extends StatelessWidget {
+  const _Chiffre({required this.valeur, required this.libelle, this.etat});
+
+  final String valeur;
+  final String libelle;
+  final String? etat;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            valeur,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
+          ),
+          const SizedBox(height: 2),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (etat != null) ...[
+                Icon(Icons.error_outline,
+                    size: 11, color: Charte.statut(context, etat!)),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                libelle,
+                style: TextStyle(fontSize: 11, color: context.encreDouce),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Une journée sur la frise.
+class _LigneFrise extends StatelessWidget {
+  const _LigneFrise({
+    required this.pointage,
+    required this.premiere,
+    required this.derniere,
+  });
 
   final Pointage pointage;
+  final bool premiere;
+  final bool derniere;
 
   @override
   Widget build(BuildContext context) {
     final complet = pointage.complet;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            Container(
-              width: 4,
-              height: 42,
-              decoration: BoxDecoration(
-                color: complet ? Charte.succes : Charte.alerte,
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(pointage.date,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 2),
-                  Text(
-                    complet
-                        ? '${Pointage.heure(pointage.entree)} → '
-                            '${Pointage.heure(pointage.sortie)}'
-                        : 'Entrée ${Pointage.heure(pointage.entree)} · départ non enregistré',
-                    style: Theme.of(context).textTheme.bodySmall,
+    final etat = complet ? 'succes' : 'alerte';
+    final couleur = Charte.statut(context, etat);
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Colonne des repères
+          SizedBox(
+            width: 28,
+            child: Column(
+              children: [
+                Container(
+                  width: 2,
+                  height: 10,
+                  color: premiere ? Colors.transparent : context.filet,
+                ),
+                Container(
+                  width: 13,
+                  height: 13,
+                  decoration: BoxDecoration(
+                    color: context.surfaceCarte,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: couleur, width: 3),
                   ),
-                ],
+                ),
+                Expanded(
+                  child: Container(
+                    width: 2,
+                    color: derniere ? Colors.transparent : context.filet,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: CarteApp(
+                padding: const EdgeInsets.all(13),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            pointage.date,
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        if (complet)
+                          Text(
+                            Pointage.heure(pointage.duree),
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Charte.primaire,
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 9),
+                    if (complet)
+                      Row(
+                        children: [
+                          _Borne(
+                            icone: Icons.arrow_downward,
+                            heure: Pointage.heure(pointage.entree),
+                            etat: 'succes',
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Container(height: 1, color: context.filet),
+                          ),
+                          const SizedBox(width: 8),
+                          _Borne(
+                            icone: Icons.arrow_upward,
+                            heure: Pointage.heure(pointage.sortie),
+                            etat: 'danger',
+                          ),
+                        ],
+                      )
+                    else
+                      Row(
+                        children: [
+                          _Borne(
+                            icone: Icons.arrow_downward,
+                            heure: Pointage.heure(pointage.entree),
+                            etat: 'succes',
+                          ),
+                          const SizedBox(width: 10),
+                          const PastilleStatut(
+                            etat: 'alerte',
+                            libelle: 'Départ manquant',
+                            icone: Icons.error_outline,
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
               ),
             ),
-            if (complet)
-              Text(Pointage.heure(pointage.duree),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, color: Charte.primaire))
-            else
-              const Icon(Icons.warning_amber_rounded,
-                  color: Charte.alerte, size: 20),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class _Borne extends StatelessWidget {
+  const _Borne({required this.icone, required this.heure, required this.etat});
+
+  final IconData icone;
+  final String heure;
+  final String etat;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icone, size: 13, color: Charte.statut(context, etat)),
+        const SizedBox(width: 4),
+        Text(
+          heure,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+      ],
     );
   }
 }

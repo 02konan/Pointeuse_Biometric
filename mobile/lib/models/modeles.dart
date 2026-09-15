@@ -89,6 +89,30 @@ class Pointage {
         statut: json['statut']?.toString(),
       );
 
+  /// Durée convertie en heures décimales, pour les graphiques.
+  /// « 04:05:00 » → 4.083. Renvoie 0 si la durée est absente ou illisible.
+  double get heures {
+    final parties = (duree ?? '').split(':');
+    if (parties.length < 2) return 0;
+    final h = int.tryParse(parties[0]) ?? 0;
+    final m = int.tryParse(parties[1]) ?? 0;
+    return h + m / 60;
+  }
+
+  /// Jour de la semaine sur deux lettres, déduit de la date ISO.
+  String get initialeJour {
+    final d = DateTime.tryParse(date);
+    if (d == null) return '';
+    const jours = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'];
+    return jours[d.weekday - 1];
+  }
+
+  /// Jour du mois, pour l'axe du graphique.
+  String get jourDuMois {
+    final d = DateTime.tryParse(date);
+    return d == null ? date : '${d.day}';
+  }
+
   /// Heure seule, sans les secondes (« 07:58:00 » → « 07:58 »).
   static String heure(String? valeur) {
     if (valeur == null || valeur.isEmpty) return '--:--';

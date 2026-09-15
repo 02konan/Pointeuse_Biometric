@@ -74,51 +74,142 @@ class _NotificationsEcranState extends State<NotificationsEcran> {
               ]);
             }
 
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: notifications.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemBuilder: (context, i) {
-                final n = notifications[i];
-                final (icone, couleur) = switch (n.type) {
-                  'pointage' => (Icons.fingerprint, Charte.primaire),
-                  'retard' => (Icons.schedule, Charte.alerte),
-                  'absence' => (Icons.person_off_outlined, Charte.danger),
-                  _ => (Icons.info_outline, Charte.primaire),
-                };
-                return Card(
-                  color: n.lue
-                      ? null
-                      : Charte.primaire.withOpacity(0.06),
-                  child: ListTile(
-                    onTap: () => _marquerLue(n),
-                    leading: CircleAvatar(
-                      backgroundColor: couleur.withOpacity(0.12),
-                      child: Icon(icone, color: couleur, size: 20),
-                    ),
-                    title: Text(
-                      n.titre,
-                      style: TextStyle(
-                          fontWeight:
-                              n.lue ? FontWeight.normal : FontWeight.bold),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+            final nonLues = notifications.where((n) => !n.lue).length;
+
+            return ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+              children: [
+                if (nonLues > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: Row(
                       children: [
-                        Text(n.message),
-                        const SizedBox(height: 4),
-                        Text(n.date,
-                            style: Theme.of(context).textTheme.bodySmall),
+                        Container(
+                          width: 7,
+                          height: 7,
+                          decoration: const BoxDecoration(
+                            color: Charte.primaire,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          nonLues > 1
+                              ? '$nonLues notifications non lues'
+                              : '1 notification non lue',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                            color: context.encreDouce,
+                          ),
+                        ),
                       ],
                     ),
-                    trailing: n.lue
-                        ? null
-                        : const Icon(Icons.circle, size: 10, color: Charte.primaire),
                   ),
-                );
-              },
+                for (var i = 0; i < notifications.length; i++) ...[
+                  _CarteNotification(
+                    notification: notifications[i],
+                    onLue: () => _marquerLue(notifications[i]),
+                  ),
+                  if (i < notifications.length - 1) const SizedBox(height: 10),
+                ],
+              ],
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+/// Une notification : le type porte une icône dédiée, jamais une couleur seule.
+class _CarteNotification extends StatelessWidget {
+  const _CarteNotification({required this.notification, required this.onLue});
+
+  final modeles.Notification notification;
+  final VoidCallback onLue;
+
+  @override
+  Widget build(BuildContext context) {
+    final (icone, etat) = switch (notification.type) {
+      'pointage' => (Icons.fingerprint, 'neutre'),
+      'retard' => (Icons.schedule, 'alerte'),
+      'absence' => (Icons.person_off_outlined, 'danger'),
+      _ => (Icons.info_outline, 'neutre'),
+    };
+    final couleur = Charte.statut(context, etat);
+    final lue = notification.lue;
+
+    return InkWell(
+      onTap: lue ? null : onLue,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: context.surfaceCarte,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: lue ? context.filet : Charte.primaire.withOpacity(0.45),
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: couleur.withOpacity(0.13),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: Icon(icone, color: couleur, size: 19),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          notification.titre,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight:
+                                lue ? FontWeight.w500 : FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      if (!lue)
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Charte.primaire,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    notification.message,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      height: 1.4,
+                      color: context.encreDouce,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    notification.date,
+                    style: TextStyle(fontSize: 11, color: context.encreDouce),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

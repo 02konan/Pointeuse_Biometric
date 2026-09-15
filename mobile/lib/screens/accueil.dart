@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../services/session.dart';
+import '../theme.dart';
 import 'notifications.dart';
 import 'pointages.dart';
 import 'profil.dart';
 import 'programme.dart';
 import 'tableau_bord.dart';
 
-/// Écran principal : barre de navigation entre les quatre sections.
+/// Écran principal : navigation entre les quatre sections.
+///
+/// Le tableau de bord porte son propre en-tête dégradé et n'a donc pas de
+/// barre d'application ; les autres onglets en gardent une, classique.
 class AccueilEcran extends StatefulWidget {
   const AccueilEcran({super.key});
 
@@ -29,8 +33,8 @@ class _AccueilEcranState extends State<AccueilEcran> {
   @override
   Widget build(BuildContext context) {
     final utilisateur = context.watch<Session>().utilisateur;
-    // Les comptes d'administration n'ont ni pointages ni emploi du temps
-    // personnels : on ne leur propose que le profil.
+    // Un compte d'administration n'a ni pointages ni emploi du temps
+    // personnels : seul le profil lui est proposé.
     final enseignant = utilisateur?.estEnseignant ?? false;
 
     final pages = enseignant
@@ -43,25 +47,33 @@ class _AccueilEcranState extends State<AccueilEcran> {
         : const [ProfilEcran()];
 
     final index = _onglet.clamp(0, pages.length - 1);
+    // Tableau de bord et profil portent leur propre en-tête dégradé ;
+    // seuls Pointages et Programme reçoivent une barre d'application.
+    final avecBarre = enseignant && (index == 1 || index == 2);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(enseignant ? _titres[index] : 'Mon profil'),
-        actions: [
-          if (enseignant)
-            IconButton(
-              tooltip: 'Notifications',
-              icon: const Icon(Icons.notifications_none),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const NotificationsEcran()),
-              ),
+      appBar: !avecBarre
+          ? null
+          : AppBar(
+              title: Text(_titres[index]),
+              actions: [
+                if (enseignant)
+                  IconButton(
+                    tooltip: 'Notifications',
+                    icon: const Icon(Icons.notifications_none),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (_) => const NotificationsEcran()),
+                    ),
+                  ),
+              ],
             ),
-        ],
-      ),
       body: pages[index],
       bottomNavigationBar: enseignant
           ? NavigationBar(
               selectedIndex: index,
+              height: 66,
+              backgroundColor: context.surfaceCarte,
               onDestinationSelected: (i) => setState(() => _onglet = i),
               destinations: const [
                 NavigationDestination(
