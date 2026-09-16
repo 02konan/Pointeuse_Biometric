@@ -1,101 +1,103 @@
 <!DOCTYPE html>
 <html lang="fr">
   <head>
-    {%include "header.html"%}
+    {% include "header.html" %}
   </head>
   <body>
-    <!-- Loader -->
-    <div
-      id="loader"
-      style="
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(255, 255, 255, 0.8);
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      "
-    >
-      <div
-        class="spinner-border text-primary"
-        role="status"
-        style="width: 4rem; height: 4rem"
-      >
-        <span class="visually-hidden">Chargement...</span>
+    <!-- Écran de chargement -->
+    <div id="loader" role="status" aria-live="polite">
+      <div class="loader-mark">
+        <i class="fas fa-fingerprint"></i>
+        <span class="visually-hidden">Chargement…</span>
+        <span aria-hidden="true">Chargement</span>
       </div>
     </div>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-      <div class="container-fluid">
-        <button id="sidebar-toggle" class="btn">
-          <i class="fas fa-bars"></i>
-        </button>
-        <div class="d-flex align-items-center ms-auto">
-          <div class="dropdown">
-            <button
-              class="btn dropdown-toggle d-flex align-items-center"
-              type="button"
-              id="dropdownMenuButton"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <div class="avatar me-2">
-                <img
-                  src="static\images\icons8-test-account-96.png"
-                  alt="Admin"
-                />
-              </div>
-              <span>{{ session['username'] }}</span>
-            </button>
-            <ul
-              class="dropdown-menu dropdown-menu-end"
-              aria-labelledby="dropdownMenuButton"
-            >
-              <li>
-                <a class="dropdown-item" href="#"
-                  ><i class="fas fa-user me-2"></i> Profil</a
-                >
-              </li>
-              <!-- <li><a class="dropdown-item" href="{{ url_for('intf_Parametres') }}"><i class="fas fa-cog me-2"></i> Paramètres</a></li>
-                        <li><hr class="dropdown-divider"></li> -->
-              <li>
-                <a class="dropdown-item" href="/logout" id="dropdown-logout"
-                  ><i class="fas fa-sign-out-alt me-2"></i> Déconnexion</a
-                >
-              </li>
-            </ul>
+
+    {% set role = (session['role'] or '')|lower %}
+    {% set titres = {
+      'index': ('Tableau de bord', "Vue d'ensemble de l'activité de pointage"),
+      'employee': ('Employés', 'Annuaire et fiches du personnel'),
+      'pointage': ('Historique des pointages', 'Tous les passages enregistrés sur les pointeuses'),
+      'presence': ('Pointages valides', 'Présences confirmées par la biométrie'),
+      'pointage_invalie': ('Pointages invalides', 'Passages à contrôler puis valider'),
+      'rapports': ('Rapports', 'Génération des fiches de présence et d’émargement'),
+      'appareils': ('Pointeuses', 'État et configuration des terminaux biométriques'),
+      'utilisateurs': ('Utilisateurs', 'Comptes et droits d’accès'),
+      'parametres': ('Paramètres', 'Configuration du système')
+    } %}
+    {% set titre_page = titres.get(active_page, ('BiometricWeb', 'Pointage biométrique')) %}
+
+    <div class="app-shell">
+      {% include "Sidebar.html" %}
+      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+      <div class="main-content" id="main-content">
+        <header class="topbar">
+          <button class="topbar-toggle" id="sidebar-toggle" type="button"
+                  aria-label="Afficher ou masquer le menu" aria-controls="sidebar">
+            <i class="fas fa-bars"></i>
+          </button>
+
+          <div class="topbar-title">
+            <strong>{{ titre_page[0] }}</strong>
+            <small class="d-none d-md-block">{{ titre_page[1] }}</small>
           </div>
-        </div>
+
+          <div class="topbar-actions">
+            <div class="topbar-clock">
+              <i class="fas fa-calendar-day"></i>
+              <span id="topbar-date"></span>
+            </div>
+
+            <button class="icon-btn" id="theme-toggle" type="button" aria-label="Basculer le thème clair/sombre" title="Thème clair / sombre">
+              <i class="fas fa-moon"></i>
+            </button>
+
+            <div class="dropdown">
+              <button class="user-chip dropdown-toggle" type="button" id="dropdownMenuButton"
+                      data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="avatar avatar-sm">
+                  <img src="{{ url_for('static', filename='images/icons8-test-account-96.png') }}" alt="" />
+                </span>
+                <span class="user-chip-name">
+                  <strong>{{ session['username'] }}</strong>
+                  <small>{{ session['role'] }}</small>
+                </span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                <li class="px-3 py-2 d-md-none">
+                  <div class="fw-semibold">{{ session['username'] }}</div>
+                  <div class="text-muted small text-capitalize">{{ session['role'] }}</div>
+                </li>
+                <li><hr class="dropdown-divider d-md-none" /></li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('logout') }}" id="dropdown-logout">
+                    <i class="fas fa-right-from-bracket me-2"></i> Déconnexion
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </header>
+
+        {% include "flash.html" %}
+
+        <main class="page-body">
+          {% block content %}
+            {% if active_page == 'index' %}
+              {% if role == 'superadmin' %}
+                {% include "DashboardAdmin.html" %}
+              {% elif role == 'admin' %}
+                {% include "Dashboard.html" %}
+              {% else %}
+                {% include "DashboardUser.html" %}
+              {% endif %}
+            {% endif %}
+          {% endblock %}
+        </main>
       </div>
-    </nav>
-    <!-- Sous-barre pour combler le vide -->
-    <div class="bg-white py-2 px-4" style="min-height: 48px">
-      <!-- Tu peux ajouter ici du texte, des liens ou laisser vide pour juste combler l'espace -->
     </div>
-    <div id="dashboard">
-      {%include "Sidebar.html"%}
-        <div class="main-content">
-      {% block content %}
-      {% if active_page == 'index' %}
-        {% if session['role']|lower == 'admin' %}
-          {% include "Dashboard.html" %}
-        {% elif session['role']|lower == 'superadmin' %}
-          {% include "DashboardAdmin.html" %}
-        {% else %} 
-          {% include "DashboardUser.html" %} 
-        {% endif %}
-      {% endif %}
-      {% endblock %}
-        </div>
-    </div>
-    {%include "footer.html"%}
-    <script>
-      window.addEventListener("load", function () {
-        document.getElementById("loader").style.display = "none";
-      });
-    </script>
+
+    {% include "footer.html" %}
   </body>
 </html>

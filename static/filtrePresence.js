@@ -1,63 +1,74 @@
-document.addEventListener("DOMContentLoaded", function() {
-  const table = document.getElementById("Table");
-  const statutSelect = document.querySelector("select.form-select");
-  const dateInputs = document.querySelectorAll("input[type='date']");
-  const recherche=document.querySelectorAll("input[type='search']");
-  const nbrlignes=document.getElementById("lignesaffichees")
+/* =====================================================================
+   BiometricWeb — filtres de la page « Pointage valide »
+   Recherche libre, intervalle de dates et statut. La pagination gère
+   ensuite le découpage en pages et le nombre de lignes affichées.
+   ===================================================================== */
+(function () {
+  "use strict";
 
-  function filterTable() {
-    const debut = dateInputs[0].value ? new Date(dateInputs[0].value) : null;
-    const fin = dateInputs[1].value ? new Date(dateInputs[1].value) : null;
-    const statut = statutSelect.value;
-    const recherchevaleur = (recherche[0] && recherche[0].value) ? recherche[0].value.toLowerCase() : '';
-    const nbrlignesvaleur = parseInt(nbrlignes.value, 10) || null;
-
-    const rows = table.querySelectorAll("tbody tr");
-    rows.forEach(row => {
-      // Récupère la date
-      const dateText = row.children[2]?.textContent.trim(); // "dd/mm/yyyy" ou "yyyy-mm-dd"
-      let rowDate = null;
-      if (dateText.includes("/")) {
-        const parts = dateText.split("/");
-        rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
-      } else if (dateText.includes("-")) {
-        const parts = dateText.split("-");
-        rowDate = new Date(parts[0], parts[1] - 1, parts[2]);
-      }
-
-      // Filtre date
-      let matchDate = true;
-      if (debut && rowDate && rowDate < debut) matchDate = false;
-      if (fin && rowDate && rowDate > fin) matchDate = false;
-
-      // Filtre statut
-      const rowStatut = row.children[8]?.textContent.trim();
-      let matchStatut = (statut === 'Tous les statuts') || (rowStatut === statut);
-
-      row.style.display = (matchDate && matchStatut) ? '' : 'none';
-
-      // Filtre recherche
-      const rowText = row.textContent.toLowerCase();
-      let matchRecherche = (recherchevaleur === '') || rowText.includes(recherchevaleur);
-
-      // Appliquer le filtre de recherche
-      if (!matchRecherche) {
-        row.style.display = 'none';
-      }
-
-    });
-
-    // Limiter le nombre de lignes affichées (appliqué après tous les filtres)
-    if (nbrlignesvaleur) {
-      const visibleRows = Array.from(rows).filter(r => r.style.display !== 'none');
-      if (visibleRows.length > nbrlignesvaleur) {
-        visibleRows.slice(nbrlignesvaleur).forEach(r => r.style.display = 'none');
-      }
-    }
+  function parseDate(str) {
+    if (!str) return null;
+    str = String(str).trim();
+    let m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
+    m = str.match(/^(\d{2})[/-](\d{2})[/-](\d{4})$/);
+    if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+    return null;
   }
 
-  statutSelect.addEventListener("change", filterTable);
-  dateInputs.forEach(input => input.addEventListener("change", filterTable));
-  recherche[0].addEventListener("input", filterTable);
-  nbrlignes.addEventListener("change", filterTable);
-});
+  document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("Table");
+    if (!table) return;
+
+    const statutSelect = document.getElementById("filtre-statut");
+    const dateDebut = document.getElementById("filtre-date-debut");
+    const dateFin = document.getElementById("filtre-date-fin");
+    const recherche = document.getElementById("filtre-recherche");
+
+    function filtrer() {
+      const debut = parseDate(dateDebut && dateDebut.value);
+      const finBrute = parseDate(dateFin && dateFin.value);
+      const fin = finBrute ? new Date(finBrute.setHours(23, 59, 59, 999)) : null;
+      const statut = statutSelect ? statutSelect.value : "tous";
+      const q = recherche ? recherche.value.trim().toLowerCase() : "";
+
+      table.querySelectorAll("tbody tr").forEach(function (row) {
+        if (row.dataset.emptyState === "true") return;
+        // Colonnes : 0=ID 1=Employé 2=Date 3=Jour 4=Arrivée 5=Départ
+        //            6=Durée prévue 7=Durée effectuée 8=Statut
+        const dateLigne = parseDate(row.cells[2] && row.cells[2].textContent);
+        const statutLigne = row.cells[8] ? row.cells[8].textContent.trim() : "";
+
+        let afficher = true;
+        if (statut !== "tous" && statutLigne !== statut) afficher = false;
+        if (debut && (!dateLigne || dateLigne < debut)) afficher = false;
+        if (fin && (!dateLigne || dateLigne > fin)) afficher = false;
+        if (q && !row.textContent.toLowerCase().includes(q)) afficher = false;
+
+        row.dataset.filtered = afficher ? "" : "hidden";
+      });
+
+      document.dispatchEvent(
+        new CustomEvent("bw:filtre", { detail: { table: table } })
+      );
+    }
+
+    [statutSelect, dateDebut, dateFin].forEach(function (el) {
+      if (el) el.addEventListener("change", filtrer);
+    });
+    if (recherche) recherche.addEventListener("input", filtrer);
+
+    const reset = document.getElementById("reset-filtres");
+    if (reset) {
+      reset.addEventListener("click", function () {
+        [dateDebut, dateFin, recherche].forEach(function (el) {
+          if (el) el.value = "";
+        });
+        if (statutSelect) statutSelect.value = "tous";
+        filtrer();
+      });
+    }
+
+    filtrer();
+  });
+})();
