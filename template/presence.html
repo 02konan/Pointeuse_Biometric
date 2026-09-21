@@ -1,175 +1,123 @@
-{% extends 'index.html' %} {% block content %}
+{% extends 'index.html' %}
+{% block content %}
 <div id="attendance-content" class="content-section">
-  <div class="container-fluid p-4">
-    <h2
-      class="mb-4 text-center p-3 bg-primary text-white rounded shadow-sm w-100"
-    >
-      Gestion de la Présence
-    </h2>
-    <div class="card mb-4">
-      <div class="card-body">
-        <div class="row g-3">
-          <div class="col-md-3">
-            <label class="form-label">Date de début</label>
-            <input type="date" class="form-control" />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Date de fin</label>
-            <input type="date" class="form-control" />
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Statut</label>
-            <select class="form-select">
-              <option selected>Tous les statuts</option>
-              <option>Présent</option>
-              <option>Absent</option>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Nombre de lignes</label>
-            <select name="" class="form-select" id="lignesaffichees"> >
-              <option value="5">5</option>
-              <option value="10" selected>10</option>
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </div>
-        </div>
-      </div>
+  {% set lignes = (resultats or []) + (resultats_admin or []) %}
+
+  <div class="page-header">
+    <div>
+      <h1><span class="page-header-icon"><i class="fas fa-circle-check"></i></span> Pointages valides</h1>
+      <p>Journées de présence reconstituées à partir des passages biométriques.</p>
     </div>
-    <div class="card mb-2">
-      <div class="card-body">
-        <div class="row g-2">
-          <div class="col-md-12">
-            <label class="form-label">Recherche:</label>
-            <input type="search" class="form-control" placeholder="chercher ici...">
+    <div class="page-header-actions">
+      <span class="badge text-bg-light border">{{ lignes|length }} enregistrement{{ 's' if lignes|length > 1 else '' }}</span>
+      <button class="btn btn-outline-primary btn-sm" type="button" onclick="window.print()">
+        <i class="fas fa-print me-2"></i>Imprimer
+      </button>
+    </div>
+  </div>
+
+  <div class="card mb-3 filter-bar">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-lg-4 col-md-12">
+          <label class="form-label" for="filtre-recherche">Recherche</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-magnifying-glass"></i></span>
+            <input type="search" id="filtre-recherche" class="form-control" placeholder="Nom, matricule…" />
           </div>
         </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-hover" id="Table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Employé</th>
-                <th>Date</th>
-                <th>jour</th>
-                <th>Arrivée</th>
-                <th>Départ</th>
-                <th>Duree de Cours</th>
-                <th>Duree Effectuer</th>
-                <th>Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% if resultats|length == 0 and resultats_admin|length == 0 %}
-              <tr>
-                <td colspan="9" class="text-center text-muted">
-                  Aucune donnée disponible
-                </td>
-              </tr>
-              {% else %} {% if resultats|length > 0 %} {% for attendance in
-              resultats %}
-              <tr>
-                <td>{{ attendance.Matricule }}</td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="avatar me-2">
-                      <img
-                        src="{{ url_for('static', filename='images/icons8-life-cycle-96.png') }}"
-                        alt="avatar"
-                      />
-                    </div>
-                    <div>{{ attendance.Nom }}</div>
-                  </div>
-                </td>
-                <td>
-                  {% if attendance.Date is string %} {{ attendance.Date }} {%
-                  else %} {{ attendance.Date.strftime('%d/%m/%Y')}} {% endif %}
-                </td>
-                <td>{{ attendance.jour }}</td>
-                <td>{{ attendance.arrivee }}</td>
-                <td>{{ attendance.depart }}</td>
-                <td>
-                  <span class="text-success"
-                    >{{ attendance.Duree_initial }}<span
-                      style="font-size: 0.85em"
-                      >s</span
-                    ></span
-                  >
-                </td>
-                <td>
-                  <span class="text-danger"
-                    >{{ attendance.Duree_presence }}<span
-                      style="font-size: 0.85em"
-                      >s</span
-                    ></span
-                  >
-                </td>
-                <td>
-                  <span class="badge bg-{{ attendance.couleur_statut }}">
-                    {{ attendance.Statut }}
-                  </span>
-                </td>
-              </tr>
-              {% endfor %} {% endif %} {% if resultats_admin|length > 0 %} {%
-              for attendance in resultats_admin %}
-              <tr>
-                <td>{{ attendance.Matricule }}</td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="avatar me-2">
-                      <img
-                        src="{{ url_for('static', filename='images/icons8-life-cycle-96.png') }}"
-                        alt="avatar"
-                      />
-                    </div>
-                    <div>{{ attendance.Nom }}</div>
-                  </div>
-                </td>
-                <td>
-                  {% if attendance.Date is string %} {{ attendance.Date }} {%
-                  else %} {{ attendance.Date.strftime('%d/%m/%Y') }} {% endif %}
-                </td>
-                <td>{{ attendance.jour }}</td>
-                <td>{{ attendance.arrivee }}</td>
-                <td>{{ attendance.depart }}</td>
-                <td>
-                  <span class="text-success"
-                    >{{ attendance.Duree_initial }}<span
-                      style="font-size: 0.85em"
-                      >s</span
-                    ></span
-                  >
-                </td>
-                <td>
-                  <span class="text-danger"
-                    >{{ attendance.Duree_presence }}<span
-                      style="font-size: 0.85em"
-                      >s</span
-                    ></span
-                  >
-                </td>
-                <td>
-                  <span class="badge bg-{{ attendance.couleur_statut }}">
-                    {{ attendance.Statut }}
-                  </span>
-                </td>
-              </tr>
-              {% endfor %} {% endif %} {% endif %}
-            </tbody>
-          </table>
+        <div class="col-lg-2 col-md-3 col-6">
+          <label class="form-label" for="filtre-date-debut">Date de début</label>
+          <input type="date" id="filtre-date-debut" class="form-control" />
         </div>
-        <nav aria-label="Page navigation" class="mt-4">
-          <ul class="pagination justify-content-center"></ul>
-        </nav>
+        <div class="col-lg-2 col-md-3 col-6">
+          <label class="form-label" for="filtre-date-fin">Date de fin</label>
+          <input type="date" id="filtre-date-fin" class="form-control" />
+        </div>
+        <div class="col-lg-2 col-md-3 col-6">
+          <label class="form-label" for="filtre-statut">Statut</label>
+          <select class="form-select" id="filtre-statut">
+            <option value="tous" selected>Tous les statuts</option>
+            <option value="Présent">Présent</option>
+            <option value="Absent">Absent</option>
+          </select>
+        </div>
+        <div class="col-lg-1 col-md-3 col-6">
+          <label class="form-label" for="lignesaffichees">Lignes</label>
+          <select class="form-select" id="lignesaffichees">
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <div class="col-lg-1 col-md-3 col-6">
+          <button class="btn btn-outline-secondary w-100" type="button" id="reset-filtres" title="Réinitialiser les filtres">
+            <i class="fas fa-rotate-left"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle" id="Table">
+          <thead>
+            <tr>
+              <th>Matricule</th>
+              <th>Employé</th>
+              <th>Date</th>
+              <th>Jour</th>
+              <th>Arrivée</th>
+              <th>Départ</th>
+              <th>Durée prévue</th>
+              <th>Durée effectuée</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-empty-state="true">
+              <td colspan="9">
+                <div class="empty-state">
+                  <i class="fas fa-inbox"></i>
+                  Aucun pointage ne correspond à votre recherche.
+                </div>
+              </td>
+            </tr>
+            {% for attendance in lignes %}
+            <tr>
+              <td class="text-muted">{{ attendance.Matricule }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar avatar-sm me-2">
+                    <img src="{{ url_for('static', filename='images/icons8-life-cycle-96.png') }}" alt="" />
+                  </div>
+                  <span class="fw-semibold">{{ attendance.Nom }}</span>
+                </div>
+              </td>
+              <td>
+                {% if attendance.Date is string %}{{ attendance.Date }}{% else %}{{ attendance.Date.strftime('%d/%m/%Y') }}{% endif %}
+              </td>
+              <td>{{ attendance.jour }}</td>
+              <td><i class="fas fa-arrow-right-to-bracket text-success me-1"></i>{{ attendance.arrivee }}</td>
+              <td><i class="fas fa-arrow-right-from-bracket text-danger me-1"></i>{{ attendance.depart }}</td>
+              <td class="text-muted">{{ attendance.Duree_initial }}</td>
+              <td class="fw-semibold">{{ attendance.Duree_presence }}</td>
+              <td>
+                <span class="badge bg-{{ attendance.couleur_statut }}">{{ attendance.Statut }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <nav aria-label="Pagination du tableau" class="mt-3">
+        <ul class="pagination justify-content-center"></ul>
+      </nav>
+    </div>
+  </div>
 </div>
-<script src="/static/filtrePresence.js"></script>
+<script src="{{ url_for('static', filename='filtrePresence.js') }}"></script>
 {% endblock %}
