@@ -292,7 +292,7 @@ def statistiques(matricule, mois=None):
 def programme(matricule):
     lignes = _executer(
         """
-        SELECT professeur_code, professeur_nom, jour, Matiere,
+        SELECT professeur_code, professeur_nom, jour,
                heure_arrivee, heure_depart, duree_cours, section, type_edt
         FROM Programme
         WHERE professeur_code = %s
@@ -305,12 +305,11 @@ def programme(matricule):
             "matricule": ligne[0],
             "enseignant": ligne[1],
             "jour": _texte(ligne[2]),
-            "matiere": ligne[3],
-            "heure_arrivee": _texte(ligne[4]),
-            "heure_depart": _texte(ligne[5]),
-            "duree": _texte(ligne[6]),
-            "section": ligne[7],
-            "type": ligne[8],
+            "heure_arrivee": _texte(ligne[3]),
+            "heure_depart": _texte(ligne[4]),
+            "duree": _texte(ligne[5]),
+            "section": ligne[6],
+            "type": ligne[7],
         }
         for ligne in lignes
     ]
