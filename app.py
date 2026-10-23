@@ -6,7 +6,7 @@ from programme.attendance import listen_attendance,synchronisation_attendance,pr
 from programme.insertion import insertion_
 from programme.read_superadmin import historique_data,read_data_Admin,read_pointage,read_admin_presence,pointage_admin_invalid,data_chatjs,generer_presence_idsection,generer_presence_idemployee
 from programme.transfert_empreintes import transfert_empreintes
-from programme.enrollement import enroler_utilisateur
+from programme.enrollement import enroler_carte, enroler_utilisateur
 from werkzeug.utils import secure_filename
 from programme.gerenerateurPdf import generer_fiche_presence_pdf
 from datetime import datetime,timedelta
@@ -710,23 +710,43 @@ class WebController:
         return render_template('parametre.html', active_page='parametres')
 
     @staticmethod
+    @login_required
     def Programme_Enrollement():
-        if request.method == 'POST':
-         idutilisateur = request.form.get('uid')
-         codeutilisateur = request.form.get('user_id')
-         utilisateur = request.form.get('name_user')
-         idemprientes = request.form.get('finger_id')
+        code_utilisateur = request.form.get('user_id', '').strip()
+        utilisateur = request.form.get('name_user', '').strip()
+        type_enrolement = request.form.get('enrollment_type')
+
+        if not code_utilisateur or not utilisateur:
+            flash("Sélectionnez un employé avant de lancer l'enrôlement.", "danger")
+            return redirect(url_for('intf_employee'))
+
+        if type_enrolement == 'fingerprint':
+            succes = enroler_utilisateur(
+                uid=None,
+                user_id=code_utilisateur,
+                name=utilisateur,
+                finger_index=0,
+            )
+        elif type_enrolement == 'card':
+            numero_carte = request.form.get('card_number', '').strip()
+            if not numero_carte.isdigit() or not 1 <= int(numero_carte) <= 4294967295:
+                flash("Saisissez un numéro de carte valide.", "danger")
+                return redirect(url_for('intf_employee'))
+            succes = enroler_carte(
+                user_id=code_utilisateur,
+                name=utilisateur,
+                card_number=int(numero_carte),
+            )
         else:
-         idutilisateur = request.args.get('uid')
-         codeutilisateur = request.args.get('user_id')
-         utilisateur = request.args.get('name_user')
-         idemprientes = request.args.get('finger_id')
-        succes=enroler_utilisateur(uid=idutilisateur,user_id=codeutilisateur, name=utilisateur, finger_index=idemprientes)
+            flash("Choisissez un type d'enrôlement valide.", "danger")
+            return redirect(url_for('intf_employee'))
+
         if succes:
-            flash(f"Utilisateur {utilisateur} enrôlé avec succès !", "success")
+            libelle = "carte" if type_enrolement == 'card' else "empreinte"
+            flash(f"{libelle.capitalize()} enrôlée pour {utilisateur}.", "success")
         else:
-            erreur=flash("Erreur lors de l'enrôlement.", "danger")
-            return render_template('employee.html', active_page='employee',erreur=erreur)
+            flash(f"Échec de l'enrôlement pour {utilisateur}. Vérifiez la connexion à la pointeuse.", "danger")
+        return redirect(url_for('intf_employee'))
 
     @staticmethod
     @login_required

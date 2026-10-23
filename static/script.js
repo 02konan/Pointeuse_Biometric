@@ -226,6 +226,43 @@
     });
   }
 
+  function initModaleEnrolement() {
+    const modal = document.getElementById("enrollEmployeeModal");
+    if (!modal) return;
+
+    const formulaire = modal.querySelector("form");
+    const type = document.getElementById("enrollmentType");
+    const groupeCarte = document.getElementById("cardNumberGroup");
+    const numeroCarte = document.getElementById("cardNumber");
+    const aideEmpreinte = document.getElementById("fingerprintHelp");
+    const nomAffiche = document.getElementById("enrollEmployeeName");
+    const idEmploye = document.getElementById("enrollEmployeeId");
+    const nomEmploye = document.getElementById("enrollEmployeeNameValue");
+    if (!formulaire || !type || !groupeCarte || !numeroCarte) return;
+
+    function afficherTypeEnrolement() {
+      const carte = type.value === "card";
+      groupeCarte.hidden = !carte;
+      numeroCarte.required = carte;
+      if (aideEmpreinte) aideEmpreinte.hidden = carte;
+    }
+
+    type.addEventListener("change", afficherTypeEnrolement);
+    modal.addEventListener("show.bs.modal", function (event) {
+      const bouton = event.relatedTarget;
+      if (!bouton) return;
+      const id = bouton.getAttribute("data-id") || "";
+      const nom = bouton.getAttribute("data-nom") || "";
+      idEmploye.value = id;
+      nomEmploye.value = nom;
+      if (nomAffiche) nomAffiche.textContent = nom;
+      formulaire.reset();
+      idEmploye.value = id;
+      nomEmploye.value = nom;
+      afficherTypeEnrolement();
+    });
+  }
+
   /* ---------------- Démarrage ---------------- */
   document.addEventListener("DOMContentLoaded", function () {
     initLoader();
@@ -235,5 +272,6 @@
     initClock();
     initRechercheTableau();
     initModaleEmploye();
+    initModaleEnrolement();
   });
 })();
