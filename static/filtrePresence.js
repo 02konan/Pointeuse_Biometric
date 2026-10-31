@@ -1,5 +1,5 @@
 /* =====================================================================
-   BiometricWeb — filtres de la page « Pointage valide »
+   Divix — filtres de la page « Pointage valide »
    Recherche libre, intervalle de dates et statut. La pagination gère
    ensuite le découpage en pages et le nombre de lignes affichées.
    ===================================================================== */

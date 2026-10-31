@@ -1,5 +1,5 @@
 /* =====================================================================
-   BiometricWeb — pagination des tableaux
+   Divix — pagination des tableaux
    Seul responsable de la visibilité des lignes : une ligne est affichée
    si elle passe les filtres (data-filtered) ET appartient à la page
    courante. Les scripts de filtrage se contentent de marquer les lignes

@@ -1,5 +1,5 @@
 /* =====================================================================
-   BiometricWeb — tableau de bord (admin de section / professeur)
+   Divix — tableau de bord (admin de section / professeur)
    Alimente les compteurs, les barres de progression, les graphiques et
    la liste d'activité à partir de /api/dashboard.
    ===================================================================== */

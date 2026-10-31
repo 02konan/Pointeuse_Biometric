@@ -1,5 +1,5 @@
 /* =====================================================================
-   BiometricWeb — filtres de l'historique des pointages
+   Divix — filtres de l'historique des pointages
    Filtre par recherche, section, statut et intervalle de dates, puis
    délègue l'affichage à la pagination (évènement « bw:filtre »).
    ===================================================================== */

@@ -1,5 +1,5 @@
 /* =====================================================================
-   BiometricWeb — socle d'interface
+   Divix — socle d'interface
    Sidebar, thème clair/sombre, toasts, horloge, recherche de tableau.
    Toutes les fonctions sont défensives : une page qui ne contient pas
    un élément n'interrompt plus l'exécution des autres modules.

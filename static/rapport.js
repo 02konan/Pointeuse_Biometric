@@ -1,5 +1,5 @@
 /* =====================================================================
-   BiometricWeb — page Rapports
+   Divix — page Rapports
    Génération des fiches PDF (admin / superadmin), liste des rapports
    déjà produits, téléchargement, impression et suppression.
    ===================================================================== */
