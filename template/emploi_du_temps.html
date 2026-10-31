@@ -1,0 +1,183 @@
+{% extends 'index.html' %}
+{% block content %}
+<div id="emploi-du-temps-content" class="content-section">
+  {% set jours = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'] %}
+
+  <div class="page-header">
+    <div>
+      <h1><span class="page-header-icon"><i class="fas fa-calendar-days"></i></span> Emploi du temps</h1>
+      <p>Cours programmés par enseignant. Les pointages sont confrontés à ces horaires.</p>
+    </div>
+    <div class="page-header-actions">
+      <span class="badge text-bg-light border">
+        {{ cours|length }} cours · {{ enseignants }} enseignant{{ 's' if enseignants > 1 else '' }}
+      </span>
+      <a class="btn btn-outline-primary" href="{{ url_for('modele_emploi_du_temps') }}">
+        <i class="fas fa-file-arrow-down me-2"></i>Modèle CSV
+      </a>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#importModal">
+        <i class="fas fa-file-import me-2"></i>Importer
+      </button>
+    </div>
+  </div>
+
+  {% if erreurs_import %}
+  <div class="alert alert-danger" role="alert">
+    <div class="fw-semibold mb-2">
+      <i class="fas fa-triangle-exclamation me-2"></i>Import refusé : corrigez ces lignes puis réimportez le fichier.
+    </div>
+    <ul class="mb-0 small">
+      {% for erreur in erreurs_import[:50] %}<li>{{ erreur }}</li>{% endfor %}
+      {% if erreurs_import|length > 50 %}<li>… et {{ erreurs_import|length - 50 }} autre(s).</li>{% endif %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="card mb-3 filter-bar">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-lg-6 col-md-12">
+          <label class="form-label" for="recherche-cours">Recherche</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-magnifying-glass"></i></span>
+            <input type="search" class="form-control" id="recherche-cours"
+                   placeholder="Enseignant, matricule, matière, section…" />
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label" for="filtre-jour">Jour</label>
+          <select class="form-select" id="filtre-jour">
+            <option value="tous" selected>Tous les jours</option>
+            {% for jour in jours %}<option value="{{ jour }}">{{ jour }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <label class="form-label" for="filtre-type">Type</label>
+          <select class="form-select" id="filtre-type">
+            <option value="tous" selected>Tous les types</option>
+            <option value="definitif">Définitif</option>
+            <option value="modulaire">Modulaire</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle" id="table-emploi-du-temps">
+          <thead>
+            <tr>
+              <th>Jour</th>
+              <th>Horaire</th>
+              <th>Enseignant</th>
+              <th>Matière</th>
+              <th>Section</th>
+              <th>Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in cours %}
+            <tr class="ligne-cours"
+                data-jour="{{ c.jour }}"
+                data-type="{{ (c.type or '')|lower }}"
+                data-recherche="{{ (c.enseignant ~ ' ' ~ c.matricule ~ ' ' ~ (c.matiere or '') ~ ' ' ~ (c.section or ''))|lower }}">
+              <td class="fw-semibold">{{ c.jour }}</td>
+              <td>
+                {{ c.debut }} – {{ c.fin }}
+                {% if c.duree %}<small class="text-muted d-block">{{ c.duree }}</small>{% endif %}
+              </td>
+              <td>
+                <span class="fw-semibold">{{ c.enseignant }}</span>
+                <small class="text-muted d-block">{{ c.matricule }}</small>
+              </td>
+              <td>{{ c.matiere or '—' }}</td>
+              <td><span class="badge bg-primary-soft text-primary">{{ c.section or '—' }}</span></td>
+              <td class="text-capitalize">{{ c.type or '—' }}</td>
+            </tr>
+            {% endfor %}
+            <tr data-empty-state="true">
+              <td colspan="6">
+                <div class="empty-state">
+                  <i class="fas fa-calendar-xmark"></i>
+                  {% if cours %}Aucun cours ne correspond à ces critères.{% else %}Aucun cours programmé : importez un emploi du temps.{% endif %}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modale d'import -->
+<div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="importModalLabel">Importer un emploi du temps</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <form action="{{ url_for('importer_emploi_du_temps') }}" method="POST" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="fichier-edt" class="form-label">Fichier (.csv ou .xlsx, 2 Mo max.)</label>
+            <input type="file" class="form-control" id="fichier-edt" name="fichier"
+                   accept=".csv,.xlsx" required />
+          </div>
+          <div class="mb-3">
+            <label for="section-edt" class="form-label">Section par défaut</label>
+            <input type="text" class="form-control" id="section-edt" name="section"
+                   placeholder="Ex. CDY — utilisée si le fichier n'a pas de colonne section" />
+          </div>
+          <div class="small text-muted">
+            <p class="mb-1">Une ligne par cours, avec les colonnes&nbsp;:</p>
+            <code>matricule ; enseignant ; jour ; matiere ; heure_debut ; heure_fin ; section ; type</code>
+            <ul class="mt-2 mb-0">
+              <li>Jour en toutes lettres (Lundi … Dimanche), heures au format 08:00.</li>
+              <li>Type&nbsp;: <em>definitif</em> ou <em>modulaire</em> (définitif par défaut).</li>
+              <li>Un cours déjà présent (même matricule, jour et heure de début) est mis à jour.</li>
+              <li>Si une seule ligne est invalide, rien n'est importé.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-file-import me-2"></i>Importer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const recherche = document.getElementById('recherche-cours');
+    const jour = document.getElementById('filtre-jour');
+    const type = document.getElementById('filtre-type');
+    const tableau = document.getElementById('table-emploi-du-temps');
+    const lignes = tableau.querySelectorAll('.ligne-cours');
+
+    // pagination.js gère seul l'affichage des lignes : on les marque, puis
+    // on lui signale le changement.
+    function filtrer() {
+      const texte = recherche.value.trim().toLowerCase();
+      lignes.forEach(function (ligne) {
+        const ok = (!texte || ligne.dataset.recherche.includes(texte))
+          && (jour.value === 'tous' || ligne.dataset.jour === jour.value)
+          && (type.value === 'tous' || ligne.dataset.type === type.value);
+        ligne.dataset.filtered = ok ? '' : 'hidden';
+      });
+      document.dispatchEvent(new CustomEvent('bw:filtre', { detail: { table: tableau } }));
+    }
+
+    [recherche, jour, type].forEach(function (champ) {
+      champ.addEventListener('input', filtrer);
+    });
+  })();
+</script>
+{% endblock %}

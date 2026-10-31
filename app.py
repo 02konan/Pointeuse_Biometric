@@ -13,6 +13,7 @@ from datetime import datetime,timedelta
 import threading
 from functools import wraps
 from programme.eduflowApi import api_programme,sync_programme_periodique
+from programme.emploi_du_temps import EmploiDuTempsService, ErreurImport, MODELE_CSV
 import os
 from App.factory import ApplicationFactory
 
@@ -789,6 +790,73 @@ class WebController:
     def api_eduflow():
         return api_programme()
 
+    # Les enseignants consultent leur emploi du temps dans l'application
+    # mobile : la page de gestion et l'import sont réservés à l'administration.
+    @staticmethod
+    def _gestion_emploi_du_temps_interdite():
+        if not session.get('connecter'):
+            return redirect(url_for('login'))
+        if (session.get('role') or '').lower() == 'professeur':
+            flash("Accès refusé : vous n'avez pas les droits nécessaires.", "danger")
+            return redirect(url_for('index'))
+        return None
+
+    @staticmethod
+    def _page_emploi_du_temps(erreurs_import=None, code=200):
+        cours = EmploiDuTempsService().lister()
+        return render_template(
+            'emploi_du_temps.html',
+            active_page='emploi_du_temps',
+            cours=cours,
+            enseignants=len({c['matricule'] for c in cours}),
+            erreurs_import=erreurs_import or [],
+        ), code
+
+    @staticmethod
+    def intf_emploi_du_temps():
+        refus = WebController._gestion_emploi_du_temps_interdite()
+        if refus:
+            return refus
+        return WebController._page_emploi_du_temps()
+
+    @staticmethod
+    def importer_emploi_du_temps():
+        refus = WebController._gestion_emploi_du_temps_interdite()
+        if refus:
+            return refus
+        fichier = request.files.get('fichier')
+        if not fichier or not fichier.filename:
+            flash("Choisissez un fichier à importer.", "danger")
+            return redirect(url_for('intf_emploi_du_temps'))
+
+        service = EmploiDuTempsService()
+        try:
+            lignes = service.lire_fichier(fichier.filename, fichier.read())
+            cours = service.valider(lignes, request.form.get('section', ''))
+            bilan = service.importer(cours)
+        except ErreurImport as erreur:
+            flash(str(erreur), "danger")
+            return WebController._page_emploi_du_temps(erreur.erreurs, 400)
+
+        flash(
+            f"Emploi du temps importé : {bilan['ajoutes']} cours ajouté(s), "
+            f"{bilan['mis_a_jour']} mis à jour.",
+            "success",
+        )
+        return redirect(url_for('intf_emploi_du_temps'))
+
+    @staticmethod
+    def modele_emploi_du_temps():
+        refus = WebController._gestion_emploi_du_temps_interdite()
+        if refus:
+            return refus
+        # BOM UTF-8 : Excel ouvre ainsi les accents correctement.
+        return Response(
+            '\ufeff' + MODELE_CSV,
+            mimetype='text/csv',
+            headers={'Content-Disposition': 'attachment; filename=modele_emploi_du_temps.csv'},
+        )
+
     ROUTES = (
         ("/login", "login", ("GET", "POST")),
         ("/login_prof", "login_prof", ("GET", "POST")),
@@ -817,6 +885,9 @@ class WebController:
         ("/utilisateurs/ajouter", "ajouter_utilisateur", ("GET", "POST")),
         ("/logout", "logout", None),
         ("/api/emploi_du_temps", "api_eduflow", ("GET",)),
+        ("/emploi-du-temps", "intf_emploi_du_temps", ("GET",)),
+        ("/emploi-du-temps/importer", "importer_emploi_du_temps", ("POST",)),
+        ("/emploi-du-temps/modele.csv", "modele_emploi_du_temps", ("GET",)),
     )
 
     @classmethod
@@ -856,6 +927,9 @@ lister_utilisateurs = WebController.lister_utilisateurs
 ajouter_utilisateur = WebController.ajouter_utilisateur
 logout = WebController.logout
 api_eduflow = WebController.api_eduflow
+intf_emploi_du_temps = WebController.intf_emploi_du_temps
+importer_emploi_du_temps = WebController.importer_emploi_du_temps
+modele_emploi_du_temps = WebController.modele_emploi_du_temps
 
 
 class WebApplicationFactory:

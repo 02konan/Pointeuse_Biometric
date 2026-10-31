@@ -18,7 +18,8 @@
 {% elif role == 'superadmin' %}
   {% set menu_principal = [
     ('index', 'index', 'fa-gauge-high', 'Tableau de bord'),
-    ('intf_employee', 'employee', 'fa-users', 'Employés')
+    ('intf_employee', 'employee', 'fa-users', 'Employés'),
+    ('intf_emploi_du_temps', 'emploi_du_temps', 'fa-calendar-days', 'Emploi du temps')
   ] %}
   {% set menu_suivi = [
     ('intf_historique', 'pointage', 'fa-clock-rotate-left', 'Historique pointages'),
@@ -33,7 +34,8 @@
 {% else %}
   {% set menu_principal = [
     ('index', 'index', 'fa-gauge-high', 'Tableau de bord'),
-    ('intf_employee', 'employee', 'fa-users', 'Employés')
+    ('intf_employee', 'employee', 'fa-users', 'Employés'),
+    ('intf_emploi_du_temps', 'emploi_du_temps', 'fa-calendar-days', 'Emploi du temps')
   ] %}
   {% set menu_suivi = [
     ('intf_historique', 'pointage', 'fa-clock-rotate-left', 'Historique pointages'),
