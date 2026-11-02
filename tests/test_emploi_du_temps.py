@@ -96,16 +96,36 @@ class ImportTests(unittest.TestCase):
 
     def test_met_a_jour_un_cours_existant_et_ajoute_le_nouveau(self):
         # 1er cours : déjà présent (id 7) ; 2e : absent, l'enseignant a un id EduFlow 42.
-        service, curseur, conn = self._service([(7, 42), None, (42,)])
+        service, curseur, conn = self._service([("programme",), (7, 42), None, (42,)])
 
         bilan = service.importer(self._cours())
 
         self.assertEqual(bilan, {"ajoutes": 1, "mis_a_jour": 1})
         requetes = [appel.args[0] for appel in curseur.execute.call_args_list]
-        self.assertTrue(any("UPDATE Programme" in r for r in requetes))
+        self.assertTrue(any("UPDATE `programme`" in r for r in requetes))
         insertion = next(a for a in curseur.execute.call_args_list if "INSERT INTO" in a.args[0])
         self.assertEqual(insertion.args[1][0], 42)
         conn.commit.assert_called_once()
+        self.assertIn("INSERT INTO `programme`", insertion.args[0])
+
+    def test_lit_la_table_quelle_que_soit_sa_casse(self):
+        service, curseur, _ = self._service([("programme",)])
+        curseur.fetchall.return_value = [
+            ("P1", "Ada", "Lundi", "Maths", "8:00:00", "10:00:00", "2:00:00", "CDY", "definitif"),
+        ]
+
+        cours = service.lister()
+
+        self.assertIn("FROM `programme`", curseur.execute.call_args.args[0])
+        self.assertEqual(cours[0]["debut"], "08:00")
+        self.assertEqual(cours[0]["duree"], "02:00")
+
+    def test_signale_une_table_absente(self):
+        service, _, _ = self._service([None])
+
+        with self.assertRaises(ErreurImport) as contexte:
+            service.lister()
+        self.assertIn("introuvable", str(contexte.exception))
 
 
 if __name__ == "__main__":

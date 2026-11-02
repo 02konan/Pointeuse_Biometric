@@ -68,6 +68,25 @@ def _texte(valeur):
 class EmploiDuTempsService:
     def __init__(self, connection_factory=None):
         self._connection_factory = connexion if connection_factory is None else connection_factory
+        self._nom_table = None
+
+    def _table(self, curseur):
+        """Nom réel de la table des cours : « Programme » ou « programme ».
+
+        Sous Linux, MySQL distingue les majuscules dans les noms de table ;
+        on retrouve donc la table quelle que soit sa casse.
+        """
+        if self._nom_table is None:
+            curseur.execute(
+                "SELECT table_name FROM information_schema.tables "
+                "WHERE table_schema = DATABASE() AND LOWER(table_name) = 'programme' "
+                "LIMIT 1"
+            )
+            ligne = curseur.fetchone()
+            if not ligne:
+                raise ErreurImport("La table « programme » est introuvable dans la base de données.")
+            self._nom_table = ligne[0]
+        return f"`{self._nom_table}`"
 
     # ------------------------------------------------------------------
     # Lecture du fichier
@@ -253,10 +272,11 @@ class EmploiDuTempsService:
         try:
             with self._connection_factory() as conn:
                 with conn.cursor() as curseur:
+                    table = self._table(curseur)
                     for c in cours:
                         curseur.execute(
-                            """
-                            SELECT IDProgramme, professeur_id FROM Programme
+                            f"""
+                            SELECT IDProgramme, professeur_id FROM {table}
                             WHERE professeur_code = %s AND jour = %s AND heure_arrivee = %s
                             LIMIT 1
                             """,
@@ -265,8 +285,8 @@ class EmploiDuTempsService:
                         existant = curseur.fetchone()
                         if existant:
                             curseur.execute(
-                                """
-                                UPDATE Programme
+                                f"""
+                                UPDATE {table}
                                 SET professeur_nom = %s, Matiere = %s, heure_depart = %s,
                                     duree_cours = %s, section = %s, type_edt = %s,
                                     status = COALESCE(%s, status)
@@ -284,15 +304,15 @@ class EmploiDuTempsService:
                         professeur_id = c["professeur_id"]
                         if professeur_id is None:
                             curseur.execute(
-                                "SELECT professeur_id FROM Programme WHERE professeur_code = %s "
+                                f"SELECT professeur_id FROM {table} WHERE professeur_code = %s "
                                 "AND professeur_id IS NOT NULL LIMIT 1",
                                 (c["professeur_code"],),
                             )
                             ligne = curseur.fetchone()
                             professeur_id = ligne[0] if ligne else None
                         curseur.execute(
-                            """
-                            INSERT INTO Programme (professeur_id, professeur_code, professeur_nom,
+                            f"""
+                            INSERT INTO {table} (professeur_id, professeur_code, professeur_nom,
                                 jour, Matiere, heure_arrivee, heure_depart, duree_cours,
                                 section, type_edt, status)
                             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -310,14 +330,16 @@ class EmploiDuTempsService:
         return {"ajoutes": ajoutes, "mis_a_jour": mis_a_jour}
 
     def lister(self):
+        """Tous les cours ; lève ErreurImport si la base est illisible."""
         try:
             with self._connection_factory() as conn:
                 with conn.cursor() as curseur:
+                    table = self._table(curseur)
                     curseur.execute(
-                        """
+                        f"""
                         SELECT professeur_code, professeur_nom, jour, Matiere,
                                heure_arrivee, heure_depart, duree_cours, section, type_edt
-                        FROM Programme
+                        FROM {table}
                         ORDER BY FIELD(jour, 'Lundi', 'Mardi', 'Mercredi', 'Jeudi',
                                        'Vendredi', 'Samedi', 'Dimanche'),
                                  heure_arrivee, professeur_nom
@@ -326,7 +348,7 @@ class EmploiDuTempsService:
                     lignes = curseur.fetchall()
         except pymysql.MySQLError as erreur:
             print(f"[ERREUR] Lecture de l'emploi du temps : {erreur}")
-            return []
+            raise ErreurImport(f"Lecture de l'emploi du temps impossible : {erreur}")
         return [
             {
                 "matricule": l[0],

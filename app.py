@@ -803,13 +803,19 @@ class WebController:
 
     @staticmethod
     def _page_emploi_du_temps(erreurs_import=None, code=200):
-        cours = EmploiDuTempsService().lister()
+        # Une base illisible s'affiche comme telle, pas comme un emploi du
+        # temps vide.
+        try:
+            cours, erreur_lecture = EmploiDuTempsService().lister(), None
+        except ErreurImport as erreur:
+            cours, erreur_lecture = [], str(erreur)
         return render_template(
             'emploi_du_temps.html',
             active_page='emploi_du_temps',
             cours=cours,
             enseignants=len({c['matricule'] for c in cours}),
             erreurs_import=erreurs_import or [],
+            erreur_lecture=erreur_lecture,
         ), code
 
     @staticmethod
