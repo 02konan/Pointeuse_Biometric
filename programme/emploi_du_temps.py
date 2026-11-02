@@ -343,8 +343,8 @@ class EmploiDuTempsService:
                 "debut": self._affichage(l[3]),
                 "fin": self._affichage(l[4]),
                 "duree": self._affichage(l[5]),
-                "section": l[7],
-                "type": l[8],
+                "section": l[6],
+                "type": l[7],
             }
             for l in lignes
         ]

@@ -111,7 +111,7 @@ class ImportTests(unittest.TestCase):
     def test_lit_la_table_quelle_que_soit_sa_casse(self):
         service, curseur, _ = self._service([("programme",)])
         curseur.fetchall.return_value = [
-            ("P1", "Ada", "Lundi", "Maths", "8:00:00", "10:00:00", "2:00:00", "CDY", "definitif"),
+            ("P1", "Ada", "Lundi", "8:00:00", "10:00:00", "2:00:00", "CDY", "definitif"),
         ]
 
         cours = service.lister()
@@ -119,6 +119,8 @@ class ImportTests(unittest.TestCase):
         self.assertIn("FROM `programme`", curseur.execute.call_args.args[0])
         self.assertEqual(cours[0]["debut"], "08:00")
         self.assertEqual(cours[0]["duree"], "02:00")
+        self.assertEqual(cours[0]["section"], "CDY")
+        self.assertEqual(cours[0]["type"], "definitif")
 
     def test_signale_une_table_absente(self):
         service, _, _ = self._service([None])
