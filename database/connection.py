@@ -77,9 +77,9 @@ class DatabaseSettings:
             ) from error
 
         if not 1 <= port <= 65535:
-            raise DatabaseConfigurationError("DB_PORT doit être compris entre 1 et 65535.")
+            raise DatabaseConfigurationError("DB_PORT")
         if connect_timeout <= 0:
-            raise DatabaseConfigurationError("DB_CONNECT_TIMEOUT doit être positif.")
+            raise DatabaseConfigurationError("DB_CONNECT_TIMEOUT")
 
         return cls(
             host=host,

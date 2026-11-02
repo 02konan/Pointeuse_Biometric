@@ -1,23 +1,9 @@
-"""Emploi du temps : lecture de la table Programme et import depuis un fichier.
-
-Le fichier (CSV ou Excel .xlsx) contient une ligne par cours. Les en-têtes
-sont reconnus sans tenir compte des majuscules, des accents ni des espaces :
-
-    matricule ; enseignant ; jour ; matiere ; heure_debut ; heure_fin ; section ; type
-
-L'import est « tout ou rien » : si une seule ligne est invalide, rien n'est
-écrit et toutes les erreurs sont rapportées avec leur numéro de ligne.
-
-Un cours est identifié par (matricule, jour, heure de début) : réimporter
-le même fichier met les cours à jour au lieu de les dupliquer. Aucune ligne
-n'est supprimée, car pointage_programe référence Programme.IDProgramme.
-"""
 
 import csv
 import io
 import unicodedata
 from datetime import datetime, time, timedelta
-
+from openpyxl import load_workbook
 import pymysql
 
 from programme.base_donnee import connexion
@@ -153,7 +139,7 @@ class EmploiDuTempsService:
     @staticmethod
     def _lire_xlsx(contenu):
         try:
-            from openpyxl import load_workbook
+            
             classeur = load_workbook(io.BytesIO(contenu), read_only=True, data_only=True)
         except Exception as erreur:
             raise ErreurImport(f"Fichier Excel illisible : {erreur}")
@@ -337,7 +323,7 @@ class EmploiDuTempsService:
                     table = self._table(curseur)
                     curseur.execute(
                         f"""
-                        SELECT professeur_code, professeur_nom, jour, Matiere,
+                        SELECT professeur_code, professeur_nom, jour,
                                heure_arrivee, heure_depart, duree_cours, section, type_edt
                         FROM {table}
                         ORDER BY FIELD(jour, 'Lundi', 'Mardi', 'Mercredi', 'Jeudi',
@@ -354,10 +340,9 @@ class EmploiDuTempsService:
                 "matricule": l[0],
                 "enseignant": l[1],
                 "jour": l[2],
-                "matiere": l[3],
-                "debut": self._affichage(l[4]),
-                "fin": self._affichage(l[5]),
-                "duree": self._affichage(l[6]),
+                "debut": self._affichage(l[3]),
+                "fin": self._affichage(l[4]),
+                "duree": self._affichage(l[5]),
                 "section": l[7],
                 "type": l[8],
             }
