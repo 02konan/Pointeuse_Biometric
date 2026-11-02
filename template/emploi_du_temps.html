@@ -21,6 +21,12 @@
     </div>
   </div>
 
+  {% if erreur_lecture %}
+  <div class="alert alert-warning" role="alert">
+    <i class="fas fa-database me-2"></i>{{ erreur_lecture }}
+  </div>
+  {% endif %}
+
   {% if erreurs_import %}
   <div class="alert alert-danger" role="alert">
     <div class="fw-semibold mb-2">
