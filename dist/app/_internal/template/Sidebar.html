@@ -1,0 +1,95 @@
+{# ---------------------------------------------------------------------
+   Menu latéral — construit à partir du rôle de la session.
+   Chaque entrée : (endpoint, clé active_page, icône, libellé)
+   --------------------------------------------------------------------- #}
+{% set role = (session['role'] or '')|lower %}
+
+{% if role == 'professeur' %}
+  {% set menu_principal = [
+    ('index', 'index', 'fa-gauge-high', 'Tableau de bord')
+  ] %}
+  {% set menu_suivi = [
+    ('intf_presence', 'presence', 'fa-circle-check', 'Pointage valide'),
+    ('intf_pointage_invalie', 'pointage_invalie', 'fa-circle-xmark', 'Pointage invalide')
+  ] %}
+  {% set menu_admin = [
+    ('intf_rapports', 'rapports', 'fa-chart-column', 'Rapports')
+  ] %}
+{% elif role == 'superadmin' %}
+  {% set menu_principal = [
+    ('index', 'index', 'fa-gauge-high', 'Tableau de bord'),
+    ('intf_employee', 'employee', 'fa-users', 'Employés'),
+    ('intf_emploi_du_temps', 'emploi_du_temps', 'fa-calendar-days', 'Emploi du temps')
+  ] %}
+  {% set menu_suivi = [
+    ('intf_historique', 'pointage', 'fa-clock-rotate-left', 'Historique pointages'),
+    ('intf_presence', 'presence', 'fa-circle-check', 'Pointage valide'),
+    ('intf_pointage_invalie', 'pointage_invalie', 'fa-circle-xmark', 'Pointage invalide')
+  ] %}
+  {% set menu_admin = [
+    ('intf_rapports', 'rapports', 'fa-chart-column', 'Rapports'),
+    ('intf_appareils', 'appareils', 'fa-fingerprint', 'Pointeuses'),
+    ('lister_utilisateurs', 'utilisateurs', 'fa-user-shield', 'Utilisateurs')
+  ] %}
+{% else %}
+  {% set menu_principal = [
+    ('index', 'index', 'fa-gauge-high', 'Tableau de bord'),
+    ('intf_employee', 'employee', 'fa-users', 'Employés'),
+    ('intf_emploi_du_temps', 'emploi_du_temps', 'fa-calendar-days', 'Emploi du temps')
+  ] %}
+  {% set menu_suivi = [
+    ('intf_historique', 'pointage', 'fa-clock-rotate-left', 'Historique pointages'),
+    ('intf_presence', 'presence', 'fa-circle-check', 'Pointage valide'),
+    ('intf_pointage_invalie', 'pointage_invalie', 'fa-circle-xmark', 'Pointage invalide')
+  ] %}
+  {% set menu_admin = [
+    ('intf_rapports', 'rapports', 'fa-chart-column', 'Rapports')
+  ] %}
+{% endif %}
+
+{% macro entree(item) %}
+  <li class="{% if active_page == item[1] %}active{% endif %}">
+    <a class="sidebar-link" href="{{ url_for(item[0]) }}" data-title="{{ item[3] }}"
+       {% if active_page == item[1] %}aria-current="page"{% endif %}>
+      <i class="fas {{ item[2] }}"></i><span>{{ item[3] }}</span>
+    </a>
+  </li>
+{% endmacro %}
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <i class="fas fa-fingerprint"></i>
+    <span class="sidebar-brand">
+      <strong>Divix</strong>
+      <small>Pointage</small>
+    </span>
+  </div>
+
+  <nav class="sidebar-menu" aria-label="Navigation principale">
+    <ul class="list-unstyled mb-0">
+      <li class="sidebar-section">Pilotage</li>
+      {% for item in menu_principal %}{{ entree(item) }}{% endfor %}
+
+      <li class="sidebar-section">Suivi des pointages</li>
+      {% for item in menu_suivi %}{{ entree(item) }}{% endfor %}
+
+      <li class="sidebar-section">Administration</li>
+      {% for item in menu_admin %}{{ entree(item) }}{% endfor %}
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="avatar">
+        <img src="{{ url_for('static', filename='images/icons8-test-account-96.png') }}" alt="" />
+      </div>
+      <div class="sidebar-user-info">
+        <strong>{{ session['username'] }}</strong>
+        <small>{{ session['role'] }}</small>
+      </div>
+    </div>
+    <a href="{{ url_for('logout') }}" class="sidebar-logout" data-title="Déconnexion">
+      <i class="fas fa-right-from-bracket"></i><span>Déconnexion</span>
+    </a>
+  </div>
+</aside>

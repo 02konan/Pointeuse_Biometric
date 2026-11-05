@@ -1,0 +1,217 @@
+{% extends 'index.html' %}
+{% block content %}
+<div id="employees-content" class="content-section">
+  <div class="page-header">
+    <div>
+      <h1><span class="page-header-icon"><i class="fas fa-users"></i></span> Employés</h1>
+      <p>Annuaire du personnel rattaché aux pointeuses biométriques.</p>
+    </div>
+    <div class="page-header-actions">
+      <span class="badge text-bg-light border">{{ resultats|length }} employé{{ 's' if resultats|length > 1 else '' }}</span>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEmployeeModal">
+        <i class="fas fa-plus me-2"></i>Ajouter un employé
+      </button>
+    </div>
+  </div>
+
+  <div class="card mb-3 filter-bar">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-lg-8 col-md-7">
+          <label class="form-label" for="champrecherche">Recherche</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-magnifying-glass"></i></span>
+            <input id="champrecherche" type="text" class="form-control" placeholder="Nom, matricule, section…" />
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-3 col-6">
+          <label class="form-label" for="lignesaffichees">Lignes</label>
+          <select class="form-select" id="lignesaffichees">
+            <option value="10" selected>10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle" id="Table">
+          <thead>
+            <tr>
+              <th>Matricule</th>
+              <th>Employé</th>
+              <th>Section</th>
+              <th>Contact</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-empty-state="true">
+              <td colspan="5">
+                <div class="empty-state">
+                  <i class="fas fa-user-slash"></i>
+                  Aucun employé ne correspond à votre recherche.
+                </div>
+              </td>
+            </tr>
+            {% for resultat in resultats %}
+            <tr>
+              <td class="text-muted">{{ resultat.Matricule }}</td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="avatar me-2">
+                    <img src="{{ url_for('static', filename='images/icons8-life-cycle-96.png') }}" alt="" />
+                  </div>
+                  <div>
+                    <div class="fw-semibold">{{ resultat.Nom }}</div>
+                    <small class="text-muted">{{ resultat.Poste or '—' }}</small>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge bg-primary-soft text-primary">{{ resultat.section }}</span></td>
+              <td>
+                <div>{{ resultat.Telephone or '—' }}</div>
+                <small class="text-muted">{{ resultat.email or '' }}</small>
+              </td>
+              <td class="text-end text-nowrap">
+                <button
+                  class="btn btn-sm btn-outline-primary"
+                  type="button"
+                  data-bs-toggle="modal"
+                  data-bs-target="#addEmployeeModal"
+                  data-id="{{ resultat.Matricule }}"
+                  data-nom="{{ resultat.Nom }}"
+                  data-section="{{ resultat.section }}"
+                  data-email="{{ resultat.email }}"
+                  data-telephone="{{ resultat.Telephone }}"
+                  data-adresse="{{ resultat.Adresse }}"
+                  data-poste="{{ resultat.Poste }}"
+                >
+                  <i class="fas fa-pen me-1"></i> Modifier
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-success"
+                  type="button"
+                  data-bs-toggle="modal"
+                  data-bs-target="#enrollEmployeeModal"
+                  data-id="{{ resultat.Matricule }}"
+                  data-nom="{{ resultat.Nom }}"
+                >
+                  <i class="fas fa-fingerprint me-1"></i> Enrôler
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <nav aria-label="Pagination du tableau" class="mt-3">
+        <ul class="pagination justify-content-center"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="enrollEmployeeModal" tabindex="-1" aria-labelledby="enrollEmployeeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="enrollEmployeeModalLabel">Enrôler un employé</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <form action="{{ url_for('Programme_Enrollement') }}" method="POST">
+        <div class="modal-body">
+          <p class="mb-3">Employé : <strong id="enrollEmployeeName"></strong></p>
+          <input type="hidden" id="enrollEmployeeId" name="user_id" />
+          <input type="hidden" id="enrollEmployeeNameValue" name="name_user" />
+          <div class="mb-3">
+            <label for="enrollmentType" class="form-label">Type d'enrôlement</label>
+            <select class="form-select" id="enrollmentType" name="enrollment_type" required>
+              <option value="fingerprint">Empreinte digitale</option>
+              <option value="card">Carte</option>
+            </select>
+          </div>
+          <div id="cardNumberGroup" class="mb-3" hidden>
+            <label for="cardNumber" class="form-label">Numéro de la carte</label>
+            <input class="form-control" id="cardNumber" name="card_number" type="number" min="1" max="4294967295" step="1" />
+            <div class="form-text">Saisissez le numéro inscrit sur la carte.</div>
+          </div>
+          <div id="fingerprintHelp" class="alert alert-info mb-0" role="status">
+            L’employé devra poser son doigt sur le lecteur de la pointeuse.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success"><i class="fas fa-fingerprint me-2"></i>Enrôler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modale d'ajout / modification -->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1" aria-labelledby="addEmployeeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addEmployeeModalLabel">Ajouter un nouvel employé</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <form action="{{ url_for('enregistrement') }}" method="POST" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="employeeId" class="form-label">Matricule employé</label>
+              <input list="Matricule" type="text" class="form-control" id="employeeId" name="idEmploye" required />
+              <datalist id="Matricule">
+                {% for resultat in user_id %}
+                <option value="{{ resultat.Code }}">{{ resultat.Nom }}</option>
+                {% endfor %}
+              </datalist>
+            </div>
+            <div class="col-md-6">
+              <label for="department" class="form-label">Section</label>
+              <input type="text" list="section" class="form-control" id="department" name="section" required />
+              <datalist id="section">
+                <option value="Cocody"></option>
+                <option value="Informatique"></option>
+                <option value="Finance"></option>
+                <option value="Marketing"></option>
+              </datalist>
+            </div>
+            <div class="col-md-6">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" name="email" required />
+            </div>
+            <div class="col-md-6">
+              <label for="phone" class="form-label">Téléphone</label>
+              <input type="tel" class="form-control" id="phone" name="telephone" />
+            </div>
+            <div class="col-md-6">
+              <label for="joinDate" class="form-label">Date d'embauche</label>
+              <input type="date" class="form-control" id="joinDate" name="joinDate" required />
+            </div>
+            <div class="col-md-6">
+              <label for="position" class="form-label">Poste</label>
+              <input type="text" class="form-control" id="position" name="position" />
+            </div>
+            <div class="col-12">
+              <label for="address" class="form-label">Adresse</label>
+              <textarea class="form-control" id="address" name="address" rows="2"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-floppy-disk me-2"></i>Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

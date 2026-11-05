@@ -1,0 +1,43 @@
+{% import "macros.html" as ui %}
+<div id="dashboard-content" class="content-section">
+  <div class="page-header">
+    <div>
+      <h1><span class="page-header-icon"><i class="fas fa-gauge-high"></i></span> Bonjour {{ session['username'] }}</h1>
+      <p>Vue consolidée de toutes les sections et de tous les terminaux.</p>
+    </div>
+    <div class="page-header-actions">
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('intf_appareils') }}">
+        <i class="fas fa-fingerprint me-2"></i>Pointeuses
+      </a>
+      <a class="btn btn-primary btn-sm" href="{{ url_for('intf_rapports') }}">
+        <i class="fas fa-file-pdf me-2"></i>Générer un rapport
+      </a>
+    </div>
+  </div>
+
+  <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.72rem; letter-spacing: 0.09em">Aujourd'hui</h6>
+  <div class="row g-3 mb-4">
+    {{ ui.stat("Présents", "dash_presents-count", "dash_bar-present", "fa-user-check", "primary") }}
+    {{ ui.stat("Absents", "dash_absents-count", "dash_bar-absent", "fa-user-xmark", "danger") }}
+    {{ ui.stat("Retards", "dash_retard-count", "dash_bar-retard", "fa-clock", "warning") }}
+    {{ ui.stat("Total employés", "dash_total-eleves", "dash_total-eleves-bar", "fa-users", "info") }}
+  </div>
+
+  <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.72rem; letter-spacing: 0.09em">Ce mois-ci</h6>
+  <div class="row g-3 mb-4">
+    {{ ui.stat("Présences", "dash_presence-mois-count", "dash_bar-presence-mois", "fa-user-check", "success") }}
+    {{ ui.stat("Absences", "dash_absence-mois-count", "dash_bar-absence-mois", "fa-user-xmark", "danger") }}
+    {{ ui.stat("Retards", "dash_retard-mois-count", "dash_bar-retard-mois", "fa-clock", "warning") }}
+    {{ ui.stat("Nouveaux employés", "dash_new-employee-count", "dash_bar-new-employee", "fa-user-plus", "info") }}
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8">{{ ui.graphique("Tendance de présence", "dash_attendanceChart", "320px") }}</div>
+    <div class="col-lg-4">{{ ui.graphique("Répartition des présences", "dash_attendancePieChart", "320px") }}</div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-lg-8">{{ ui.activite("dash_recent-activity-list") }}</div>
+    <div class="col-lg-4">{{ ui.pointeuses_panel(pointeuses) }}</div>
+  </div>
+</div>

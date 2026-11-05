@@ -69,17 +69,17 @@ class DatabaseSettings:
             )
 
         try:
-            port = int(setting("DB_PORT", "MYSQL_PORT") or "3306")
-            connect_timeout = int(setting("DB_CONNECT_TIMEOUT") or "10")
+            port = int(setting("3306"))
+            connect_timeout = int(setting("10"))
         except ValueError as error:
             raise DatabaseConfigurationError(
                 "DB_PORT et DB_CONNECT_TIMEOUT doivent être des entiers."
             ) from error
 
         if not 1 <= port <= 65535:
-            raise DatabaseConfigurationError("DB_PORT")
+            raise DatabaseConfigurationError("3306")
         if connect_timeout <= 0:
-            raise DatabaseConfigurationError("DB_CONNECT_TIMEOUT")
+            raise DatabaseConfigurationError("10")
 
         return cls(
             host=host,

@@ -11,10 +11,12 @@ from werkzeug.utils import secure_filename
 from programme.gerenerateurPdf import generer_fiche_presence_pdf
 from datetime import datetime,timedelta
 import threading
+import time
 from functools import wraps
 from programme.eduflowApi import api_programme,sync_programme_periodique
 from programme.emploi_du_temps import EmploiDuTempsService, ErreurImport, MODELE_CSV
 import os
+import webview
 from App.factory import ApplicationFactory
 
 
@@ -954,27 +956,59 @@ web_application_factory = WebApplicationFactory()
 create_app = web_application_factory.create_app
 app = create_app()
 
-if __name__ == '__main__':
-    # recuperation = threading.Thread(target=recuperation_emprientes)
-    # recuperation.daemon = True
-    # recuperation.start()
-    # etats_pointeuse = threading.Thread(target=get_etats_pointeuses)
-    # etats_pointeuse.daemon = True
-    # etats_pointeuse.start()
-    # thread_insertion = threading.Thread(target=insertion_)
-    # thread_insertion.daemon = True
-    # thread_insertion.start()
-    # thread_transfert_empreintes = threading.Thread(target=transfert_empreintes)
-    # thread_transfert_empreintes.daemon = True
-    # thread_transfert_empreintes.start()
-    # thread_synchronisation_attendance = threading.Thread(target=synchronisation_attendance)
-    # thread_synchronisation_attendance.daemon = True
-    # thread_synchronisation_attendance.start()
-    thread_sync_programme_periodique = threading.Thread(target=sync_programme_periodique,args=(180,))
-    thread_sync_programme_periodique.daemon = True
-    thread_sync_programme_periodique.start()
-    # thread = threading.Thread(target=listen_attendance)
-    # thread.daemon = True
-    # thread.start()
+def lancer_flask():
+    app.run(
+        host="127.0.0.1",
+        port=5000,
+        debug=True,
+        use_reloader=False,
+        threaded=True
+    )
 
-    app.run(host='0.0.0.0',port=8000)
+
+if __name__ == '__main__':
+
+    # Démarrage des services en arrière-plan
+    fonctions_background = [
+        recuperation_emprientes,
+        get_etats_pointeuses,
+        insertion_,
+        synchronisation_attendance,
+        listen_attendance
+    ]
+
+    for fonction in fonctions_background:
+        thread = threading.Thread(
+            target=fonction,
+            daemon=True
+        )
+        thread.start()
+
+    # Synchronisation périodique
+    thread_sync = threading.Thread(
+        target=sync_programme_periodique,
+        args=(180,),
+        daemon=True
+    )
+    thread_sync.start()
+
+    # Démarrage du serveur Flask
+    serveur = threading.Thread(
+        target=lancer_flask,
+        daemon=True
+    )
+    serveur.start()
+
+    # Attendre que Flask démarre
+    time.sleep(2)
+
+    # Ouverture de la fenêtre Desktop
+    webview.create_window(
+        "Divix-Biometric",
+        "http://127.0.0.1:5000",
+        width=1400,
+        height=850,
+        min_size=(1000, 650)
+    )
+
+    webview.start()

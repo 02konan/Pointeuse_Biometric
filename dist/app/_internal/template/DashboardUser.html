@@ -1,0 +1,29 @@
+{% import "macros.html" as ui %}
+<div id="dashboard-content" class="content-section">
+  <div class="page-header">
+    <div>
+      <h1><span class="page-header-icon"><i class="fas fa-chalkboard-user"></i></span> Bonjour {{ session['username'] }}</h1>
+      <p>Suivi de vos pointages et de vos heures effectuées.</p>
+    </div>
+    <div class="page-header-actions">
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('intf_presence') }}">
+        <i class="fas fa-circle-check me-2"></i>Mes pointages
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    {{ ui.stat("Présents aujourd'hui", "presents-prof", "bar-present", "fa-user-check", "primary") }}
+    {{ ui.stat("Absents aujourd'hui", "absents-prof", "bar-absent", "fa-user-xmark", "danger") }}
+    {{ ui.stat("Retards aujourd'hui", "retard-prof", "bar-retard", "fa-clock", "warning") }}
+    {{ ui.stat("Pointages du mois", "new-pointage", "bar-new-employee", "fa-calendar-check", "info") }}
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-12">{{ ui.graphique("Tendance de présence", "attendanceChart", "300px") }}</div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-12">{{ ui.activite("recent-activity-list") }}</div>
+  </div>
+</div>

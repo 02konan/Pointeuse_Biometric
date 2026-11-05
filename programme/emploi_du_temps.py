@@ -323,7 +323,7 @@ class EmploiDuTempsService:
                     table = self._table(curseur)
                     curseur.execute(
                         f"""
-                        SELECT professeur_code, professeur_nom, jour,
+                        SELECT professeur_code, professeur_nom, jour,Matiere,
                                heure_arrivee, heure_depart, duree_cours, section, type_edt
                         FROM {table}
                         ORDER BY FIELD(jour, 'Lundi', 'Mardi', 'Mercredi', 'Jeudi',
@@ -331,6 +331,8 @@ class EmploiDuTempsService:
                                  heure_arrivee, professeur_nom
                         """
                     )
+
+ 
                     lignes = curseur.fetchall()
         except pymysql.MySQLError as erreur:
             print(f"[ERREUR] Lecture de l'emploi du temps : {erreur}")
@@ -340,18 +342,18 @@ class EmploiDuTempsService:
                 "matricule": l[0],
                 "enseignant": l[1],
                 "jour": l[2],
-                "debut": self._affichage(l[3]),
-                "fin": self._affichage(l[4]),
-                "duree": self._affichage(l[5]),
-                "section": l[6],
-                "type": l[7],
+                "Matiere": l[3],
+                "debut": self._affichage(l[4]),
+                "fin": self._affichage(l[5]),
+                "duree": self._affichage(l[6]),
+                "section": l[7],
+                "type": l[8],
             }
             for l in lignes
         ]
 
     @staticmethod
     def _affichage(valeur):
-        """« 8:00:00 », timedelta ou time → « 08:00 »."""
         if valeur is None:
             return ""
         if isinstance(valeur, timedelta):

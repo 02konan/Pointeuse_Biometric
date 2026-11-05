@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    {% include "header.html" %}
+  </head>
+  <body>
+    <!-- Écran de chargement -->
+    <div id="loader" role="status" aria-live="polite">
+      <div class="loader-mark">
+        <i class="fas fa-fingerprint"></i>
+        <span class="visually-hidden">Chargement…</span>
+        <span aria-hidden="true">Chargement</span>
+      </div>
+    </div>
+
+    {% set role = (session['role'] or '')|lower %}
+    {% set titres = {
+      'index': ('Tableau de bord', "Vue d'ensemble de l'activité de pointage"),
+      'employee': ('Employés', 'Annuaire et fiches du personnel'),
+      'emploi_du_temps': ('Emploi du temps', 'Cours programmés et import des emplois du temps'),
+      'pointage': ('Historique des pointages', 'Tous les passages enregistrés sur les pointeuses'),
+      'presence': ('Pointages valides', 'Présences confirmées par la biométrie'),
+      'pointage_invalie': ('Pointages invalides', 'Passages à contrôler puis valider'),
+      'rapports': ('Rapports', 'Génération des fiches de présence et d’émargement'),
+      'appareils': ('Pointeuses', 'État et configuration des terminaux biométriques'),
+      'utilisateurs': ('Utilisateurs', 'Comptes et droits d’accès'),
+      'parametres': ('Paramètres', 'Configuration du système')
+    } %}
+    {% set titre_page = titres.get(active_page, ('Divix', 'Pointage biométrique')) %}
+
+    <div class="app-shell">
+      {% include "Sidebar.html" %}
+      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+      <div class="main-content" id="main-content">
+        <header class="topbar">
+          <button class="topbar-toggle" id="sidebar-toggle" type="button"
+                  aria-label="Afficher ou masquer le menu" aria-controls="sidebar">
+            <i class="fas fa-bars"></i>
+          </button>
+
+          <div class="topbar-title">
+            <strong>{{ titre_page[0] }}</strong>
+            <small class="d-none d-md-block">{{ titre_page[1] }}</small>
+          </div>
+
+          <div class="topbar-actions">
+            <div class="topbar-clock">
+              <i class="fas fa-calendar-day"></i>
+              <span id="topbar-date"></span>
+            </div>
+
+            <button class="icon-btn" id="theme-toggle" type="button" aria-label="Basculer le thème clair/sombre" title="Thème clair / sombre">
+              <i class="fas fa-moon"></i>
+            </button>
+
+            <div class="dropdown">
+              <button class="user-chip dropdown-toggle" type="button" id="dropdownMenuButton"
+                      data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="avatar avatar-sm">
+                  <img src="{{ url_for('static', filename='images/icons8-test-account-96.png') }}" alt="" />
+                </span>
+                <span class="user-chip-name">
+                  <strong>{{ session['username'] }}</strong>
+                  <small>{{ session['role'] }}</small>
+                </span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                <li class="px-3 py-2 d-md-none">
+                  <div class="fw-semibold">{{ session['username'] }}</div>
+                  <div class="text-muted small text-capitalize">{{ session['role'] }}</div>
+                </li>
+                <li><hr class="dropdown-divider d-md-none" /></li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('logout') }}" id="dropdown-logout">
+                    <i class="fas fa-right-from-bracket me-2"></i> Déconnexion
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </header>
+
+        {% include "flash.html" %}
+
+        <main class="page-body">
+          {% block content %}
+            {% if active_page == 'index' %}
+              {% if role == 'superadmin' %}
+                {% include "DashboardAdmin.html" %}
+              {% elif role == 'admin' %}
+                {% include "Dashboard.html" %}
+              {% else %}
+                {% include "DashboardUser.html" %}
+              {% endif %}
+            {% endif %}
+          {% endblock %}
+        </main>
+      </div>
+    </div>
+
+    {% include "footer.html" %}
+  </body>
+</html>
