@@ -1,7 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
+# Dans `datas`, le second élément est le DOSSIER de destination : ('.env', '.')
+# copie le fichier .env à la racine du paquet. ('.env', '.env') créait un
+# dossier « .env » contenant le fichier, et la configuration n'était pas lue.
+# Un .env posé à côté de app.exe est prioritaire (voir database/connection.py).
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('template', 'template'), ('static', 'static'), ('.env', '.env'), ('programme', 'programme'),]
+datas = [('template', 'template'), ('static', 'static'), ('.env', '.'), ('programme', 'programme'),]
 binaries = []
 hiddenimports = []
 tmp_ret = collect_all('webview')

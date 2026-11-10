@@ -28,6 +28,32 @@ class DatabaseSettingsTests(unittest.TestCase):
                 self.assertTrue(loaded)
                 self.assertEqual(os.environ["DB_HOST"], "dotenv.example.test")
 
+    def test_compiled_app_reads_dotenv_next_to_executable(self):
+        with tempfile.TemporaryDirectory() as directory:
+            racine = Path(directory)
+            (racine / "_internal" / ".env").mkdir(parents=True)  # ancien bug : un dossier
+            (racine / ".env").write_text("DB_HOST=desktop.example.test\n", encoding="utf-8")
+            with patch.dict(os.environ, {}, clear=False), \
+                    patch("sys.frozen", True, create=True), \
+                    patch("sys.executable", str(racine / "app.exe")), \
+                    patch("sys._MEIPASS", str(racine / "_internal"), create=True):
+                os.environ.pop("DB_HOST", None)
+                self.assertTrue(load_project_environment())
+                self.assertEqual(os.environ["DB_HOST"], "desktop.example.test")
+
+    def test_compiled_app_falls_back_to_bundled_dotenv(self):
+        with tempfile.TemporaryDirectory() as directory:
+            racine = Path(directory)
+            (racine / "_internal").mkdir()
+            (racine / "_internal" / ".env").write_text("DB_HOST=bundle.example.test\n", encoding="utf-8")
+            with patch.dict(os.environ, {}, clear=False), \
+                    patch("sys.frozen", True, create=True), \
+                    patch("sys.executable", str(racine / "app.exe")), \
+                    patch("sys._MEIPASS", str(racine / "_internal"), create=True):
+                os.environ.pop("DB_HOST", None)
+                self.assertTrue(load_project_environment())
+                self.assertEqual(os.environ["DB_HOST"], "bundle.example.test")
+
     def test_reads_database_settings_from_environment_mapping(self):
         settings = DatabaseSettings.from_environment(
             {

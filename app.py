@@ -16,7 +16,6 @@ from functools import wraps
 from programme.eduflowApi import api_programme,sync_programme_periodique
 from programme.emploi_du_temps import EmploiDuTempsService, ErreurImport, MODELE_CSV
 import os
-import webview
 from App.factory import ApplicationFactory
 
 
@@ -967,6 +966,9 @@ def lancer_flask():
 
 
 if __name__ == '__main__':
+    # Uniquement pour l'application de bureau : le serveur (gunicorn) importe
+    # ce fichier sans passer ici et n'a pas besoin de pywebview.
+    import webview
 
     # Démarrage des services en arrière-plan
     fonctions_background = [
