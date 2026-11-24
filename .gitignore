@@ -16,3 +16,6 @@ venv/
 # Ignorer les fichiers sensibles
 env/
 .env
+# Ignorer les sorties de PyInstaller (régénérées par « pyinstaller app.spec »)
+build/
+dist/

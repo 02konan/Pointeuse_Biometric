@@ -4,7 +4,6 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import cm
 from datetime import datetime, timedelta
 from jinja2 import Template
-from weasyprint import HTML
 from programme.Creat_data import creat_rapports
 
 
@@ -166,7 +165,10 @@ class AttendanceReportService:
             template = Template(template_html)
             html_content = template.render(lignes=lignes, total_heures_effectuees=total_heures_effectuees_str,total_heures_cours=total_heures_cours_str, total_ecart=total_ecart_str)
 
-            # Génération du PDF avec WeasyPrint
+            # Génération du PDF avec WeasyPrint. Import ici et non en tête de
+            # fichier : sous Windows, WeasyPrint exige les bibliothèques GTK ;
+            # sans elles, seul le PDF échoue au lieu de toute l'application.
+            from weasyprint import HTML
             HTML(string=html_content).write_pdf(file_path)
 
             if os.path.exists(file_path):
