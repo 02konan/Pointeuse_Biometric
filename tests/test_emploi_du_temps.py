@@ -32,6 +32,7 @@ class LectureEtValidationTests(unittest.TestCase):
         self.assertEqual(cours[0]["jour"], "Mercredi")
         self.assertEqual(cours[0]["heure_arrivee"], "08:30:00")
         self.assertEqual(cours[0]["duree_cours"], "01:30:00")
+        self.assertEqual(cours[0]["matiere"], "Maths")
         self.assertEqual(cours[0]["section"], "CDY")
         self.assertEqual(cours[0]["type_edt"], "definitif")
 
@@ -111,7 +112,7 @@ class ImportTests(unittest.TestCase):
     def test_lit_la_table_quelle_que_soit_sa_casse(self):
         service, curseur, _ = self._service([("programme",)])
         curseur.fetchall.return_value = [
-            ("P1", "Ada", "Lundi", "8:00:00", "10:00:00", "2:00:00", "CDY", "definitif"),
+            ("P1", "Ada", "Lundi", "Maths", "8:00:00", "10:00:00", "2:00:00", "CDY", "definitif"),
         ]
 
         cours = service.lister()

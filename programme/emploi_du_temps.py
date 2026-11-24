@@ -342,7 +342,7 @@ class EmploiDuTempsService:
                 "matricule": l[0],
                 "enseignant": l[1],
                 "jour": l[2],
-                "Matiere": l[3],
+                "matiere": l[3],
                 "debut": self._affichage(l[4]),
                 "fin": self._affichage(l[5]),
                 "duree": self._affichage(l[6]),
