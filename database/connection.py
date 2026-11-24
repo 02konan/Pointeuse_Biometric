@@ -69,8 +69,11 @@ class DatabaseSettings:
             )
 
         try:
-            port = int(setting("3306"))
-            connect_timeout = int(setting("10"))
+            port = int(setting("DB_PORT") or "3306")
+            connect_timeout = int(
+                           setting("DB_CONNECT_TIMEOUT") or "10"
+                       )
+           
         except ValueError as error:
             raise DatabaseConfigurationError(
                 "DB_PORT et DB_CONNECT_TIMEOUT doivent être des entiers."
@@ -89,8 +92,6 @@ class DatabaseSettings:
             port=port,
             connect_timeout=connect_timeout,
         )
-
-
 class DatabaseConnectionFactory:
     """Builds PyMySQL connections from injectable settings."""
 

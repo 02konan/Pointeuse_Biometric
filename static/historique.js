@@ -1,92 +1,76 @@
-/* =====================================================================
-   Divix — filtres de l'historique des pointages
-   Filtre par recherche, section, statut et intervalle de dates, puis
-   délègue l'affichage à la pagination (évènement « bw:filtre »).
-   ===================================================================== */
-(function () {
-  "use strict";
+function filtrerActivites() {
 
-  // Accepte YYYY-MM-DD, DD/MM/YYYY et DD-MM-YYYY (format rendu par Flask).
-  function parseDate(str) {
-    if (!str) return null;
-    str = String(str).trim();
-    let m = str.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (m) return new Date(+m[1], +m[2] - 1, +m[3]);
-    m = str.match(/^(\d{2})[/-](\d{2})[/-](\d{4})$/);
-    if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
-    return null;
-  }
+    const dateDebutStr = document.getElementById('date-debut') ? document.getElementById('date-debut').value : '';
+    const dateFinStr = document.getElementById('date-fin') ? document.getElementById('date-fin').value : '';
+    const statut = document.getElementById('statut') ? document.getElementById('statut').value : 'tous';
+    const section = document.getElementById('section') ? document.getElementById('section').value : 'toutes';
+    const recherchetable = document.getElementById('champrecherche') ? document.getElementById('champrecherche').value : '';
 
-  function finDeJournee(d) {
-    if (!d) return null;
-    const copie = new Date(d);
-    copie.setHours(23, 59, 59, 999);
-    return copie;
-  }
+    const rows = document.querySelectorAll('#dashboard_recent_activity_list tr');
 
-  document.addEventListener("DOMContentLoaded", function () {
-    const corps = document.getElementById("dashboard_recent_activity_list");
-    if (!corps) return;
-    const table = corps.closest("table");
+    rows.forEach(row => {
 
-    const champs = {
-      debut: document.getElementById("date-debut"),
-      fin: document.getElementById("date-fin"),
-      statut: document.getElementById("statut"),
-      section: document.getElementById("section"),
-      recherche: document.getElementById("champrecherche"),
-    };
+        const nomCell = row.cells[0] ? row.cells[0].textContent.trim() : '';
+        const statutCell = row.cells[3] ? row.cells[3].textContent.trim() : '';
+        const sectionCell = row.cells[4] ? row.cells[4].textContent.trim() : '';
+        const dateText = row.children[1]?.textContent.trim();
 
-    function filtrer() {
-      const debut = parseDate(champs.debut && champs.debut.value);
-      const fin = finDeJournee(parseDate(champs.fin && champs.fin.value));
-      const statut = champs.statut ? champs.statut.value : "tous";
-      const section = champs.section ? champs.section.value : "toutes";
-      const recherche = champs.recherche
-        ? champs.recherche.value.trim().toLowerCase()
-        : "";
+        let rowDate = null;
+      if (dateText.includes("/")) {
+        const parts = dateText.split("/");
+        rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
+      } else if (dateText.includes("-")) {
+        const parts = dateText.split("-");
+        rowDate = new Date(parts[0], parts[1] - 1, parts[2]);
+      }
 
-      corps.querySelectorAll("tr").forEach(function (row) {
-        if (row.dataset.emptyState === "true") return;
-        // Colonnes : 0=Nom 1=Date 2=Heure 3=Statut 4=Section 5=Action
-        const nom = row.cells[0] ? row.cells[0].textContent.trim() : "";
-        const dateLigne = parseDate(row.cells[1] && row.cells[1].textContent);
-        const statutLigne = row.cells[3] ? row.cells[3].textContent.trim() : "";
-        const sectionLigne = row.cells[4] ? row.cells[4].textContent.trim() : "";
 
+        
         let afficher = true;
-        if (statut !== "tous" && statutLigne !== statut) afficher = false;
-        if (section !== "toutes" && sectionLigne !== section) afficher = false;
-        if (debut && (!dateLigne || dateLigne < debut)) afficher = false;
-        if (fin && (!dateLigne || dateLigne > fin)) afficher = false;
-        if (recherche && !nom.toLowerCase().includes(recherche)) afficher = false;
 
-        row.dataset.filtered = afficher ? "" : "hidden";
-      });
+        // Filtrer par statut
+        if (statut !== 'tous' && statutCell !== statut) {
+            afficher = false;
+        }
 
-      document.dispatchEvent(
-        new CustomEvent("bw:filtre", { detail: { table: table } })
-      );
-    }
+        // Filtrer par date (utiliser objets Date pour comparaison)
+        if (dateDebutStr && dateCellRaw< dateDebutStr) {
+            afficher = false;
+        }
+        if (dateFinStr && dateCellRaw> dateFinStr) {
+            afficher = false;
+        }
+        
 
-    Object.values(champs).forEach(function (el) {
-      if (!el) return;
-      el.addEventListener(el.tagName === "INPUT" && el.type === "text" ? "input" : "change", filtrer);
+        // Filtrer par section
+        if (section !== 'toutes' && sectionCell !== section) {
+            afficher = false;
+        }
+
+        // Filtrer par recherche (insensible à la casse)
+        if (recherchetable && !nomCell.toLowerCase().includes(recherchetable.toLowerCase().trim())) {
+            afficher = false;
+        }
+
+        row.style.display = afficher ? '' : 'none';
     });
+}
 
-    // Bouton de réinitialisation optionnel.
-    const reset = document.getElementById("reset-filtres");
-    if (reset) {
-      reset.addEventListener("click", function () {
-        if (champs.debut) champs.debut.value = "";
-        if (champs.fin) champs.fin.value = "";
-        if (champs.statut) champs.statut.value = "tous";
-        if (champs.section) champs.section.value = "toutes";
-        if (champs.recherche) champs.recherche.value = "";
-        filtrer();
-      });
-    }
+// Attacher les écouteurs d'événements lorsque le DOM est prêt
+document.addEventListener('DOMContentLoaded', () => {
+    const dateDebutEl = document.getElementById('date-debut');
+    const dateFinEl = document.getElementById('date-fin');
+    const statutEl = document.getElementById('statut');
+    const sectionEl = document.getElementById('section');
+    const rechercheEl = document.getElementById('champrecherche');
 
-    filtrer();
-  });
-})();
+    if (dateDebutEl) dateDebutEl.addEventListener('change', filtrerActivites);
+    if (dateFinEl) dateFinEl.addEventListener('change', filtrerActivites);
+    if (statutEl) statutEl.addEventListener('change', filtrerActivites);
+    if (sectionEl) sectionEl.addEventListener('change', filtrerActivites);
+    if (rechercheEl) rechercheEl.addEventListener('input', filtrerActivites);
+
+    // Lancer un premier filtrage pour appliquer les valeurs initiales
+    filtrerActivites();
+});
+

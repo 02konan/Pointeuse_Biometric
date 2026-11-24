@@ -984,7 +984,7 @@ if __name__ == '__main__':
         )
         thread.start()
 
-    # Synchronisation périodique
+    
     thread_sync = threading.Thread(
         target=sync_programme_periodique,
         args=(180,),
@@ -992,17 +992,17 @@ if __name__ == '__main__':
     )
     thread_sync.start()
 
-    # Démarrage du serveur Flask
+    
     serveur = threading.Thread(
         target=lancer_flask,
         daemon=True
     )
     serveur.start()
 
-    # Attendre que Flask démarre
+    
     time.sleep(2)
 
-    # Ouverture de la fenêtre Desktop
+   
     webview.create_window(
         "Divix-Biometric",
         "http://127.0.0.1:5000",
@@ -1010,5 +1010,4 @@ if __name__ == '__main__':
         height=850,
         min_size=(1000, 650)
     )
-
     webview.start()

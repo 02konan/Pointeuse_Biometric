@@ -73,7 +73,7 @@
  [],
  False,
  False,
- 1793892790,
+ 1793971600,
  [('run_d.exe',
    'C:\\Users\\IFSM\\Desktop\\MesProjets\\Pointeuse_Biometrique_IFSM\\env\\Lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\run_d.exe',
    'EXECUTABLE')],

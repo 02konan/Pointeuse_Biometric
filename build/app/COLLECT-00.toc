@@ -1,4 +1,4 @@
-([('.env\\.env',
+([('.env',
    'C:\\Users\\IFSM\\Desktop\\MesProjets\\Pointeuse_Biometrique_IFSM\\.env',
    'DATA'),
   ('MSVCP140.dll', 'C:\\Windows\\system32\\MSVCP140.dll', 'BINARY'),
