@@ -1,24 +1,7 @@
-"""Surveillance des pointeuses : un fil d'exécution indépendant par pointeuse.
-
-Chaque pointeuse a son propre fil, qui ne s'arrête jamais :
-
-* hors ligne, il retente la connexion avec une attente croissante
-  (5 s, 10 s, 20 s… jusqu'à 2 min), sans bloquer les autres pointeuses ;
-* dès qu'elle répond, il récupère les nouveaux pointages toutes les 15 s,
-  synchronise les enseignants toutes les 10 min et sauvegarde les
-  empreintes toutes les 30 min ;
-* chaque échange se fait sous un verrou propre à l'adresse IP : deux
-  connexions simultanées à la même pointeuse sont impossibles, y compris
-  avec l'enrôlement lancé depuis l'interface (voir `verrou`).
-
-Le superviseur relit la table `pointeuse` chaque minute : une pointeuse
-ajoutée, supprimée ou dont l'IP change est prise en compte sans redémarrer.
-"""
 
 import threading
 import time
 from datetime import datetime
-
 import pymysql
 from zk import ZK
 

@@ -960,8 +960,6 @@ def lancer_flask():
     app.run(
         host="127.0.0.1",
         port=5000,
-        # Pas de mode debug dans l'application livrée : il expose la console
-        # de débogage de Werkzeug sur la page d'erreur.
         debug=False,
         use_reloader=False,
         threaded=True

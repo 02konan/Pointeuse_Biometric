@@ -2,7 +2,7 @@
 from programme.base_donnee import connexion
 from programme.pointeuses import journal, ouvrir, verrou
 
-ATTENTE_VERROU = 30  # secondes d'attente max si la pointeuse est occupée
+ATTENTE_VERROU = 30  
 
 
 class FingerprintEnrollmentService:
@@ -13,7 +13,6 @@ class FingerprintEnrollmentService:
         self._verrous_tenus = {}
 
     def pointeuses_candidates(self):
-        """Adresses des pointeuses, celles signalées en ligne d'abord."""
         with self._connection_factory() as db:
             with db.cursor() as cursor:
                 cursor.execute(
@@ -30,12 +29,7 @@ class FingerprintEnrollmentService:
         )
 
     def _open_connection(self):
-        """Ouvre la première pointeuse joignable, sous son verrou.
-
-        Le verrou reste tenu jusqu'à `_fermer` : le fil de surveillance de
-        cette pointeuse attend la fin de l'enrôlement au lieu d'ouvrir une
-        seconde connexion en même temps.
-        """
+       
         for ip in self.pointeuses_candidates():
             acces = verrou(ip)
             if not acces.acquire(timeout=ATTENTE_VERROU):
@@ -76,7 +70,7 @@ class FingerprintEnrollmentService:
             if utilisateur_existant is None:
                 conn.set_user(uid=int(uid), name=str(name), user_id=str(user_id))
             print(f"Placez le doigt pour enrôler {name} (ID={user_id})...")
-            if conn.enroll_user(uid=int(uid), temp_id=int(finger_index), user_id=str(user_id)):
+            if conn.enroll_user(uid=int(uid), temp_id=int(finger_index=finger_index), user_id=str(user_id)):
                 print(f"Utilisateur {name} enrôlé avec succès (ID={user_id}, doigt={finger_index})")
                 return True
             else:
