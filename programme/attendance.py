@@ -1,11 +1,7 @@
-from zk import ZK, const
 import pymysql
 import time
 from datetime import datetime, timedelta
-import os
 from programme.base_donnee import connexion
-
-RECONNECT_DELAY = 5
 
 
 class AttendanceService:
@@ -13,145 +9,22 @@ class AttendanceService:
         self._connection_factory = (
             connexion if connection_factory is None else connection_factory
         )
-        self._last_processed_timestamp = None
-
-    def is_pingable(self, ip):
-        response = os.system(f"ping -n 1 -w 1000 {ip}" if os.name == "nt" else f"ping -c 1 -W 1 {ip}")
-        return response == 0
-
-    def dernier_pointage(self):
-        db = self._connection_factory()
-        cursor = db.cursor()
-        cursor.execute("SELECT MAX(date_pointage) FROM pointages")
-        result = cursor.fetchone()
-        db.close()
-        return result[0] if result and result[0] else None
-
-    def get_pointeuses(self):
-        db = self._connection_factory()
-        cursor = db.cursor()
-        cursor.execute("SELECT Adresseip,idPointeuse FROM pointeuse")
-        result = cursor.fetchall()
-        db.close()
-        return result
-
-    def listen_attendance(self):
-        self._last_processed_timestamp = self.dernier_pointage()
-        print(
-            "[INFO] Dernier pointage déjà traité : "
-            f"{self._last_processed_timestamp}"
-        )
-
-        while True:
-            pointeuses = self.get_pointeuses()
-            for ip in pointeuses:
-                ip_str = ip[0]
-                if not self.is_pingable(ip_str):
-                    print(f"[ERREUR] Impossible de joindre la pointeuse {ip_str}. Nouvel essai dans {RECONNECT_DELAY} secondes...")
-                    continue
-
-                zk = ZK(ip_str, port=int(4370), timeout=20)
-                try:
-                    print(f"[INFO] Connexion à la pointeuse {ip_str} (ID {ip[1]})...")
-                    conn = zk.connect()
-                    conn.disable_device()
-                    print(f"[INFO] Écoute des nouveaux pointages sur {ip_str}...")
-
-                    attendances = conn.get_attendance()
-                    new_timestamps = []
-
-                    for record in attendances:
-                        if (
-                            self._last_processed_timestamp is None
-                            or record.timestamp > self._last_processed_timestamp
-                        ):
-                            db = self._connection_factory()
-                            cursor = db.cursor()
-
-                            verification = """
-                                SELECT COUNT(*)
-                                FROM pointages
-                                WHERE IDEmploye = %s
-                                  AND DATE(date_pointage) = DATE(%s)
-                                  AND idPointeuse = %s
-                            """
-                            cursor.execute(verification, (record.user_id, record.timestamp, ip[1]))
-                            nb_pointages = cursor.fetchone()[0]
-
-                            jour_semaine = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
-                            jour = jour_semaine[record.timestamp.weekday()]
-
-                            if nb_pointages == 0:
-                                insertion = """
-                                    INSERT IGNORE INTO pointages (IDEmploye, date_pointage, jour_pointage, idPointeuse,Status)
-                                    VALUES (%s, %s, %s, %s,%s)
-                                """
-                                cursor.execute(insertion, (record.user_id, record.timestamp, jour, ip[1],"Arrivée enregistrée"))
-                                print(f"[NOUVEAU 1er] ID: {record.user_id} | Heure: {record.timestamp}")
-
-                            elif nb_pointages == 1:
-                                insertion = """
-                                    INSERT IGNORE INTO pointages (IDEmploye, date_pointage, jour_pointage, idPointeuse,Status)
-                                    VALUES (%s, %s, %s, %s,%s)
-                                """
-                                cursor.execute(insertion, (record.user_id, record.timestamp, jour, ip[1],"Départ enregistré"))
-                                print(f"[NOUVEAU 2e] ID: {record.user_id} | Heure: {record.timestamp}")
-
-                            else:
-                                cursor.execute("""
-                                    SELECT id
-                                    FROM pointages
-                                    WHERE IDEmploye = %s
-                                      AND DATE(date_pointage) = DATE(%s)
-                                      AND idPointeuse = %s
-                                    ORDER BY date_pointage ASC
-                                    LIMIT 1 OFFSET 1
-                                """, (record.user_id, record.timestamp, ip[1]))
-                                second_pointage = cursor.fetchone()
-
-                                if second_pointage:
-                                    mise_ajour = """
-                                        UPDATE pointages
-                                        SET date_pointage = %s , Status=%s
-                                        WHERE id = %s
-                                    """
-                                    cursor.execute(mise_ajour, (record.timestamp,"Départ enregistré",second_pointage[0],))
-                                    print(f"[MAJ 2e] ID: {record.user_id} | Nouveau: {record.timestamp}")
-
-                            db.commit()
-                            db.close()
-                            new_timestamps.append(record.timestamp)
-
-                    if new_timestamps:
-                        self._last_processed_timestamp = max(new_timestamps)
-
-                    time.sleep(5)
-
-                except Exception as e:
-                    print(f"[ERREUR] Problème avec la pointeuse {ip_str}: {e}")
-
-                finally:
-                    try:
-                        conn.enable_device()
-                        conn.disconnect()
-                    except:
-                        pass
 
     def programme_attendence(self):
-        while True:
-            try:
-                with self._connection_factory() as conn:
-                    with conn.cursor() as curseur:
-                        sql_insert = """
-                        INSERT INTO pointage_programe
+        """Recalcule pointage_programe (présences confrontées à l'emploi du temps)."""
+        try:
+            with self._connection_factory() as conn:
+                with conn.cursor() as curseur:
+                    sql_insert = """
+                    INSERT INTO pointage_programe
     (IDProgramme, IDPointage, Status, arrivee, depart, Duree_initial, Duree_finale, jour_programme, Date_Programme, section)
     SELECT
         pr.IDProgramme,
         ptg.IDPointage,
         CASE
-            WHEN TIMEDIFF(ptg.depart, ptg.arrivee) >= pr.duree_cours
-                THEN 'Présent'
-            ELSE 'Absent'
+        WHEN TIMEDIFF(ptg.depart, ptg.arrivee) >= pr.duree_cours
+            THEN 'Présent'
+        ELSE 'Absent'
         END AS Status,
         ptg.arrivee,
         ptg.depart,
@@ -163,12 +36,12 @@ class AttendanceService:
     FROM Programme pr
     JOIN (
         SELECT
-            MIN(id) AS IDPointage,
-            IDEmploye,
-            jour_pointage,
-            MIN(TIME(date_pointage)) AS arrivee,
-            MAX(TIME(date_pointage)) AS depart,
-            DATE(date_pointage) AS date_valider
+        MIN(id) AS IDPointage,
+        IDEmploye,
+        jour_pointage,
+        MIN(TIME(date_pointage)) AS arrivee,
+        MAX(TIME(date_pointage)) AS depart,
+        DATE(date_pointage) AS date_valider
         FROM pointages
         GROUP BY IDEmploye, jour_pointage
         HAVING COUNT(*) >= 2
@@ -184,20 +57,22 @@ class AttendanceService:
         jour_programme = VALUES(jour_programme),
         Date_Programme = VALUES(Date_Programme),
         section = VALUES(section);
-                        """
-                        curseur.execute(sql_insert)
-                        conn.commit()
-                        print("[INFO] Mise à jour de pointage_programme effectuée.")
+                    """
+                    curseur.execute(sql_insert)
+                    conn.commit()
+                    print("[INFO] Mise à jour de pointage_programme effectuée.")
 
-            except pymysql.MySQLError as e:
-                print(f"[ERREUR] MySQL: {e}")
-            except Exception as e:
-                print(f"[ERREUR] Générale: {e}")
+        except pymysql.MySQLError as e:
+            print(f"[ERREUR] MySQL: {e}")
+        except Exception as e:
+            print(f"[ERREUR] Générale: {e}")
 
-    def synchronisation_attendance(self):
+    def synchronisation_attendance(self, period=60):
+        # Une passe par minute : l'ancienne boucle tournait sans pause et
+        # sollicitait la base en continu.
         while True:
-          return self.programme_attendence()
-          time.sleep(60)
+            self.programme_attendence()
+            time.sleep(period)
 
     def programme_valider(self, IDemploye, date_pointage,idpointeuse, jour_pointage,Status):
         sql_valider = """insert into pointages (IDEmploye, date_pointage, idPointeuse,jour_pointage,Status)
@@ -217,10 +92,6 @@ class AttendanceService:
 
 
 _service = AttendanceService(connection_factory=connexion)
-is_pingable = _service.is_pingable
-dernier_pointage = _service.dernier_pointage
-get_pointeuses = _service.get_pointeuses
-listen_attendance = _service.listen_attendance
 programme_attendence = _service.programme_attendence
 synchronisation_attendance = _service.synchronisation_attendance
 programme_valider = _service.programme_valider
