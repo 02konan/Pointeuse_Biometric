@@ -1,13 +1,14 @@
 from flask import render_template, request,send_file, redirect, url_for, jsonify, send_from_directory, Response, session, flash
 from programme.read_data import pointeuse,historique_pointage,read_matricule_section,read_data_from_pr,verification_prof,pointage_invalid,read_raports,read_data_from_db,read_utilisateur,read_idsection,read_idrole,read_matricule, read_data_employe,read_data_presence,read_data_pointeuse,verification_utilisateur,generer_presence
 from programme.Creat_data import creat_data_employee, creat_data_pointeuse,cret_User
-from programme.detecteur import recuperation_emprientes,get_etats_pointeuses
-from programme.attendance import listen_attendance,synchronisation_attendance,programme_valider
-from programme.insertion import insertion_
+from programme.detecteur import get_etats_pointeuses
+from programme.attendance import programme_valider
 from programme.read_superadmin import historique_data,read_data_Admin,read_pointage,read_admin_presence,pointage_admin_invalid,data_chatjs,generer_presence_idsection,generer_presence_idemployee
 from programme.transfert_empreintes import transfert_empreintes
 from programme.enrollement import enroler_carte, enroler_utilisateur
+from programme.arriere_plan import demarrer_services
 from werkzeug.utils import secure_filename
+import importlib
 from programme.gerenerateurPdf import generer_fiche_presence_pdf
 from datetime import datetime,timedelta
 import threading
@@ -959,39 +960,18 @@ def lancer_flask():
     app.run(
         host="127.0.0.1",
         port=5000,
-        debug=True,
+        # Pas de mode debug dans l'application livrée : il expose la console
+        # de débogage de Werkzeug sur la page d'erreur.
+        debug=False,
         use_reloader=False,
         threaded=True
     )
 
 
 if __name__ == '__main__':
-    import webview
-
-    fonctions_background = [
-        recuperation_emprientes,
-        get_etats_pointeuses,
-        insertion_,
-        synchronisation_attendance,
-        listen_attendance
-    ]
-
-    for fonction in fonctions_background:
-        thread = threading.Thread(
-            target=fonction,
-            daemon=True
-        )
-        thread.start()
-
     
-    thread_sync = threading.Thread(
-        target=sync_programme_periodique,
-        args=(180,),
-        daemon=True
-    )
-    thread_sync.start()
-
     
+    demarrer_services()
     serveur = threading.Thread(
         target=lancer_flask,
         daemon=True
@@ -1002,6 +982,7 @@ if __name__ == '__main__':
     time.sleep(2)
 
    
+    webview = importlib.import_module('webview')
     webview.create_window(
         "Divix-Biometric",
         "http://127.0.0.1:5000",

@@ -1,10 +1,8 @@
 
-import os
-import time
-from zk import ZK
 from programme.base_donnee import connexion
+from programme.pointeuses import journal, ouvrir, verrou
 
-# Détection automatique de la première pointeuse en ligne
+ATTENTE_VERROU = 30  # secondes d'attente max si la pointeuse est occupée
 
 
 class FingerprintEnrollmentService:
@@ -12,25 +10,17 @@ class FingerprintEnrollmentService:
         self._connection_factory = (
             connexion if connection_factory is None else connection_factory
         )
+        self._verrous_tenus = {}
 
-    def is_pingable(self, ip):
-        response = os.system(f"ping -n 1 -w 1000 {ip}" if os.name == "nt" else f"ping -c 1 -W 1 {ip}")
-        return response == 0
-
-    def get_pointeuse(self, essiae=2, attente=5):
-        for _ in range(essiae):
-         db = self._connection_factory()
-         cursor = db.cursor()
-         cursor.execute("SELECT AdresseIp FROM pointeuse")
-         pointeuses = cursor.fetchall()
-         cursor.close()
-         db.close()
-         for (ip,) in pointeuses:
-            if self.is_pingable(ip):
-                return ip
-         print(f"⏳ Aucune pointeuse en ligne détectée. Nouvelle tentative dans {attente} secondes...")
-         time.sleep(attente)
-        return None
+    def pointeuses_candidates(self):
+        """Adresses des pointeuses, celles signalées en ligne d'abord."""
+        with self._connection_factory() as db:
+            with db.cursor() as cursor:
+                cursor.execute(
+                    "SELECT AdresseIp FROM pointeuse "
+                    "ORDER BY (EstEnligne = 'En ligne') DESC, idPointeuse"
+                )
+                return [ip.strip() for (ip,) in cursor.fetchall() if ip and ip.strip()]
 
     @staticmethod
     def _find_user(conn, user_id):
@@ -40,12 +30,37 @@ class FingerprintEnrollmentService:
         )
 
     def _open_connection(self):
-        pointeuse=self.get_pointeuse()
-        if not pointeuse:
-            print("❌ Aucune pointeuse en ligne disponible pour l'enrôlement.")
-            return None
-        zk = ZK(pointeuse, port=4370, timeout=20)
-        return zk, zk.connect(), pointeuse
+        """Ouvre la première pointeuse joignable, sous son verrou.
+
+        Le verrou reste tenu jusqu'à `_fermer` : le fil de surveillance de
+        cette pointeuse attend la fin de l'enrôlement au lieu d'ouvrir une
+        seconde connexion en même temps.
+        """
+        for ip in self.pointeuses_candidates():
+            acces = verrou(ip)
+            if not acces.acquire(timeout=ATTENTE_VERROU):
+                journal(f"Enrôlement : pointeuse {ip} occupée, essai de la suivante.")
+                continue
+            try:
+                conn = ouvrir(ip, timeout=20)
+            except Exception as erreur:
+                acces.release()
+                journal(f"Enrôlement : pointeuse {ip} injoignable ({erreur}).")
+                continue
+            self._verrous_tenus[id(conn)] = acces
+            return None, conn, ip
+        print("❌ Aucune pointeuse en ligne disponible pour l'enrôlement.")
+        return None
+
+    def _fermer(self, connexion_pointeuse):
+        conn = connexion_pointeuse[1]
+        try:
+            conn.disconnect()
+            print("Déconnecté de la pointeuse")
+        finally:
+            acces = self._verrous_tenus.pop(id(conn), None)
+            if acces is not None:
+                acces.release()
 
     def enroler_utilisateur(self, uid=None, user_id:str="", name:str="", finger_index:int=0):
         connexion_pointeuse = None
@@ -72,8 +87,7 @@ class FingerprintEnrollmentService:
             return False
         finally:
             if connexion_pointeuse is not None:
-                connexion_pointeuse[1].disconnect()
-                print("Déconnecté de la pointeuse")
+                self._fermer(connexion_pointeuse)
 
     def enroler_carte(self, user_id:str="", name:str="", card_number:int=0):
         connexion_pointeuse = None
@@ -103,12 +117,9 @@ class FingerprintEnrollmentService:
             return False
         finally:
             if connexion_pointeuse is not None:
-                connexion_pointeuse[1].disconnect()
-                print("Déconnecté de la pointeuse")
+                self._fermer(connexion_pointeuse)
 
 
 _service = FingerprintEnrollmentService(connection_factory=connexion)
-is_pingable = _service.is_pingable
-get_pointeuse = _service.get_pointeuse
 enroler_utilisateur = _service.enroler_utilisateur
 enroler_carte = _service.enroler_carte

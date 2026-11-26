@@ -19,3 +19,5 @@ env/
 # Ignorer les sorties de PyInstaller (régénérées par « pyinstaller app.spec »)
 build/
 dist/
+# Installateur produit par Inno Setup (installateur.iss)
+Output/
