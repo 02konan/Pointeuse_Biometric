@@ -32,6 +32,24 @@ class FingerprintEnrollmentServiceTests(unittest.TestCase):
         )
         self.connection.disconnect.assert_called_once_with()
 
+    def test_detects_fingerprint_saved_although_pyzk_reports_failure(self):
+        # Firmware dont pyzk ne comprend pas les codes de fin : False, mais
+        # l'empreinte est bien sur la pointeuse.
+        self.connection.enroll_user.return_value = False
+        self.connection.get_user_template.side_effect = [
+            None,
+            SimpleNamespace(size=512, template=b"empreinte"),
+        ]
+
+        self.assertTrue(self.service.enroler_utilisateur(user_id="123", name="Ada"))
+
+    def test_reports_failure_when_no_new_fingerprint(self):
+        ancienne = SimpleNamespace(size=512, template=b"ancienne")
+        self.connection.enroll_user.return_value = False
+        self.connection.get_user_template.side_effect = [ancienne, ancienne]
+
+        self.assertFalse(self.service.enroler_utilisateur(user_id="123", name="Ada"))
+
     def test_assigns_card_to_existing_employee(self):
         self.connection.get_users.return_value = [
             SimpleNamespace(user_id="123", uid=5, card=0)
