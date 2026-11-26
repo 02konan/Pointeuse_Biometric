@@ -966,11 +966,8 @@ def lancer_flask():
 
 
 if __name__ == '__main__':
-    # Uniquement pour l'application de bureau : le serveur (gunicorn) importe
-    # ce fichier sans passer ici et n'a pas besoin de pywebview.
     import webview
 
-    # Démarrage des services en arrière-plan
     fonctions_background = [
         recuperation_emprientes,
         get_etats_pointeuses,
