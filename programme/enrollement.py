@@ -82,7 +82,11 @@ class FingerprintEnrollmentService:
                 conn.set_user(uid=int(uid), name=str(name), user_id=str(user_id))
             avant = self._empreinte(conn, uid, finger_index)
             print(f"Placez le doigt pour enrôler {name} (ID={user_id})...")
-            if conn.enroll_user(uid=int(uid), temp_id=int(finger_index=finger_index), user_id=str(user_id)):
+            signale = conn.enroll_user(uid=int(uid), temp_id=int(finger_index), user_id=str(user_id))
+            # pyzk renvoie False avec certains firmwares alors que l'empreinte
+            # est enregistrée : on vérifie sur la pointeuse qu'elle a changé.
+            apres = self._empreinte(conn, uid, finger_index)
+            if signale or (apres is not None and apres != avant):
                 print(f"Utilisateur {name} enrôlé avec succès (ID={user_id}, doigt={finger_index})")
                 return True
             print(f"Échec de l'enrôlement de l'utilisateur {name} (ID={user_id}, doigt={finger_index})")
